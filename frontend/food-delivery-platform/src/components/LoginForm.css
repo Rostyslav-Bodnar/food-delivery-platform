@@ -1,0 +1,87 @@
+/* Login container */
+.login-container {
+    max-width: 450px; /* обмежує ширину */
+    width: 100%;
+    padding: 2.5rem;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(255, 99, 71, 0.2);
+    text-align: center;
+    margin: 4rem auto; /* центрування по горизонталі */
+    border: 1px solid rgba(255, 99, 71, 0.15);
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+    /* Заголовок */
+    .login-container h2 {
+        color: #ff5733;
+        margin-bottom: 2rem;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 700;
+        font-size: 2rem;
+        letter-spacing: 0.5px;
+    }
+
+/* Input fields */
+.login-form input {
+    width: 100%;
+    padding: 16px;
+    margin: 10px 0;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+    .login-form input:focus {
+        border-color: #ff5733;
+        outline: none;
+        box-shadow: 0 0 12px rgba(255, 87, 51, 0.3);
+        background: #fff;
+        transform: scale(1.01);
+    }
+
+/* Button */
+.login-form button {
+    width: 100%;
+    padding: 16px;
+    margin-top: 1.5rem;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff5733, #ff8c66);
+    color: white;
+    font-size: 1.1rem;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(255, 87, 51, 0.3);
+}
+
+    .login-form button:hover {
+        background: linear-gradient(135deg, #ff4500, #ff7043);
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(255, 69, 0, 0.4);
+    }
+
+.login-text {
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+    color: #333;
+    font-family: 'Poppins', sans-serif;
+}
+
+    .login-text a {
+        color: #ff5733;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.3s ease;
+    }
+
+        .login-text a:hover {
+            color: #ff4500;
+            text-decoration: underline;
+        }
