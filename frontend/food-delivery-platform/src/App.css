@@ -1,42 +1,57 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Header */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2.5rem;
+    background: rgba(255, 255, 255, 0.7); /* напівпрозорий фон */
+    backdrop-filter: blur(12px);
+    border-radius: 0 0 20px 20px;
+    box-shadow: 0 6px 20px rgba(255, 99, 71, 0.15);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    transition: background 0.3s ease;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+    /* Лого */
+    .header h1 {
+        font-size: 1.8rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ff7f50, #e63946);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: 1.5px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+        .header h1:hover {
+            transform: scale(1.05);
+        }
+
+/* Навігація */
+nav {
+    display: flex;
+    gap: 1.5rem;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.6);
+    transition: 0.3s ease-in-out;
+    box-shadow: 0 3px 10px rgba(255, 99, 71, 0.1);
+    position: relative;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
+    .nav-link:hover {
+        background: linear-gradient(135deg, #ff7f50, #ff6347);
+        color: white;
+        box-shadow: 0 5px 15px rgba(255, 99, 71, 0.3);
+        transform: translateY(-2px);
+    }
