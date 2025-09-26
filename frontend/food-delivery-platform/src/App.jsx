@@ -7,7 +7,6 @@ function App() {
     return (
         <Router>
             <div className="app-container">
-                {/* Просте меню навігації */}
                 <header className="header">
                     <h1>Foodie Delivery 🍔</h1>
                     <nav>
