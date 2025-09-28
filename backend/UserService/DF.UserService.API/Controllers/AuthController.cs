@@ -31,12 +31,26 @@ namespace DF.UserService.API.Controllers
         }
 
         [Authorize]
-        [HttpGet("me")]
+        [HttpGet("profile")]
         public async Task<IActionResult> Me()
         {
             var userId = Guid.Parse(User.FindFirst("sub")!.Value);
-            var result = await userService.GetCurrentUserAsync(userId);
+            var result = await userService.GetUserAsync(userId);
             return Ok(result);
+        }
+
+        [HttpGet("user")]
+        public async Task<IActionResult> GetUser([FromQuery] Guid userId)
+        {
+            var user = await userService.GetUserAsync(userId);
+            return Ok(user);
+        }
+
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await userService.GetAllUsers();
+            return Ok(users);
         }
     }
 }
