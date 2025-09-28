@@ -34,7 +34,6 @@
     margin-bottom: 1.5rem;
     background: linear-gradient(135deg, #ff5733, #ff8c66);
     -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
     animation: slideIn 0.6s ease-in-out;
 }
 
