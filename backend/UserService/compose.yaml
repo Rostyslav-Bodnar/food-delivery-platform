@@ -1,0 +1,33 @@
+﻿services:
+  df.userservice.api:
+    image: df.userservice.api
+    build:
+      context: .
+      dockerfile: DF.UserService.API/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mssql
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: mssql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=StrongPass123!
+    ports:
+      - "11433:1433"
+    volumes:
+      - mssql_data:/var/opt/mssql
+  mssql-init:
+    image: mcr.microsoft.com/mssql-tools
+    depends_on:
+      - mssql
+    volumes:
+      - ./init.sql:/init.sql
+    entrypoint: >
+      /bin/bash -c "
+      sleep 20;
+      /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P StrongPass123! -i /init.sql
+      "
+volumes:
+  mssql_data:
