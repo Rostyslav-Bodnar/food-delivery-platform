@@ -4,6 +4,7 @@ using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace DF.UserService.Application.Services
 {
@@ -43,10 +44,16 @@ namespace DF.UserService.Application.Services
             return "jwt-token";
         }
 
-        public async Task<UserDto> GetCurrentUserAsync(Guid userId)
+        public async Task<UserDto> GetUserAsync(Guid userId)
         {
             var user = await userManager.FindByIdAsync(userId.ToString());
             return new UserDto(user.Id, user.Email, user.FullName);
+        }
+
+        public async Task<List<UserDto>> GetAllUsers()
+        {
+            var users = await userManager.Users.ToListAsync();
+            return users.Select(u => new UserDto(u.Id, u.Email, u.FullName)).ToList();
         }
     }
 }

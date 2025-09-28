@@ -1,32 +1,43 @@
-﻿import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import "./styles/LoginForm.css";
+﻿import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { login } from '../api/auth';
+import './styles/LoginForm.css';
 
 const LoginForm = () => {
     const [formData, setFormData] = useState({
-        username: "",
-        password: "",
+        email: '',
+        password: '',
     });
+    const [error, setError] = useState(null);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert(`Welcome back, ${formData.username}! 🍔`);
+        setError(null);
+        try {
+            const response = await login(formData);
+            localStorage.setItem('token', response.token);
+            alert(`Welcome back, ${formData.email}! 🍔`);
+            setFormData({ email: '', password: '' });
+        } catch (err) {
+            setError(err.message || 'Failed to login. Please check your credentials.');
+        }
     };
 
     return (
         <div className="page-wrapper">
-            <div className="register-container"> {/* Використовуємо ті самі стилі, що у реєстрації */}
+            <div className="register-container">
                 <h2>Login to Foodie Delivery 🍔</h2>
+                {error && <p className="error-text">{error}</p>}
                 <form className="register-form" onSubmit={handleSubmit}>
                     <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={formData.username}
+                        type="email"
+                        name="email"
+                        placeholder="Email address"
+                        value={formData.email}
                         onChange={handleChange}
                         required
                     />

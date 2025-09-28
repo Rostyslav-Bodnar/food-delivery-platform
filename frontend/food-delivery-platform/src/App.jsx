@@ -1,8 +1,9 @@
 ﻿import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import RegisterForm from './components/RegisterForm';
 import LoginForm from './components/LoginForm';
 import Header from './components/HeaderComponent.jsx';
+import HomePage from './components/HomePage.jsx';
 
 function App() {
     return (
@@ -11,15 +12,7 @@ function App() {
                 <Header />
                 <main>
                     <Routes>
-                        <Route path="/" element={
-                            <div className="page-wrapper">
-                                <h2 className="welcome">Welcome to Foodie Delivery 🍔</h2>
-                                <div style={{ marginTop: '2rem' }}>
-                                    <Link className="nav-link" to="/login">Login</Link>
-                                    <Link className="nav-link" to="/register" style={{ marginLeft: '1rem' }}>Register</Link>
-                                </div>
-                            </div>
-                        } />
+                        <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginForm />} />
                         <Route path="/register" element={<RegisterForm />} />
                     </Routes>

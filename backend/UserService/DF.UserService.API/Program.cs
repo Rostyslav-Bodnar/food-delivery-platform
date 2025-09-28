@@ -8,6 +8,17 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// CORS Policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+            .AllowAnyHeader()                     // дозволяємо всі заголовки
+            .AllowAnyMethod()                   // дозволяємо всі HTTP методи
+            .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
+    });
+});
 // MSSQL
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("UserServiceMSSQLDatabase")));
@@ -47,6 +58,8 @@ using (var scope = app.Services.CreateScope())
 
 app.UseSwagger();
 app.UseSwaggerUI();
+
+app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();

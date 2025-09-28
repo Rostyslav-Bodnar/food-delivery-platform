@@ -7,6 +7,7 @@ namespace DF.UserService.Application.Interfaces
     {
         Task<UserDto> RegisterAsync(RegisterRequest request);
         Task<string> LoginAsync(LoginRequest request);
-        Task<UserDto> GetCurrentUserAsync(Guid userId);
+        Task<UserDto> GetUserAsync(Guid userId);
+        Task<List<UserDto>> GetAllUsers();
     }
 }

@@ -14,10 +14,12 @@ namespace DF.UserService.Infrastructure.Messaging
         {
             var factory = new ConnectionFactory()
             {
-                HostName = config["RabbitMQ:Host"],
-                UserName = config["RabbitMQ:User"],
-                Password = config["RabbitMQ:Pass"]
+                HostName = config["RabbitMQ:HostName"],
+                UserName = config["RabbitMQ:UserName"],
+                Password = config["RabbitMQ:Password"],
+                Port = int.Parse(config["RabbitMQ:Port"] ?? "5672")
             };
+
             connection = factory.CreateConnection();
             channel = connection.CreateModel();
             channel.ExchangeDeclare("user-exchange", ExchangeType.Topic, durable: true);
