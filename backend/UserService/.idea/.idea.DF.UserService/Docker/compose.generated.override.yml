@@ -1,0 +1,23 @@
+# This is a generated file. Not intended for manual editing.
+services:
+  df.userservice.api:
+    build:
+      context: "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\\
+        UserService"
+      dockerfile: "DF.UserService.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/DF.UserService.API.dll"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "df.userservice.api:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\UserService\\\
+      DF.UserService.API:/app:rw"
+    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\UserService:/src:rw"
+    - "C:\\Users\\User\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
