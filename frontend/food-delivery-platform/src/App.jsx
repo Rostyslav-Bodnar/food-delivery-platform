@@ -1,11 +1,11 @@
 ﻿import React from "react";
-import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import RegisterForm from "./components/RegisterForm";
 import LoginForm from "./components/LoginForm";
 
 function App() {
     return (
-        <Router>
+        <Router basename="/food-delivery-platform">
             <div className="app-container">
                 <header className="header">
                     <h1>Foodie Delivery 🍔</h1>
