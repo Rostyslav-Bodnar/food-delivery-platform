@@ -1,29 +1,22 @@
-﻿import React from "react";
-import { HashRouter as Router, Routes, Route, Link } from "react-router-dom";
-import RegisterForm from "./components/RegisterForm";
-import LoginForm from "./components/LoginForm";
+﻿import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
+import Header from './components/HeaderComponent.jsx';
 
 function App() {
     return (
-        <Router>
+        <Router basename="/food-delivery-platform">
             <div className="app-container">
-                <header className="header">
-                    <h1>Foodie Delivery 🍔</h1>
-                    <nav>
-                        <Link className="nav-link" to="/">Home</Link>
-                        <Link className="nav-link" to="/login">Login</Link>
-                        <Link className="nav-link" to="/register">Register</Link>
-                    </nav>
-                </header>
-
+                <Header />
                 <main>
                     <Routes>
                         <Route path="/" element={
                             <div className="page-wrapper">
                                 <h2 className="welcome">Welcome to Foodie Delivery 🍔</h2>
-                                <div style={{ marginTop: "2rem" }}>
+                                <div style={{ marginTop: '2rem' }}>
                                     <Link className="nav-link" to="/login">Login</Link>
-                                    <Link className="nav-link" to="/register" style={{ marginLeft: "1rem" }}>Register</Link>
+                                    <Link className="nav-link" to="/register" style={{ marginLeft: '1rem' }}>Register</Link>
                                 </div>
                             </div>
                         } />
