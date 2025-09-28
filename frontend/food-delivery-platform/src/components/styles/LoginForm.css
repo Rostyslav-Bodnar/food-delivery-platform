@@ -1,19 +1,18 @@
 /* Login container */
 .login-container {
-    max-width: 450px; /* обмежує ширину */
+    max-width: 450px; 
     width: 100%;
     padding: 2.5rem;
     background: rgba(255, 255, 255, 0.95);
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(255, 99, 71, 0.2);
     text-align: center;
-    margin: 4rem auto; /* центрування по горизонталі */
+    margin: 4rem auto; 
     border: 1px solid rgba(255, 99, 71, 0.15);
     backdrop-filter: blur(8px);
     animation: fadeIn 0.8s ease-in-out;
 }
 
-    /* Заголовок */
     .login-container h2 {
         color: #ff5733;
         margin-bottom: 2rem;
