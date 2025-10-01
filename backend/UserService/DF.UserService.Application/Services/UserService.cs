@@ -41,7 +41,15 @@ namespace DF.UserService.Application.Services
         public async Task<string> LoginAsync(LoginRequest request)
         {
             // TODO: Validate password, generate JWT
-            return "jwt-token";
+            var user = await userManager.FindByEmailAsync(request.Email);
+            if (user == null)
+                throw new Exception("User not found");
+
+            var isPasswordValid = await userManager.CheckPasswordAsync(user, request.Password);
+            if (!isPasswordValid)
+                throw new Exception("Invalid password");
+
+            return $"Login successful for user {user.Email}";
         }
 
         public async Task<UserDto> GetUserAsync(Guid userId)

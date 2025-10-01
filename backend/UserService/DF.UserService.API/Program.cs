@@ -42,7 +42,10 @@ builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
 
 // DI
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+
 builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
