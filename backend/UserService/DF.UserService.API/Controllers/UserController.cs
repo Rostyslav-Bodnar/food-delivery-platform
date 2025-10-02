@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UserController : ControllerBase

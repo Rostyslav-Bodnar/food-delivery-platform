@@ -1,9 +1,11 @@
 ﻿using DF.UserService.Application.Services;
 using DF.UserService.Contracts.Models.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AccountController(IAccountService accountService) : ControllerBase
