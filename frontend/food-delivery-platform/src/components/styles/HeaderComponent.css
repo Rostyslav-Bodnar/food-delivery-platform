@@ -3,7 +3,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1.2rem 3rem;
+    padding: 1rem 2rem;
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(8px);
     border-radius: 0 0 16px 16px;
@@ -46,7 +46,7 @@ nav {
     font-family: 'Poppins', sans-serif;
     font-weight: 600;
     font-size: 1rem;
-    padding: 16px;
+    padding: 12px;
     border-radius: 12px;
     border: 1px solid #e0e0e0;
     background: #fafafa;
@@ -151,12 +151,13 @@ nav {
         padding: 0;
         margin: 0.6rem 0;
         transition: all 0.3s ease;
+        padding-left: 10px;
     }
 
     .dropdown-content-header li,
     .dropdown-content-header .action-btn-header {
         padding: 0.6rem 0.8rem;
-        border-radius: 12px;
+        border-radius: 0px;
         border: 1px solid #e0e0e0;
         background: #fafafa;
         color: #333;

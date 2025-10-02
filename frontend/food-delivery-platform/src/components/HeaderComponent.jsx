@@ -1,6 +1,7 @@
 ﻿import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import './styles/HeaderComponent.css';
+import {useState, useEffect, useRef } from "react";
 
 const Header = () => {
     const user = {
@@ -49,25 +50,25 @@ const Header = () => {
                     <div className={`dropdown-content-header ${isDropdownOpen ? "show" : ""}`}>
                         <h4>{user.name}</h4>
                         <button className="action-btn-header">
-                            <span className="icon">👤</span> Profile
+                            Profile
                         </button>
                         <h5 className="accounts-toggle" onClick={handleToggleAccounts}>
-                            🍽️ Акаунти {isAccountsOpen ? "▲" : "▼"}
+                            Accounts {isAccountsOpen ? "▲" : "▼"}
                         </h5>
                         {isAccountsOpen && (
                             <ul>
                                 {user.accounts.map((acc, idx) => (
                                     <li key={idx}>
-                                        <span className="icon">🍴</span> {acc}
+                                         {acc}
                                     </li>
                                 ))}
                             </ul>
                         )}
                         <button className="action-btn-header">
-                            <span className="icon">➕</span> Create Account
+                             Create Account
                         </button>
                         <button className="action-btn-header">
-                            <span className="icon">🚪</span> Logout
+                             Logout
                         </button>
                     </div>
                 </div>
