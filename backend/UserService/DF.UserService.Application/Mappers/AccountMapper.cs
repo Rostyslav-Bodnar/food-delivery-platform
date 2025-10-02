@@ -7,7 +7,7 @@ public static class AccountMapper
 {
     public static AccountDTO ToDTO(Account entity)
     {
-        var dto = new AccountDTO(entity.Id,  entity.UserId.ToString(), entity.AccountType.ToString());
+        var dto = new AccountDTO(entity.Id.ToString(), entity.UserId.ToString(), entity.AccountType.ToString());
         return dto;
     }
 
@@ -15,7 +15,7 @@ public static class AccountMapper
     {
         var entity = new Account
         {
-            UserId = dto.Id,
+            UserId = new Guid(dto.UserId),
             AccountType = (AccountType)Enum.Parse(typeof(AccountType), dto.AccountType)
         };
         

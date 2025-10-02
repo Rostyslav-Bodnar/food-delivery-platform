@@ -4,7 +4,7 @@ public interface IRepository<T>
 {
     Task<T?> Get(Guid id);
     Task<IEnumerable<T?>> GetAll();
-    Task<bool> Create(T entity);
+    Task<T> Create(T entity);
     Task<T> Update(T entity);
     Task<bool> Delete(Guid id);
 }

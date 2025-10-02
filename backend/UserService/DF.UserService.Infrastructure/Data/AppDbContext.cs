@@ -33,7 +33,7 @@ namespace DF.UserService.Infrastructure.Data
                     .IsUnicode(false);
 
                 entity.HasOne(a => a.User)
-                    .WithOne()
+                    .WithOne(u => u.CurrentAccount)
                     .HasForeignKey<Account>(a => a.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
 
@@ -47,7 +47,11 @@ namespace DF.UserService.Infrastructure.Data
                 entity.Property(u => u.FullName)
                     .HasMaxLength(200)
                     .IsRequired();
-
+                
+                entity.Property(u => u.UserRole)
+                    .HasConversion<int>()
+                    .IsRequired();
+                
                 entity.Property(u => u.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
 

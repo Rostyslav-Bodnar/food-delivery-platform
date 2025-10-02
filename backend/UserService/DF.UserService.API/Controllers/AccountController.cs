@@ -1,5 +1,7 @@
-﻿using DF.UserService.Application.Services;
+﻿using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Services;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -44,7 +46,8 @@ public class AccountController(IAccountService accountService) : ControllerBase
         if (account == null)
             return BadRequest("Account data is required.");
 
-        var created = await accountService.CreateAccountAsync(account);
+        var accountType = Enum.Parse<AccountType>(account.AccountType, ignoreCase: true);
+        var created = await accountService.CreateAccountAsync(new Guid(account.UserId), accountType, account.ImageURL);
 
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
@@ -55,7 +58,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
     [HttpPut("{id:guid}")]
     public async Task<ActionResult<AccountDTO>> UpdateAccount(Guid id, [FromBody] AccountDTO? account)
     {
-        if (account == null || id != account.Id)
+        if (account == null || id.ToString() != account.Id)
             return BadRequest("Invalid account data.");
 
         var updated = await accountService.UpdateAccountAsync(account);

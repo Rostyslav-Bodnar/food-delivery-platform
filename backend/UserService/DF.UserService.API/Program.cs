@@ -33,7 +33,7 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT TODO: setup real JWT config
+// JWT 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 var jwtKey = jwtSection.GetValue<string>("Key")!;
 var issuer = jwtSection.GetValue<string>("Issuer");

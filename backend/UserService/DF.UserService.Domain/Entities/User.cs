@@ -6,5 +6,14 @@ namespace DF.UserService.Domain.Entities
     {
         public required string FullName { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        
+        //TODO: location implementation
+        
+        public Guid AccountId { get; set; }
+        public Account CurrentAccount { get; set; }
+        
+        public required UserRole UserRole { get; set; }
+        
+        
     }
 }

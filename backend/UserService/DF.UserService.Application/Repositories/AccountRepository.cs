@@ -28,10 +28,11 @@ public class AccountRepository : IAccountRepository
             .ToListAsync();
     }
 
-    public async Task<bool> Create(Account entity)
+    public async Task<Account> Create(Account entity)
     {
         await dbContext.Accounts.AddAsync(entity);
-        return await dbContext.SaveChangesAsync() > 0;
+        await dbContext.SaveChangesAsync();
+        return entity;
     }
 
     public async Task<Account> Update(Account entity)

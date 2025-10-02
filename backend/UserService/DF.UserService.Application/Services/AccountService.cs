@@ -1,22 +1,30 @@
-﻿using DF.UserService.Application.Mappers;
+﻿using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Services;
 
 public class AccountService(IAccountRepository accountRepository) : IAccountService
 {
-    public async Task<AccountDTO> CreateAccountAsync(AccountDTO account)
+    public async Task<AccountDTO> CreateAccountAsync(Guid userId, AccountType accountType, string? imageURL)
     {
         try
         {
-            var entity = AccountMapper.ToEntity(account);
-            await accountRepository.Create(entity);
+            var entity = new Account
+            {
+                UserId = userId,
+                AccountType = accountType
+            };
+
+            entity = await accountRepository.Create(entity);
+
             return AccountMapper.ToDTO(entity);
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error creating account with UserId {account.UserId}", ex);
+            throw new ApplicationException($"Error creating account for user {userId}", ex);
         }
     }
 
@@ -30,7 +38,7 @@ public class AccountService(IAccountRepository accountRepository) : IAccountServ
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error updating account with Id {account.Id}", ex);
+            throw new ApplicationException($"Error updating account with Id {account}", ex);
         }
     }
 
