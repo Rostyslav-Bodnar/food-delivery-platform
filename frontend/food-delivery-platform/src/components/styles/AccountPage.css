@@ -1,0 +1,150 @@
+/* Full page wrapper */
+.page-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(145deg, #fff3e0, #ffe0cc);
+    padding: 2rem;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* Container */
+.account-container {
+    max-width: 500px;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 2rem;
+    border-radius: 20px;
+    box-shadow: 0 12px 40px rgba(255, 99, 71, 0.2);
+    text-align: center;
+}
+
+    /* Title */
+    .account-container h2 {
+        color: #ff5733;
+        margin-bottom: 1.5rem;
+        font-weight: 700;
+        font-size: 1.6rem;
+    }
+
+/* Dropdown button */
+.dropbtn {
+    background: linear-gradient(135deg, #ff5733, #ff8c66);
+    color: white;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 50%; /* кружок */
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+    .dropbtn:hover {
+        transform: translateY(-2px);
+    }
+
+/* Dropdown container */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Dropdown content */
+.dropdown-content {
+    display: none; /* спочатку приховано */
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #fff;
+    color: #333; /* темний текст */
+    min-width: 250px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(255, 87, 51, 0.2);
+    padding: 1rem;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Показуємо меню при hover */
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content h4 {
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+}
+
+.dropdown-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+}
+
+.dropdown-content li {
+    padding: 0.5rem 0.3rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+    .dropdown-content li:hover {
+        background: #ffe6e1;
+    }
+
+/* Buttons inside dropdown (Create Account & Logout) */
+.logout-btn,
+.create-btn {
+    margin-top: 0.6rem;
+    padding: 0.6rem 1rem;
+    background: #ff5733;
+    color: white;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+    .logout-btn:hover,
+    .create-btn:hover {
+        background: #e64a19;
+    }
+
+/* Fade in animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .account-container {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .dropbtn {
+        width: 100%;
+        height: 44px;
+        border-radius: 12px; /* на мобільних робимо прямокутник */
+    }
+}
