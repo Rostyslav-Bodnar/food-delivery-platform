@@ -1,34 +1,37 @@
-﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using DF.UserService.Application.Interfaces;
 using DF.UserService.Contracts.Models.Request;
 
-namespace DF.UserService.API.Controllers
+[ApiController]
+[Route("api/[controller]")]
+public class AuthController(IAuthService authService) : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
     {
-        private readonly IUserService userService;
+        var tokens = await authService.RegisterAsync(request);
+        return Ok(tokens);
+    }
 
-        public AuthController(IUserService userService)
-        {
-            this.userService = userService;
-        }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var tokens = await authService.LoginAsync(request);
+        return Ok(tokens);
+    }
 
-        [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequest request)
-        {
-            var result = await userService.RegisterAsync(request);
-            return Ok(result);
-        }
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh([FromBody] RefreshRequest request)
+    {
+        var tokens = await authService.RefreshAsync(request.RefreshToken);
+        if (tokens == null) return Unauthorized("Invalid or expired refresh token");
+        return Ok(tokens);
+    }
 
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest request)
-        {
-            var result = await userService.LoginAsync(request);
-            return Ok(new { Message = result });
-        }
-        
+    [HttpPost("revoke")]
+    public async Task<IActionResult> Revoke([FromBody] RefreshRequest request)
+    {
+        await authService.RevokeAsync(request.RefreshToken);
+        return NoContent();
     }
 }

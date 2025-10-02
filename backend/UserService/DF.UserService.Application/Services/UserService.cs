@@ -10,57 +10,22 @@ namespace DF.UserService.Application.Services
 {
     public class UserService : IUserService
     {
-        private readonly UserManager<User> userManager;
-        private readonly IMessageBroker _broker;
+        private readonly UserManager<User> _userManager;
 
-        public UserService(UserManager<User> userManager, IMessageBroker broker)
+        public UserService(UserManager<User> userManager)
         {
-            this.userManager = userManager;
-            _broker = broker;
-        }
-
-        public async Task<UserDto> RegisterAsync(RegisterRequest request)
-        {
-            var user = new User { UserName = request.Email, Email = request.Email, FullName = request.FullName };
-            var result = await userManager.CreateAsync(user, request.Password);
-
-            if (!result.Succeeded)
-                throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
-
-            _broker.Publish("user.registered", new
-            {
-                user.Id,
-                user.Email,
-                user.FullName,
-                user.CreatedAt
-            });
-
-            return new UserDto(user.Id, user.Email, user.FullName);
-        }
-
-        public async Task<string> LoginAsync(LoginRequest request)
-        {
-            // TODO: Validate password, generate JWT
-            var user = await userManager.FindByEmailAsync(request.Email);
-            if (user == null)
-                throw new Exception("User not found");
-
-            var isPasswordValid = await userManager.CheckPasswordAsync(user, request.Password);
-            if (!isPasswordValid)
-                throw new Exception("Invalid password");
-
-            return $"Login successful for user {user.Email}";
+            _userManager = userManager;
         }
 
         public async Task<UserDto> GetUserAsync(Guid userId)
         {
-            var user = await userManager.FindByIdAsync(userId.ToString());
+            var user = await _userManager.FindByIdAsync(userId.ToString());
             return new UserDto(user.Id, user.Email, user.FullName);
         }
 
         public async Task<List<UserDto>> GetAllUsers()
         {
-            var users = await userManager.Users.ToListAsync();
+            var users = await _userManager.Users.ToListAsync();
             return users.Select(u => new UserDto(u.Id, u.Email, u.FullName)).ToList();
         }
     }

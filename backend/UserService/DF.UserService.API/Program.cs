@@ -1,10 +1,13 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using System.Text;
+using DF.UserService.Application.Interfaces;
 using DF.UserService.Application.Services;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using DF.UserService.Infrastructure.Messaging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,20 +32,41 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddDefaultTokenProviders();
 
 // JWT TODO: setup real JWT config
-builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
-{
-    options.TokenValidationParameters = new()
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSection.GetValue<string>("Key")!;
+var issuer = jwtSection.GetValue<string>("Issuer");
+var audience = jwtSection.GetValue<string>("Audience");
+
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication(options =>
     {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = false
-    };
-});
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        // Для refresh token endpoints не потрібна додаткова логіка тут
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // DI
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
 
