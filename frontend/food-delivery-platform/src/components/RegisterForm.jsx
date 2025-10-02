@@ -20,12 +20,15 @@ const RegisterForm = () => {
         setError(null);
         try {
             const response = await register(formData);
-            alert(`Welcome, ${response.fullName}! Your account has been created 🍕`);
-            setFormData({ username: '', email: '', password: '' });
+            alert(`Welcome, ${formData.username}! 🎉`);
+
+            // Перенаправляємо користувача після реєстрації
+            window.location.href = "/dashboard";
         } catch (err) {
             setError(err.message || 'Failed to register. Please try again.');
         }
     };
+
 
     return (
         <div className="page-wrapper">

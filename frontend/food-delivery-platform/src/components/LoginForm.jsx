@@ -19,13 +19,16 @@ const LoginForm = () => {
         setError(null);
         try {
             const response = await login(formData);
-            localStorage.setItem('token', response.token);
+
             alert(`Welcome back, ${formData.email}! 🍔`);
-            setFormData({ email: '', password: '' });
+
+            // Перенаправляємо користувача на головну сторінку/кабінет
+            window.location.href = "/food-delivery-platform/profile";
         } catch (err) {
             setError(err.message || 'Failed to login. Please check your credentials.');
         }
     };
+
 
     return (
         <div className="page-wrapper">

@@ -16,14 +16,23 @@ public class UserController : ControllerBase
         this.userService = userService;
     }
     
-    [Authorize]
     [HttpGet("profile")]
+    [Authorize]
     public async Task<IActionResult> Me()
     {
-        var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+        // Отримуємо клейм NameIdentifier
+        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized("Invalid token or user id");
+
         var result = await userService.GetUserAsync(userId);
+        if (result == null)
+            return NotFound("User not found");
+
         return Ok(result);
     }
+
 
     [HttpGet("user")]
     public async Task<IActionResult> GetUser([FromQuery] Guid userId)

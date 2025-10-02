@@ -1,6 +1,6 @@
-﻿import React, { useState, useEffect, useRef } from "react";
-import { NavLink } from "react-router-dom";
-import "./styles/HeaderComponent.css";
+﻿import React from 'react';
+import { Link, NavLink } from 'react-router-dom';
+import './styles/HeaderComponent.css';
 
 const Header = () => {
     const user = {
