@@ -1,10 +1,12 @@
 ﻿using DF.UserService.Application.Interfaces;
-using DF.UserService.Application.Services;
+using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
+
+namespace DF.UserService.Application.Services;
 
 public class AuthService(
     UserManager<User> userManager, 
@@ -19,7 +21,8 @@ public class AuthService(
         {
             UserName = request.Email,
             Email = request.Email,
-            FullName = request.FullName,
+            Name = request.Name,
+            Surname = request.Surname,
             UserRole = UserRole.User
         };
 
@@ -27,13 +30,27 @@ public class AuthService(
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
+        var customerDto = new CustomerAccountDTO(
+            Id: null,
+            UserId: user.Id.ToString(),
+            AccountType: "Customer",
+            ImageUrl: null,
+            PhoneNumber: null,
+            Name: user.Name,
+            Surname: user.Surname,
+            Address: null
+        );
+        
         // Створюємо акаунт користувача
-        var accountDto = await accountService.CreateAccountAsync(user.Id, AccountType.Customer, null);
+        var accountDto = await accountService.CreateAccountAsync(customerDto);
+
 
         // Прив'язуємо акаунт до користувача
-        user.AccountId = Guid.Parse(accountDto.Id);
-        user.CurrentAccount = new Account
+        if (accountDto.Id != null) user.AccountId = Guid.Parse(accountDto.Id);
+        user.CurrentAccount = new CustomerAccount
         {
+            Name = user.Name,
+            Surname = user.Surname,
             Id = user.AccountId,
             UserId = user.Id,
             AccountType = AccountType.Customer
@@ -48,7 +65,8 @@ public class AuthService(
         {
             user.Id,
             user.Email,
-            user.FullName,
+            user.Name,
+            user.Surname,
             user.CreatedAt,
             accountDto.AccountType
         });

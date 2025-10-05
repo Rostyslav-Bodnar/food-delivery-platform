@@ -46,7 +46,7 @@ const Profile = () => {
     ];
 
     useEffect(() => {
-        if (fetchedRef.current) return;
+        if (fetchedRef.current) return; // якщо вже викликали
         fetchedRef.current = true;
 
         const fetchUser = async () => {

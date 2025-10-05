@@ -4,7 +4,8 @@ namespace DF.UserService.Domain.Entities
 {
     public class User : IdentityUser<Guid>
     {
-        public required string FullName { get; set; }
+        public required string Name { get; set; }
+        public required string Surname { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         
         //TODO: location implementation

@@ -1,4 +1,6 @@
 ﻿using System.Text;
+using DF.UserService.Application.Factories;
+using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Interfaces;
 using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
@@ -72,6 +74,9 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+
+//Builders
+builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 
 builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
 

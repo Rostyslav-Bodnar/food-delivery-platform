@@ -102,11 +102,11 @@ const Header = () => {
                 {user && (
                     <div className="dropdown-header" ref={dropdownRef}>
                         <button className="dropbtn-header" onClick={handleToggleDropdown}>
-                            {user.fullName ? user.fullName[0].toUpperCase() : "U"}
+                            {user.name ? user.name[0].toUpperCase() : "U"}
                         </button>
 
                         <div className={`dropdown-content-header ${isDropdownOpen ? "show" : ""}`}>
-                            <h4>{user.fullName}</h4>
+                            <h4>{user.name + " " + user.surname}</h4>
 
                             <button className="action-btn-header" onClick={() => navigate("/profile")}>
                                 Profile
@@ -132,8 +132,8 @@ const Header = () => {
                                 isAccountsOpen && <p>No accounts yet</p>
                             )}
 
-                            <button className="action-btn-header" onClick={() => navigate("/account/create")}>
-                                Create Account  
+                            <button className="action-btn-header" onClick={() => navigate("/create-account")}>
+                                Create Account
                             </button>
 
                             <button className="action-btn-header" onClick={handleLogout}>

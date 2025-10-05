@@ -1,6 +1,6 @@
 ﻿namespace DF.UserService.Domain.Entities;
 
-public class Account
+public abstract class Account
 {
     public Guid Id { get; set; }
     public required Guid UserId { get; set; }

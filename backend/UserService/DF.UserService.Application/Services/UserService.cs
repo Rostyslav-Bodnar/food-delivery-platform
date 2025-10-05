@@ -17,13 +17,13 @@ namespace DF.UserService.Application.Services
 
             await dbContext.Entry(user).Reference(u => u.CurrentAccount).LoadAsync();
 
-            return new UserDto(user.Id, user.Email, user.FullName, user.UserRole.ToString(), AccountMapper.ToDTO(user.CurrentAccount));
+            return new UserDto(user.Id, user.Email, user.Name, user.Surname, user.UserRole.ToString(), AccountMapper.ToDTO(user.CurrentAccount));
         }
 
         public async Task<List<UserDto>> GetAllUsers()
         {
             var users = await userManager.Users.ToListAsync();
-            return users.Select(u => new UserDto(u.Id, u.Email, u.FullName, u.UserRole.ToString(), AccountMapper.ToDTO(u.CurrentAccount))).ToList();
+            return users.Select(u => new UserDto(u.Id, u.Email, u.Name, u.Surname, u.UserRole.ToString(), AccountMapper.ToDTO(u.CurrentAccount))).ToList();
         }
     }
 }

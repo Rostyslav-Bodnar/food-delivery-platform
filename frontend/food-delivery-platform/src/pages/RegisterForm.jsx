@@ -5,7 +5,8 @@ import './styles/RegisterForm.css';
 
 const RegisterForm = () => {
     const [formData, setFormData] = useState({
-        username: '',
+        name: '',
+        surname: '',
         email: '',
         password: '',
     });
@@ -20,15 +21,14 @@ const RegisterForm = () => {
         setError(null);
         try {
             const response = await register(formData);
-            alert(`Welcome, ${formData.username}! 🎉`);
+            alert(`Welcome, ${formData.name}! 🎉`);
 
             // Перенаправляємо користувача після реєстрації
             window.location.href = "/food-delivery-platform/profile";
         } catch (err) {
-            setError(err.message || 'Failed to register. Please try again.');
+            setError(err.response?.data || 'Failed to register. Please try again.');
         }
     };
-
 
     return (
         <div className="page-wrapper">
@@ -36,14 +36,24 @@ const RegisterForm = () => {
                 <h2>Create Your Account</h2>
                 {error && <p className="error-text">{error}</p>}
                 <form className="register-form" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Full Name"
-                        value={formData.username}
-                        onChange={handleChange}
-                        required
-                    />
+                    <div className="fullname-inputs">
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="First Name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="surname"
+                            placeholder="Last Name"
+                            value={formData.surname}
+                            onChange={handleChange}
+                            required
+                        />
+                    </div>
                     <input
                         type="email"
                         name="email"

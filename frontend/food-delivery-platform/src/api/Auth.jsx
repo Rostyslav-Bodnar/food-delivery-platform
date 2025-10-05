@@ -2,13 +2,11 @@
 
 const API_URL = "http://localhost:5000/api/Auth";
 
-// створюємо інстанс із cookie підтримкою
 const authApi = axios.create({
     baseURL: API_URL,
     withCredentials: true // ✅ дозволяє відправляти HttpOnly refresh cookie
 });
 
-// додаємо accessToken до кожного запиту (якщо він є)
 authApi.interceptors.request.use(config => {
     const token = localStorage.getItem("accessToken");
     if (token) {
@@ -22,7 +20,8 @@ export const register = async (userData) => {
     const response = await authApi.post("/register", {
         email: userData.email,
         password: userData.password,
-        fullName: userData.username
+        name: userData.name,
+        surname: userData.surname
     });
     saveTokens(response.data);
     return response.data;
@@ -37,20 +36,17 @@ export const login = async (credentials) => {
     return response.data;
 };
 
-// ⚙️ Refresh-токен — cookies обробляються автоматично
 export const refresh = async () => {
     const response = await authApi.post("/refresh", {}, { withCredentials: true });
     saveTokens(response.data);
     return response.data;
 };
 
-// 🚪 Logout — видаляємо cookies і локальні токени
 export const logout = async () => {
     await authApi.post("/revoke", {}, { withCredentials: true });
     clearTokens();
 };
 
-// 🔐 Допоміжні функції
 function saveTokens(tokens) {
     localStorage.setItem("accessToken", tokens.accessToken);
     localStorage.setItem("accessTokenExpiresAt", tokens.accessTokenExpiresAt);

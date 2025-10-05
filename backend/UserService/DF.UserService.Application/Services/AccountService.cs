@@ -1,4 +1,5 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using DF.UserService.Application.Factories.Interfaces;
+using DF.UserService.Application.Interfaces;
 using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
@@ -6,25 +7,27 @@ using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Services;
 
-public class AccountService(IAccountRepository accountRepository) : IAccountService
+public class AccountService(IAccountRepository accountRepository, IAccountFactory accountFactory) : IAccountService
 {
-    public async Task<AccountDTO> CreateAccountAsync(Guid userId, AccountType accountType, string? imageURL)
+    public async Task<AccountDTO> CreateAccountAsync(AccountDTO accountDto)
     {
         try
         {
-            var entity = new Account
-            {
-                UserId = userId,
-                AccountType = accountType
-            };
+            var entity = accountFactory.CreateAccount(accountDto);
 
             entity = await accountRepository.Create(entity);
 
-            return AccountMapper.ToDTO(entity);
+            return entity switch
+            {
+                CustomerAccount c => AccountMapper.ToDTO((CustomerAccount)c),
+                BusinessAccount b => AccountMapper.ToDTO((BusinessAccount)b),
+                CourierAccount co => AccountMapper.ToDTO((CourierAccount)co),
+                _ => AccountMapper.ToDTO(entity) // fallback
+            };
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error creating account for user {userId}", ex);
+            throw new ApplicationException($"Error creating account for user {accountDto.UserId}", ex);
         }
     }
 
@@ -86,5 +89,5 @@ public class AccountService(IAccountRepository accountRepository) : IAccountServ
             throw new ApplicationException($"Error retrieving accounts for user {userId}", ex);
         }
     }
-
+    
 }

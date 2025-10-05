@@ -16,7 +16,28 @@ namespace DF.UserService.Infrastructure.Data
         {
             base.OnModelCreating(builder);
 
-            // Account
+            // === USER ===
+            builder.Entity<User>(entity =>
+            {
+                entity.Property(u => u.Name)
+                    .HasMaxLength(200)
+                    .IsRequired();
+                
+                entity.Property(u => u.Surname)
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(u => u.UserRole)
+                    .HasConversion<int>()
+                    .IsRequired();
+
+                entity.Property(u => u.CreatedAt)
+                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+                entity.ToTable("Users");
+            });
+
+            // === BASE ACCOUNT (abstract) ===
             builder.Entity<Account>(entity =>
             {
                 entity.HasKey(a => a.Id);
@@ -25,9 +46,9 @@ namespace DF.UserService.Infrastructure.Data
                     .IsUnique();
 
                 entity.Property(a => a.AccountType)
-                    .HasConversion<int>() // enum -> int
+                    .HasConversion<int>()
                     .IsRequired();
-                
+
                 entity.Property(a => a.ImageUrl)
                     .HasMaxLength(500)
                     .IsUnicode(false);
@@ -40,25 +61,63 @@ namespace DF.UserService.Infrastructure.Data
                 entity.ToTable("Accounts");
             });
 
-
-            // User
-            builder.Entity<User>(entity =>
+            // === COURIER ACCOUNT ===
+            builder.Entity<CourierAccount>(entity =>
             {
-                entity.Property(u => u.FullName)
-                    .HasMaxLength(200)
+                entity.Property(c => c.Name)
+                    .HasMaxLength(100)
                     .IsRequired();
-                
-                entity.Property(u => u.UserRole)
-                    .HasConversion<int>()
-                    .IsRequired();
-                
-                entity.Property(u => u.CreatedAt)
-                    .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
-                entity.ToTable("Users");
+                entity.Property(c => c.Surname)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(c => c.Address)
+                    .HasMaxLength(300);
+                
+                entity.Property(c => c.Description)
+                    .HasMaxLength(1000);
+                
+                entity.Property(a => a.PhoneNumber)
+                    .HasMaxLength(20);
+
+                entity.ToTable("CourierAccounts");
             });
 
-            // RefreshToken
+            // === BUSINESS ACCOUNT ===
+            builder.Entity<BusinessAccount>(entity =>
+            {
+                entity.Property(b => b.Name)
+                    .HasMaxLength(200)
+                    .IsRequired();
+
+                entity.Property(b => b.Description)
+                    .HasMaxLength(1000);
+
+                entity.ToTable("BusinessAccounts");
+            });
+
+            // === CUSTOMER ACCOUNT ===
+            builder.Entity<CustomerAccount>(entity =>
+            {
+                entity.Property(c => c.Name)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(c => c.Surname)
+                    .HasMaxLength(100)
+                    .IsRequired();
+
+                entity.Property(c => c.Address)
+                    .HasMaxLength(300);
+                
+                entity.Property(a => a.PhoneNumber)
+                    .HasMaxLength(20);
+
+                entity.ToTable("CustomerAccounts");
+            });
+
+            // === REFRESH TOKEN ===
             builder.Entity<RefreshToken>(entity =>
             {
                 entity.HasKey(rt => rt.Id);

@@ -5,7 +5,7 @@ namespace DF.UserService.Application.Interfaces;
 
 public interface IAccountService
 {
-    Task<AccountDTO> CreateAccountAsync(Guid userId, AccountType accountType, string? imageURL);
+    Task<AccountDTO> CreateAccountAsync(AccountDTO  account);
     Task<AccountDTO> UpdateAccountAsync(AccountDTO account);
     Task<bool> DeleteAccountAsync(Guid id);
     Task<AccountDTO?> GetAccountByUserAsync(Guid userId);
