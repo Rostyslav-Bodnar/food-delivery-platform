@@ -6,7 +6,6 @@ import Header from './components/HeaderComponent.jsx';
 import HomePage from './components/HomePage.jsx';
 import Profile from './components/ProfilePage.jsx';
 import ProtectedRoute from './utils/ProtectedRoute.jsx';
-import AccountPage from './components/AccountPage.jsx';
 
 function App() {
     return (
@@ -24,7 +23,7 @@ function App() {
                             </ProtectedRoute>
                         } />
 
-                        <Route path="/accounts" element={<AccountPage />} />
+                        
                     </Routes>
                 </main>
             </div>
