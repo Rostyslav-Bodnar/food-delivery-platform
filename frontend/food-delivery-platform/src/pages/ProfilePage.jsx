@@ -10,8 +10,40 @@ const Profile = () => {
     const [editingField, setEditingField] = useState(null);
     const [formData, setFormData] = useState({ name: "", phone: "", address: "", avatar: null });
     const [isAvatarHovered, setIsAvatarHovered] = useState(false);
+    const [currentAccountId, setCurrentAccountId] = useState(1); // Track active account
     const inputRef = useRef(null);
     const fetchedRef = useRef(false);
+
+    // Mock data for active accounts
+    const mockAccounts = [
+        {
+            id: 1,
+            name: "John Doe",
+            email: "john.doe@example.com",
+            type: "Admin",
+            phone: "+1234567890",
+            address: "123 Main St",
+            avatar: null,
+        },
+        {
+            id: 2,
+            name: "Jane Smith",
+            email: "jane.smith@example.com",
+            type: "User",
+            phone: "—",
+            address: "456 Elm St",
+            avatar: null,
+        },
+        {
+            id: 3,
+            name: "Alex Johnson",
+            email: "alex.johnson@example.com",
+            type: "Guest",
+            phone: "—",
+            address: "—",
+            avatar: null,
+        },
+    ];
 
     useEffect(() => {
         if (fetchedRef.current) return;
@@ -53,7 +85,19 @@ const Profile = () => {
             }
         };
 
-        fetchUser();
+        // For demo, use mock data as initial user
+        const initialUser = mockAccounts.find((account) => account.id === currentAccountId);
+        setUser(initialUser);
+        setFormData({
+            name: initialUser.name,
+            phone: initialUser.phone === "—" ? "" : initialUser.phone,
+            address: initialUser.address === "—" ? "" : initialUser.address,
+            avatar: initialUser.avatar,
+        });
+        setLoading(false);
+
+        // Uncomment to fetch real user data
+        // fetchUser();
     }, []);
 
     useEffect(() => {
@@ -96,7 +140,11 @@ const Profile = () => {
             };
             setUser(updatedUser);
             setEditingField(null);
-            // Example API call (uncomment and adjust when API is ready):
+            // Update mockAccounts to reflect changes (for demo purposes)
+            const updatedAccounts = mockAccounts.map((account) =>
+                account.id === user.id ? { ...account, [field]: formData[field] || "—" } : account
+            );
+            // Normally, you'd update via API:
             // await updateProfile(user.id, {
             //     fullName: field === "name" ? formData.name : user.name,
             //     phoneNumber: field === "phone" ? (formData.phone || null) : user.phone,
@@ -106,6 +154,17 @@ const Profile = () => {
         } catch (err) {
             setError(err.message || "Failed to save profile");
         }
+    };
+
+    const handleAccountSwitch = (account) => {
+        setCurrentAccountId(account.id);
+        setUser(account);
+        setFormData({
+            name: account.name,
+            phone: account.phone === "—" ? "" : account.phone,
+            address: account.address === "—" ? "" : account.address,
+            avatar: account.avatar,
+        });
     };
 
     if (loading) return <div className="page-wrapper"><div className="user-container">⏳ Loading profile...</div></div>;
@@ -211,6 +270,28 @@ const Profile = () => {
                 </div>
 
                 <div className="user-actions">
+                    <div className="active-accounts">
+                        <h3>Active Accounts</h3>
+                        <ul>
+                            {mockAccounts.map((account) => (
+                                <li
+                                    key={account.id}
+                                    className={account.id === currentAccountId ? "active-account" : ""}
+                                    onClick={() => handleAccountSwitch(account)}
+                                >
+                                    <div className="account-avatar">
+                                        {account.avatar ? (
+                                            <img src={account.avatar} alt="Account Avatar" className="account-avatar-image" />
+                                        ) : (
+                                            account.name[0]
+                                        )}
+                                    </div>
+                                    <span className="account-name">{account.name}</span>
+                                    <span className="account-type">({account.type})</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                     <button
                         className="btn secondary"
                         onClick={() => {
