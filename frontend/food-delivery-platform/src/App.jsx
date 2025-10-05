@@ -1,10 +1,10 @@
 ﻿import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import RegisterForm from './pages/RegisterForm';
-import LoginForm from './pages/LoginForm';
+import RegisterForm from './components/RegisterForm';
+import LoginForm from './components/LoginForm';
 import Header from './components/HeaderComponent.jsx';
-import HomePage from './pages/HomePage.jsx';
-import Profile from './pages/ProfilePage.jsx';
+import HomePage from './components/HomePage.jsx';
+import Profile from './components/ProfilePage.jsx';
 import ProtectedRoute from './utils/ProtectedRoute.jsx';
 import CreateAccountPage from './pages/CreateAccountPage.jsx';
 
@@ -19,7 +19,6 @@ function App() {
                         <Route path="/login" element={<LoginForm />} />
                         <Route path="/register" element={<RegisterForm />} />
                         <Route path="/profile" element={<Profile />} />
-                        <Route path="/account/create" element={<CreateAccountPage />} />
                         <Route path="/dashboard" element={
                             <ProtectedRoute>
                             </ProtectedRoute>

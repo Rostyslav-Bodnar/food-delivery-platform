@@ -8,6 +8,7 @@ import { refresh, logout } from "../api/Auth.jsx";
 const Header = () => {
     const [user, setUser] = useState(null);
     const [accounts, setAccounts] = useState([]);
+    const [selectedAccount, setSelectedAccount] = useState(null);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isAccountsOpen, setIsAccountsOpen] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -16,7 +17,7 @@ const Header = () => {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    // --- Завантаження даних користувача ---
+    // --- Fetch user data ---
     const refreshCalled = useRef(false);
 
     useEffect(() => {
@@ -27,10 +28,14 @@ const Header = () => {
                 await refresh();
                 const profile = await getProfile();
                 setUser(profile);
+                // Fetch accounts from API
                 const userAccounts = await getAccounts(profile.id);
                 setAccounts(userAccounts);
+                if (userAccounts.length > 0) {
+                    setSelectedAccount(userAccounts[0].accountType);
+                }
             } catch (err) {
-                console.error("Failed to load user:", err);
+                console.error("Failed to load user or accounts:", err);
                 setError(err.response?.data || err.message || "Failed to load user data");
             } finally {
                 setLoading(false);
@@ -41,8 +46,7 @@ const Header = () => {
         refreshCalled.current = true;
     }, []);
 
-
-    // --- Закриття dropdown поза межами ---
+    // --- Close dropdown on outside click ---
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -55,6 +59,10 @@ const Header = () => {
 
     const handleToggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
     const handleToggleAccounts = () => setIsAccountsOpen(!isAccountsOpen);
+
+    const handleSelectAccount = (accountType) => {
+        setSelectedAccount(accountType);
+    };
 
     const handleLogout = async () => {
         await logout();
@@ -111,7 +119,13 @@ const Header = () => {
                             {isAccountsOpen && accounts.length > 0 ? (
                                 <ul>
                                     {accounts.map((acc, idx) => (
-                                        <li key={idx}>{acc.accountType}</li>
+                                        <li
+                                            key={idx}
+                                            className={selectedAccount === acc.accountType ? "selected-account" : ""}
+                                            onClick={() => handleSelectAccount(acc.accountType)}
+                                        >
+                                            {acc.accountType}
+                                        </li>
                                     ))}
                                 </ul>
                             ) : (

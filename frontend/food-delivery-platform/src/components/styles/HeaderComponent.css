@@ -187,6 +187,14 @@ nav {
             transform: scale(1.01);
         }
 
+        /* Selected account style */
+        .dropdown-content-header li.selected-account {
+            border-color: #ff5733;
+            background: #fff;
+            color: #ff5733;
+            box-shadow: 0 0 12px rgba(255, 87, 51, 0.3);
+        }
+
     /* Іконки */
     .dropdown-content-header .icon {
         font-size: 1.2rem;
