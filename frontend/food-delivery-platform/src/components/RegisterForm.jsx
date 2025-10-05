@@ -23,7 +23,7 @@ const RegisterForm = () => {
             alert(`Welcome, ${formData.username}! 🎉`);
 
             // Перенаправляємо користувача після реєстрації
-            window.location.href = "/dashboard";
+            window.location.href = "/food-delivery-platform/profile";
         } catch (err) {
             setError(err.message || 'Failed to register. Please try again.');
         }

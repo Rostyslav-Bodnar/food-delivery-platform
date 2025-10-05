@@ -7,15 +7,8 @@ namespace DF.UserService.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
-    private readonly IUserService userService;
-    
-    public UserController(IUserService userService)
-    {
-        this.userService = userService;
-    }
-    
     [HttpGet("profile")]
     [Authorize]
     public async Task<IActionResult> Me()

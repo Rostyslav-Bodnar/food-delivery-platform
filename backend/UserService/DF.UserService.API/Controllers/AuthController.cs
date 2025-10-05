@@ -65,7 +65,7 @@ public class AuthController(IAuthService authService) : ControllerBase
         {
             HttpOnly = true,
             Secure = false, // у production включай завжди
-            SameSite = SameSiteMode.None,
+            SameSite = SameSiteMode.Lax,
             Expires = expiresAt
         };
 

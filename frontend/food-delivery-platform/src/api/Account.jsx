@@ -2,47 +2,42 @@
 
 const API_URL = "http://localhost:5000/api/Account";
 
-export const getAccount = async (userId) => {
-    try {
-        const response = await axios.get(`${API_URL}/${userId}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || "Failed to fetch account";
+const accountApi = axios.create({
+    baseURL: API_URL,
+    withCredentials: true
+});
+
+accountApi.interceptors.request.use(config => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+        config.headers["Authorization"] = `Bearer ${token}`;
     }
+    return config;
+});
+
+export const getAccount = async (userId) => {
+    const response = await accountApi.get(`/${userId}`);
+    return response.data;
 };
 
 export const getAccounts = async (userId) => {
-    try {
-        const response = await axios.get(`${API_URL}/all/${userId}`);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || "Failed to fetch accounts";
-    }
+    const response = await accountApi.get(`/all/${userId}`);
+    return response.data;
 };
 
 export const createAccount = async (accountData) => {
-    try {
-        const response = await axios.post(API_URL, accountData);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || "Failed to create account";
-    }
+    const response = await accountApi.post("/", accountData);
+    return response.data;
 };
 
 export const updateAccount = async (id, accountData) => {
-    try {
-        const response = await axios.put(`${API_URL}/${id}`, accountData);
-        return response.data;
-    } catch (error) {
-        throw error.response?.data || "Failed to update account";
-    }
+    const response = await accountApi.put(`/${id}`, accountData);
+    return response.data;
 };
 
 export const deleteAccount = async (id) => {
-    try {
-        await axios.delete(`${API_URL}/${id}`);
-        return true;
-    } catch (error) {
-        throw error.response?.data || "Failed to delete account";
-    }
+    await accountApi.delete(`/${id}`);
+    return true;
 };
+
+export default accountApi;
