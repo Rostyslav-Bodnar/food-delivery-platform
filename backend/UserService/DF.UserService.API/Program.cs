@@ -1,10 +1,18 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using System.Text;
+using System.Text.Json.Serialization;
+using DF.UserService.Application.Factories;
+using DF.UserService.Application.Factories.Interfaces;
+using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Repositories;
+using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using DF.UserService.Infrastructure.Messaging;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,25 +36,97 @@ builder.Services.AddIdentity<User, IdentityRole<Guid>>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// JWT TODO: setup real JWT config
-builder.Services.AddAuthentication("Bearer").AddJwtBearer("Bearer", options =>
-{
-    options.TokenValidationParameters = new()
-    {
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = false
-    };
-});
+// JWT 
+var jwtSection = builder.Configuration.GetSection("Jwt");
+var jwtKey = jwtSection.GetValue<string>("Key")!;
+var issuer = jwtSection.GetValue<string>("Issuer");
+var audience = jwtSection.GetValue<string>("Audience");
 
-// DI
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        // Для refresh token endpoints не потрібна додаткова логіка тут
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = issuer,
+            ValidateAudience = true,
+            ValidAudience = audience,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+//Repositories
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+
+// Services
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAccountService, AccountService>();
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+//Builders
+builder.Services.AddScoped<IAccountFactory, AccountFactory>();
+
 builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
 
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.IncludeFields = true;
+        o.JsonSerializerOptions.UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement;
+    });
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter 'Bearer {your token}'"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
+    });
+});
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5000);
+    // options.ListenAnyIP(5001, listenOptions => listenOptions.UseHttps()); // HTTPS, якщо потрібно
+});
 
 var app = builder.Build();
 

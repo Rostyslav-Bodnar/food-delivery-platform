@@ -1,24 +1,12 @@
-﻿import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import RegisterForm from './components/RegisterForm';
-import LoginForm from './components/LoginForm';
-import Header from './components/HeaderComponent.jsx';
-import HomePage from './components/HomePage.jsx';
+﻿import React from "react";
+import AppRouter from "./AppRouter.jsx";
+import { UserProvider } from "./context/UserContext.jsx";
 
 function App() {
     return (
-        <Router basename="/food-delivery-platform">
-            <div className="app-container">
-                <Header />
-                <main>
-                    <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/login" element={<LoginForm />} />
-                        <Route path="/register" element={<RegisterForm />} />
-                    </Routes>
-                </main>
-            </div>
-        </Router>
+        <UserProvider>
+            <AppRouter />
+        </UserProvider>
     );
 }
 
