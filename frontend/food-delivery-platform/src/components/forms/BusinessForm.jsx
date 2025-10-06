@@ -1,8 +1,13 @@
 ﻿import React, { useState } from "react";
 import { createAccount } from "../../api/Account.jsx";
 import "../styles/FormBase.css";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/UserContext";
 
 const BusinessForm = () => {
+    const navigate = useNavigate();
+    const { reloadUser } = useUser(); // Access reloadUser from UserContext
+
     const [formData, setFormData] = useState({
         companyName: "",
         description: "",
@@ -25,12 +30,15 @@ const BusinessForm = () => {
             accountType: "Business",
             name: formData.companyName,
             description: formData.description,
-            imageUrl: formData.photo ? formData.photo.name : null
+            phoneNumber: formData.phone,
+            imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : null
         };
 
         try {
             await createAccount(account);
+            await reloadUser(); // Refresh user data to include new account
             alert("Business account created successfully!");
+            navigate("/profile");
         } catch (err) {
             console.error(err);
             alert("Failed to create business account");

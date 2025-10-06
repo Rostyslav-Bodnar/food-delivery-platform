@@ -1,8 +1,13 @@
 ﻿import React, { useState } from "react";
 import { createAccount } from "../../api/Account.jsx";
 import "../styles/FormBase.css";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "../../context/UserContext";
 
 const CustomerForm = () => {
+    const navigate = useNavigate();
+    const { reloadUser } = useUser(); // Access reloadUser from UserContext
+
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
@@ -21,7 +26,6 @@ const CustomerForm = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
 
         const account = {
             accountType: "Customer",
@@ -29,12 +33,14 @@ const CustomerForm = () => {
             surname: formData.lastName,
             phoneNumber: formData.phone,
             address: formData.address,
-            imageUrl: formData.photo ? formData.photo.name : null
+            imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : null
         };
 
         try {
             await createAccount(account);
+            await reloadUser(); // Refresh user data to include new account
             alert("Customer account created successfully!");
+            navigate("/profile");
         } catch (err) {
             console.error(err);
             alert("Failed to create account");
