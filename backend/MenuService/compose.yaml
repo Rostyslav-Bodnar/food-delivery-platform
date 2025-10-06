@@ -1,0 +1,7 @@
+﻿services:
+  df.menuservice.api:
+    image: df.menuservice.api
+    build:
+      context: .
+      dockerfile: DF.MenuService.API/Dockerfile
+

@@ -1,0 +1,138 @@
+﻿.account-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.account-form input,
+.account-form select,
+.account-form textarea {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    font-size: 1rem;
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.account-form input:focus,
+.account-form select:focus,
+.account-form textarea:focus {
+    border-color: #ff5733;
+    box-shadow: 0 0 10px rgba(255, 87, 51, 0.2);
+    background: #fff;
+    outline: none;
+}
+
+/* File input */
+.file-input-wrapper {
+    position: relative;
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e0e0e0;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.file-input-wrapper:hover {
+    border-color: #ff5733;
+}
+
+.file-label {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1rem;
+    color: #333;
+    flex-grow: 1;
+    cursor: pointer;
+}
+
+.file-input {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Textarea */
+.account-form textarea {
+    resize: none;
+    min-height: 100px;
+}
+
+/* Address field */
+.address-field {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.remove-address-btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background: #ff4500;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.remove-address-btn:hover {
+    background: #e03e00;
+    transform: translateY(-2px);
+}
+
+.add-address-btn {
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff5733, #ff8c66);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.add-address-btn:hover {
+    background: linear-gradient(135deg, #ff4500, #ff7043);
+    transform: translateY(-2px);
+}
+
+/* Button */
+.account-form button[type="submit"] {
+    margin-top: 1.5rem;
+    padding: 16px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #ff5733, #ff8c66);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba(255, 87, 51, 0.25);
+}
+
+.account-form button[type="submit"]:hover {
+    background: linear-gradient(135deg, #ff4500, #ff7043);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(255, 69, 0, 0.4);
+}
+ 
+.account-form button[type="submit"]:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 15px rgba(255, 69, 0, 0.3);
+}
