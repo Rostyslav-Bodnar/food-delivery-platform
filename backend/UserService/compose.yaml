@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: DF.UserService.API/Dockerfile
     ports:
-      - "8080:8080"
+      - "5000:5000"
     depends_on:
       - mssql
       - rabbitmq
