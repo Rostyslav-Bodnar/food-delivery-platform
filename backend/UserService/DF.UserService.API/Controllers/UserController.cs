@@ -1,4 +1,6 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using System.Security.Claims;
+using DF.UserService.Application.Interfaces;
+using DF.UserService.Contracts.Models.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,7 +9,7 @@ namespace DF.UserService.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, IAccountService accountService) : ControllerBase
 {
     [HttpGet("profile")]
     [Authorize]
@@ -25,7 +27,6 @@ public class UserController(IUserService userService) : ControllerBase
 
         return Ok(result);
     }
-
 
     [HttpGet("user")]
     public async Task<IActionResult> GetUser([FromQuery] Guid userId)

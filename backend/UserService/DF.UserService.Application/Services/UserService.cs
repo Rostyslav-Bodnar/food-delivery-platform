@@ -25,5 +25,16 @@ namespace DF.UserService.Application.Services
             var users = await userManager.Users.ToListAsync();
             return users.Select(u => new UserDto(u.Id, u.Email, u.Name, u.Surname, u.UserRole.ToString(), AccountMapper.ToDTO(u.CurrentAccount))).ToList();
         }
+        
+        public async Task<User?> GetUserEntityAsync(Guid userId)
+        {
+            return await userManager.Users.Include(u => u.Accounts).FirstOrDefaultAsync(u => u.Id == userId);
+        }
+
+        public async Task UpdateUserAsync(User user)
+        {
+            await userManager.UpdateAsync(user);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }

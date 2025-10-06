@@ -4,6 +4,7 @@ using DF.UserService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DF.UserService.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251005184146_DeleteUniqueKeyInAccountsTable")]
+    partial class DeleteUniqueKeyInAccountsTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,7 +44,7 @@ namespace DF.UserService.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("UserId", "AccountType")
+                    b.HasIndex("UserId")
                         .IsUnique();
 
                     b.ToTable("Accounts", (string)null);
@@ -147,8 +150,6 @@ namespace DF.UserService.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountId");
 
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
@@ -365,8 +366,8 @@ namespace DF.UserService.Infrastructure.Migrations
             modelBuilder.Entity("DF.UserService.Domain.Entities.Account", b =>
                 {
                     b.HasOne("DF.UserService.Domain.Entities.User", "User")
-                        .WithMany("Accounts")
-                        .HasForeignKey("UserId")
+                        .WithOne("CurrentAccount")
+                        .HasForeignKey("DF.UserService.Domain.Entities.Account", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -382,17 +383,6 @@ namespace DF.UserService.Infrastructure.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("DF.UserService.Domain.Entities.User", b =>
-                {
-                    b.HasOne("DF.UserService.Domain.Entities.Account", "CurrentAccount")
-                        .WithMany()
-                        .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("CurrentAccount");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
@@ -475,7 +465,8 @@ namespace DF.UserService.Infrastructure.Migrations
 
             modelBuilder.Entity("DF.UserService.Domain.Entities.User", b =>
                 {
-                    b.Navigation("Accounts");
+                    b.Navigation("CurrentAccount")
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

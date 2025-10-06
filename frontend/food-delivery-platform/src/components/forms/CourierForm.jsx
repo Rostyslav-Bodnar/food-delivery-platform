@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { createAccount } from "../../api/Account.jsx";
 import "../styles/FormBase.css";
 
 const CourierForm = () => {
@@ -8,9 +9,7 @@ const CourierForm = () => {
         phone: "",
         address: "",
         description: "",
-        requisites: "",
-        photo: null,
-        paymentMethod: "Cash",
+        photo: null
     });
 
     const handleChange = (e) => {
@@ -21,10 +20,26 @@ const CourierForm = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert("Courier account created successfully!");
-        console.log(formData);
+
+        const account = {
+            accountType: "Courier",
+            name: formData.firstName,
+            surname: formData.lastName,
+            phoneNumber: formData.phone,
+            address: formData.address,
+            description: formData.description,
+            imageUrl: formData.photo ? formData.photo.name : null
+        };
+
+        try {
+            await createAccount(account);
+            alert("Courier account created successfully!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to create courier account");
+        }
     };
 
     return (
@@ -32,17 +47,12 @@ const CourierForm = () => {
             <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required />
             <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required />
             <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} required />
-            <input type="text" name="address" placeholder="Work Area / City" value={formData.address} onChange={handleChange} required />
-            <textarea name="description" placeholder="Short Description (experience, delivery type...)" value={formData.description} onChange={handleChange} className="textarea-input" />
-            <input type="text" name="requisites" placeholder="Payment Requisites" value={formData.requisites} onChange={handleChange} />
+            <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
+            <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} />
             <div className="file-input-wrapper">
-                <label className="file-label">Upload Profile Photo</label>
+                <label className="file-label">Upload Photo</label>
                 <input type="file" name="photo" accept="image/*" onChange={handleChange} className="file-input" />
             </div>
-            <select name="paymentMethod" value={formData.paymentMethod} onChange={handleChange}>
-                <option value="Cash">💵 Cash</option>
-                <option value="Card">💳 Card</option>
-            </select>
             <button type="submit">Create Courier Account</button>
         </form>
     );

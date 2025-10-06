@@ -89,5 +89,5 @@ public class AccountService(IAccountRepository accountRepository, IAccountFactor
             throw new ApplicationException($"Error retrieving accounts for user {userId}", ex);
         }
     }
-    
+
 }

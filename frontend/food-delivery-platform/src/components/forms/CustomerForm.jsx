@@ -1,4 +1,5 @@
 ﻿import React, { useState } from "react";
+import { createAccount } from "../../api/Account.jsx";
 import "../styles/FormBase.css";
 
 const CustomerForm = () => {
@@ -7,8 +8,7 @@ const CustomerForm = () => {
         lastName: "",
         phone: "",
         address: "",
-        photo: null,
-        paymentMethod: "Credit Card",
+        photo: null
     });
 
     const handleChange = (e) => {
@@ -19,9 +19,26 @@ const CustomerForm = () => {
         });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert("Customer account created successfully!");
+        
+
+        const account = {
+            accountType: "Customer",
+            name: formData.firstName,
+            surname: formData.lastName,
+            phoneNumber: formData.phone,
+            address: formData.address,
+            imageUrl: formData.photo ? formData.photo.name : null
+        };
+
+        try {
+            await createAccount(account);
+            alert("Customer account created successfully!");
+        } catch (err) {
+            console.error(err);
+            alert("Failed to create account");
+        }
     };
 
     return (
@@ -34,11 +51,6 @@ const CustomerForm = () => {
                 <label className="file-label">Upload Profile Photo</label>
                 <input type="file" name="photo" accept="image/*" onChange={handleChange} className="file-input" />
             </div>
-            <select name="paymentMethod" value={formData.paymentMethod} onChange={handleChange}>
-                <option value="Credit Card">💳 Credit Card</option>
-                <option value="PayPal">💰 PayPal</option>
-                <option value="Cash">💵 Cash</option>
-            </select>
             <button type="submit">Create Account</button>
         </form>
     );

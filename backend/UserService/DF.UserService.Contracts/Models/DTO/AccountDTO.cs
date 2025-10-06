@@ -1,5 +1,11 @@
-﻿namespace DF.UserService.Contracts.Models.DTO
+﻿using System.Text.Json.Serialization;
+
+namespace DF.UserService.Contracts.Models.DTO
 {
+    [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
+    [JsonDerivedType(typeof(CustomerAccountDTO), "customer")]
+    [JsonDerivedType(typeof(BusinessAccountDTO), "business")]
+    [JsonDerivedType(typeof(CourierAccountDTO), "courier")]
     // === BASE DTO ===
     public abstract record AccountDTO(
         string? Id,

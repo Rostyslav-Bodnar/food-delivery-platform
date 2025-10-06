@@ -1,4 +1,6 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using System.Security.Claims;
+using System.Text.Json;
+using DF.UserService.Application.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -39,29 +41,61 @@ public class AccountController(IAccountService accountService) : ControllerBase
     /// Create account
     /// </summary>
     [HttpPost]
-    public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] AccountDTO? account)
+    public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] JsonElement json)
     {
-        if (account == null)
-            return BadRequest("Account data is required.");
+        // Отримуємо тип акаунту
+        if (!json.TryGetProperty("accountType", out var accountTypeProp))
+            return BadRequest("Account type is required.");
 
+        var accountType = accountTypeProp.GetString();
+        if (string.IsNullOrWhiteSpace(accountType))
+            return BadRequest("Invalid account type.");
+
+        // Отримуємо userId з токена
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("User ID not found in token");
+
+        var userId = userIdClaim.Value;
+
+        var account = DeserializeAccount(json, accountType, userId);
+
+        if (account == null)
+            return BadRequest($"Unknown account type: {accountType}");
+
+        // Створюємо акаунт
         var created = await accountService.CreateAccountAsync(account);
 
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
-
+    
     /// <summary>
     /// Update account
     /// </summary>
-    [HttpPut("{id:guid}")]
-    public async Task<ActionResult<AccountDTO>> UpdateAccount(Guid id, [FromBody] AccountDTO? account)
+    [HttpPut]
+    public async Task<ActionResult<AccountDTO>> UpdateAccount([FromBody] JsonElement json)
     {
-        if (account == null || id.ToString() != account.Id)
-            return BadRequest("Invalid account data.");
+        if (!json.TryGetProperty("accountType", out var accountTypeProp))
+            return BadRequest("Account type is required.");
+
+        var accountType = accountTypeProp.GetString();
+        if (string.IsNullOrWhiteSpace(accountType))
+            return BadRequest("Invalid account type.");
+
+        var account = DeserializeAccount(json, accountType, userId: null);
+        if (account == null)
+            return BadRequest($"Unknown account type: {accountType}");
+        
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized("Invalid token or user id");
+
+        account = account with { UserId = userId.ToString() };
 
         var updated = await accountService.UpdateAccountAsync(account);
-
         return Ok(updated);
     }
+
 
     /// <summary>
     /// Delete account
@@ -76,4 +110,18 @@ public class AccountController(IAccountService accountService) : ControllerBase
 
         return NoContent();
     }
+    
+    private static AccountDTO? DeserializeAccount(JsonElement json, string accountType, string userId)
+    {
+        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+        return accountType switch
+        {
+            "Customer" => JsonSerializer.Deserialize<CustomerAccountDTO>(json, options) with { UserId = userId },
+            "Business" => JsonSerializer.Deserialize<BusinessAccountDTO>(json, options) with { UserId = userId },
+            "Courier"  => JsonSerializer.Deserialize<CourierAccountDTO>(json, options) with { UserId = userId },
+            _ => null
+        };
+    }
+
 }

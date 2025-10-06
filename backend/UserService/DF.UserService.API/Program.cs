@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Interfaces;
@@ -81,6 +82,14 @@ builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
 
 builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.IncludeFields = true;
+        o.JsonSerializerOptions.UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement;
+    });
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

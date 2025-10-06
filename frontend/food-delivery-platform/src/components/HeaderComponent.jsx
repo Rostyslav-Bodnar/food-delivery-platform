@@ -132,7 +132,7 @@ const Header = () => {
                                 isAccountsOpen && <p>No accounts yet</p>
                             )}
 
-                            <button className="action-btn-header" onClick={() => navigate("/create-account")}>
+                            <button className="action-btn-header" onClick={() => navigate("/account/create")}>
                                 Create Account
                             </button>
 

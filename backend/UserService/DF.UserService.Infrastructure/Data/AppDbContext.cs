@@ -22,7 +22,7 @@ namespace DF.UserService.Infrastructure.Data
                 entity.Property(u => u.Name)
                     .HasMaxLength(200)
                     .IsRequired();
-                
+
                 entity.Property(u => u.Surname)
                     .HasMaxLength(200)
                     .IsRequired();
@@ -34,6 +34,12 @@ namespace DF.UserService.Infrastructure.Data
                 entity.Property(u => u.CreatedAt)
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
+                // Поточний акаунт (nullable, один до одного)
+                entity.HasOne(u => u.CurrentAccount)
+                    .WithMany() // CurrentAccount не має колекції
+                    .HasForeignKey(u => u.AccountId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
                 entity.ToTable("Users");
             });
 
@@ -41,9 +47,6 @@ namespace DF.UserService.Infrastructure.Data
             builder.Entity<Account>(entity =>
             {
                 entity.HasKey(a => a.Id);
-
-                entity.HasIndex(a => a.UserId)
-                    .IsUnique();
 
                 entity.Property(a => a.AccountType)
                     .HasConversion<int>()
@@ -53,10 +56,14 @@ namespace DF.UserService.Infrastructure.Data
                     .HasMaxLength(500)
                     .IsUnicode(false);
 
+                // Один користувач може мати багато акаунтів
                 entity.HasOne(a => a.User)
-                    .WithOne(u => u.CurrentAccount)
-                    .HasForeignKey<Account>(a => a.UserId)
+                    .WithMany(u => u.Accounts)
+                    .HasForeignKey(a => a.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+                // Унікальний індекс: один акаунт одного типу на користувача
+                entity.HasIndex(a => new { a.UserId, a.AccountType }).IsUnique();
 
                 entity.ToTable("Accounts");
             });
