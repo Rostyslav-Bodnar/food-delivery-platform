@@ -56,7 +56,7 @@ export const UserProvider = ({ children }) => {
             console.warn("Logout error:", err);
         } finally {
             localStorage.clear();
-            window.location.href = "/login";
+            window.location.href = "/food-delivery-platform/";
         }
     };
 
