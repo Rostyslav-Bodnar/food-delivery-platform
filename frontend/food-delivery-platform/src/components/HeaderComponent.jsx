@@ -1,91 +1,41 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
+import { useUser } from "../context/UserContext";
+import { motion, AnimatePresence } from "framer-motion";
 import "./styles/HeaderComponent.css";
-import { getProfile } from "../api/User.jsx";
-import { getAccounts } from "../api/Account.jsx";
-import { refresh, logout } from "../api/Auth.jsx";
 
 const Header = () => {
-    const [user, setUser] = useState(null);
-    const [accounts, setAccounts] = useState([]);
-    const [selectedAccount, setSelectedAccount] = useState(null);
+    const { user, accounts, currentAccountId, loading, logout, switchAccount } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-    const [isAccountsOpen, setIsAccountsOpen] = useState(false);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    // --- Fetch user data ---
-    const refreshCalled = useRef(false);
-
-    useEffect(() => {
-        if (refreshCalled.current) return;
-
-        const fetchData = async () => {
-            try {
-                await refresh();
-                const profile = await getProfile();
-                setUser(profile);
-                // Fetch accounts from API
-                const userAccounts = await getAccounts(profile.id);
-                setAccounts(userAccounts);
-                if (userAccounts.length > 0) {
-                    setSelectedAccount(userAccounts[0].accountType);
-                }
-            } catch (err) {
-                console.error("Failed to load user or accounts:", err);
-                setError(err.response?.data || err.message || "Failed to load user data");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-        refreshCalled.current = true;
-    }, []);
-
-    // --- Close dropdown on outside click ---
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsDropdownOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    const handleToggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
-    const handleToggleAccounts = () => setIsAccountsOpen(!isAccountsOpen);
-
-    const handleSelectAccount = (accountType) => {
-        setSelectedAccount(accountType);
+    const handleSelectAccount = async (account) => {
+        await switchAccount(account.id);
+        setIsDropdownOpen(false);
     };
 
-    const handleLogout = async () => {
-        await logout();
-        navigate("/login");
-    };
-
-    if (loading) {
+    if (loading)
         return (
             <header className="header">
                 <h1>Foodie Delivery 🍔</h1>
                 <p>Loading...</p>
             </header>
         );
-    }
 
-    if (error) {
-        return (
-            <header className="header">
-                <h1>Foodie Delivery 🍔</h1>
-                <p className="error-text">{error}</p>
-            </header>
-        );
-    }
+    const activeAccount = accounts.find(acc => acc.id === currentAccountId) || {};
+    const otherAccounts = accounts.filter(acc => acc.id !== currentAccountId);
+    const totalAccounts = accounts.length;
+
+    // Determine positions for non-active accounts (left or right, same height, partially overlapped)
+    const getPosition = (index) => {
+        if (totalAccounts === 1) return { x: 0, y: 0, zIndex: 3 };
+        if (totalAccounts === 2) return { x: index === 0 ? -20 : 0, y: 0, zIndex: index === 0 ? 1 : 3 };
+        // For 3 accounts, position left and right, partially overlapped
+        if (index === 0) return { x: -20, y: 0, zIndex: 1 }; // Left
+        if (index === 1) return { x: 20, y: 0, zIndex: 1 }; // Right
+        return { x: 0, y: 0, zIndex: 3 }; // Active (center)
+    };
 
     return (
         <header className="header">
@@ -100,46 +50,113 @@ const Header = () => {
                 )}
 
                 {user && (
-                    <div className="dropdown-header" ref={dropdownRef}>
-                        <button className="dropbtn-header" onClick={handleToggleDropdown}>
-                            {user.name ? user.name[0].toUpperCase() : "U"}
-                        </button>
+                    <div className="account-bubbles-container" ref={dropdownRef}>
+                        <div className="account-bubbles">
+                            {/* Active account bubble */}
+                            <motion.div
+                                className="account-bubble active"
+                                title={activeAccount.accountType}
+                                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                                animate={{ x: 0, y: 0, scale: 1, zIndex: 3 }}
+                                transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                            >
+                                {activeAccount.imageUrl ? (
+                                    <motion.img
+                                        src={activeAccount.imageUrl}
+                                        alt={activeAccount.accountType}
+                                        whileHover={{ scale: 1.1 }}
+                                        transition={{ duration: 0.2 }}
+                                    />
+                                ) : (
+                                    <span>{activeAccount.name ? activeAccount.name[0].toUpperCase() : "U"}</span>
+                                )}
+                            </motion.div>
 
-                        <div className={`dropdown-content-header ${isDropdownOpen ? "show" : ""}`}>
-                            <h4>{user.name + " " + user.surname}</h4>
-
-                            <button className="action-btn-header" onClick={() => navigate("/profile")}>
-                                Profile
-                            </button>
-
-                            <h5 className="accounts-toggle" onClick={handleToggleAccounts}>
-                                Accounts {isAccountsOpen ? "▲" : "▼"}
-                            </h5>
-
-                            {isAccountsOpen && accounts.length > 0 ? (
-                                <ul>
-                                    {accounts.map((acc, idx) => (
-                                        <li
-                                            key={idx}
-                                            className={selectedAccount === acc.accountType ? "selected-account" : ""}
-                                            onClick={() => handleSelectAccount(acc.accountType)}
-                                        >
-                                            {acc.accountType}
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                isAccountsOpen && <p>No accounts yet</p>
-                            )}
-
-                            <button className="action-btn-header" onClick={() => navigate("/account/create")}>
-                                Create Account
-                            </button>
-
-                            <button className="action-btn-header" onClick={handleLogout}>
-                                Logout
-                            </button>
+                            {/* Non-active account bubbles */}
+                            {otherAccounts.map((acc, index) => {
+                                const position = getPosition(index);
+                                return (
+                                    <motion.div
+                                        key={acc.id}
+                                        className="account-bubble"
+                                        title={acc.accountType}
+                                        onClick={() => setIsDropdownOpen(true)}
+                                        animate={{
+                                            x: position.x,
+                                            y: position.y,
+                                            scale: 1,
+                                            zIndex: position.zIndex,
+                                            opacity: 0.7, // Slightly faded for non-active
+                                        }}
+                                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
+                                    >
+                                        {acc.imageUrl ? (
+                                            <motion.img
+                                                src={acc.imageUrl}
+                                                alt={acc.accountType}
+                                                whileHover={{ scale: 1.1, opacity: 1 }}
+                                                transition={{ duration: 0.2 }}
+                                            />
+                                        ) : (
+                                            <span>{acc.name ? acc.name[0].toUpperCase() : "U"}</span>
+                                        )}
+                                    </motion.div>
+                                );
+                            })}
                         </div>
+
+                        <AnimatePresence>
+                            {isDropdownOpen && (
+                                <motion.div
+                                    className="dropdown-content-header show"
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.25 }}
+                                >
+                                    <h4>{user.name + " " + user.surname}</h4>
+
+                                    <motion.button
+                                        className="action-btn-header"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => navigate("/profile")}
+                                    >
+                                        Profile
+                                    </motion.button>
+
+                                    <h5 className="accounts-toggle" onClick={() => setIsDropdownOpen(true)}>
+                                        Accounts ▼
+                                    </h5>
+
+                                    <motion.ul
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.3 }}
+                                    >
+                                        {accounts.map((acc) => (
+                                            <li
+                                                key={acc.id}
+                                                className={acc.id === currentAccountId ? "selected-account" : ""}
+                                                onClick={() => handleSelectAccount(acc)}
+                                            >
+                                                {acc.accountType}
+                                            </li>
+                                        ))}
+                                    </motion.ul>
+
+                                    <motion.button
+                                        className="action-btn-header"
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={logout}
+                                    >
+                                        Logout
+                                    </motion.button>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </div>
                 )}
             </nav>

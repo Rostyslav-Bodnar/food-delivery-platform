@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DF.UserService.Application.Interfaces;
+﻿using DF.UserService.Application.Interfaces;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
+using Microsoft.AspNetCore.Mvc;
+
+namespace DF.UserService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -87,4 +89,3 @@ public class AuthController(IAuthService authService) : ControllerBase
     }
 
 }
-
