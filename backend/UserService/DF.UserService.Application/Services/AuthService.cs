@@ -40,27 +40,15 @@ public class AuthService(
             Surname: user.Surname,
             Address: null
         );
-        
-        // Створюємо акаунт користувача
+
         var accountDto = await accountService.CreateAccountAsync(customerDto);
 
-
-        // Прив'язуємо акаунт до користувача
-        if (accountDto.Id != null) user.AccountId = Guid.Parse(accountDto.Id);
-        user.CurrentAccount = new CustomerAccount
-        {
-            Name = user.Name,
-            Surname = user.Surname,
-            Id = user.AccountId,
-            UserId = user.Id,
-            AccountType = AccountType.Customer
-        };
+        user.AccountId = Guid.Parse(accountDto.Id);
 
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
             throw new Exception(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
 
-        // Публікація повідомлення про нову реєстрацію
         broker.Publish("user.registered", new
         {
             user.Id,

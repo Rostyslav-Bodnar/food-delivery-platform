@@ -10,8 +10,8 @@ namespace DF.UserService.Domain.Entities
         
         //TODO: location implementation
         
-        public Guid AccountId { get; set; }
-        public Account CurrentAccount { get; set; }
+        public Guid? AccountId { get; set; }
+        public Account? CurrentAccount { get; set; }
         
         public required UserRole UserRole { get; set; }
         
