@@ -1,4 +1,4 @@
-﻿import React, { useState, useRef } from "react";
+﻿import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -7,13 +7,34 @@ import "./styles/HeaderComponent.css";
 const Header = () => {
     const { user, accounts, currentAccountId, loading, logout, switchAccount } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+    const [isAccountsOpen, setIsAccountsOpen] = useState(true);
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
+
+    // Handle outside click to close dropdown
+    useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+                setIsAccountsOpen(true); // Reset accounts list to open when dropdown closes
+            }
+        };
+
+        if (isDropdownOpen) {
+            document.addEventListener("mousedown", handleOutsideClick);
+        }
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
+    }, [isDropdownOpen]);
 
     const handleSelectAccount = async (account) => {
         await switchAccount(account.id);
         setIsDropdownOpen(false);
     };
+
+    const toggleAccounts = () => setIsAccountsOpen(prev => !prev);
 
     if (loading)
         return (
@@ -31,7 +52,6 @@ const Header = () => {
     const getPosition = (index) => {
         if (totalAccounts === 1) return { x: 0, y: 0, zIndex: 3 };
         if (totalAccounts === 2) return { x: index === 0 ? -20 : 0, y: 0, zIndex: index === 0 ? 1 : 3 };
-        // For 3 accounts, position left and right, partially overlapped
         if (index === 0) return { x: -20, y: 0, zIndex: 1 }; // Left
         if (index === 1) return { x: 20, y: 0, zIndex: 1 }; // Right
         return { x: 0, y: 0, zIndex: 3 }; // Active (center)
@@ -39,7 +59,7 @@ const Header = () => {
 
     return (
         <header className="header">
-            <h1>Foodie Delivery 🍔</h1>
+            <NavLink className="page-header" to="/">Foodie Delivery 🍔</NavLink>
             <nav>
                 <NavLink className="nav-link" to="/">Home</NavLink>
                 {!user && (
@@ -86,7 +106,7 @@ const Header = () => {
                                             y: position.y,
                                             scale: 1,
                                             zIndex: position.zIndex,
-                                            opacity: 0.7, // Slightly faded for non-active
+                                            opacity: 0.7,
                                         }}
                                         transition={{ type: "spring", stiffness: 200, damping: 20 }}
                                     >
@@ -112,7 +132,7 @@ const Header = () => {
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
                                     exit={{ opacity: 0, y: -10 }}
-                                    transition={{ duration: 0.25 }}
+                                    transition={{ duration: 0.3, ease: "easeOut" }}
                                 >
                                     <h4>{user.name + " " + user.surname}</h4>
 
@@ -125,26 +145,34 @@ const Header = () => {
                                         Profile
                                     </motion.button>
 
-                                    <h5 className="accounts-toggle" onClick={() => setIsDropdownOpen(true)}>
-                                        Accounts ▼
+                                    <h5 className="accounts-toggle" onClick={toggleAccounts}>
+                                        Accounts {isAccountsOpen ? "▲" : "▼"}
                                     </h5>
 
-                                    <motion.ul
-                                        initial={{ opacity: 0, y: -10 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        exit={{ opacity: 0, y: -10 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        {accounts.map((acc) => (
-                                            <li
-                                                key={acc.id}
-                                                className={acc.id === currentAccountId ? "selected-account" : ""}
-                                                onClick={() => handleSelectAccount(acc)}
-                                            >
-                                                {acc.accountType}
-                                            </li>
-                                        ))}
-                                    </motion.ul>
+                                    {isAccountsOpen && (
+                                        <ul>
+                                            {accounts.map((acc) => (
+                                                <li
+                                                    key={acc.id}
+                                                    className={acc.id === currentAccountId ? "selected-account" : ""}
+                                                    onClick={() => handleSelectAccount(acc)}
+                                                >
+                                                    {acc.accountType}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+
+                                    {accounts.length < 3 && (
+                                        <motion.button
+                                            className="action-btn-header"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate("/account/create")}
+                                        >
+                                            Create Account
+                                        </motion.button>
+                                    )}
 
                                     <motion.button
                                         className="action-btn-header"
