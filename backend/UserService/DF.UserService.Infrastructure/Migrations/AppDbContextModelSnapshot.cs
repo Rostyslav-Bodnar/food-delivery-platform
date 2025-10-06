@@ -81,7 +81,7 @@ namespace DF.UserService.Infrastructure.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("AccountId")
+                    b.Property<Guid?>("AccountId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ConcurrencyStamp")
@@ -389,8 +389,7 @@ namespace DF.UserService.Infrastructure.Migrations
                     b.HasOne("DF.UserService.Domain.Entities.Account", "CurrentAccount")
                         .WithMany()
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("CurrentAccount");
                 });
