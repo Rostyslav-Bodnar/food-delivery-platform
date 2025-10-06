@@ -1,6 +1,5 @@
 /* Full page wrapper */
 .page-wrapper {
-    width: 100%;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -36,9 +35,14 @@
         letter-spacing: 0.5px;
     }
 
+.fullname-inputs {
+    display: flex;
+    gap: 1rem;
+}
+
 /* Input fields */
 .register-form input {
-    width: 100%;
+    width: 93%;
     padding: 16px;
     margin: 10px 0;
     border-radius: 12px;

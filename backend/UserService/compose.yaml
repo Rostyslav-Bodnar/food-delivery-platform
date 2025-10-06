@@ -1,4 +1,6 @@
-﻿services:
+﻿version: '3.9'
+
+services:
   df.userservice.api:
     image: df.userservice.api
     build:
@@ -8,6 +10,8 @@
       - "8080:8080"
     depends_on:
       - mssql
+      - rabbitmq
+
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql
@@ -18,6 +22,7 @@
       - "11433:1433"
     volumes:
       - mssql_data:/var/opt/mssql
+
   mssql-init:
     image: mcr.microsoft.com/mssql-tools
     depends_on:
@@ -29,5 +34,16 @@
       sleep 20;
       /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P StrongPass123! -i /init.sql
       "
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"       # RabbitMQ default port
+      - "15672:15672"     # Management UI
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
 volumes:
   mssql_data:

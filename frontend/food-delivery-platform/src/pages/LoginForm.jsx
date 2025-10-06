@@ -1,36 +1,41 @@
-﻿import React, { useState } from "react";
-import "./styles/RegisterForm.css";
+﻿import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { login } from '../api/auth';
+import './styles/LoginForm.css';
 
-const RegisterForm = () => {
+const LoginForm = () => {
     const [formData, setFormData] = useState({
-        username: "",
-        email: "",
-        password: "",
+        email: '',
+        password: '',
     });
+    const [error, setError] = useState(null);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        alert(`Welcome, ${formData.username}! Your account has been created 🍕`);
+        setError(null);
+        try {
+            const response = await login(formData);
+
+            alert(`Welcome back, ${formData.email}! 🍔`);
+
+            // Перенаправляємо користувача на головну сторінку/кабінет
+            window.location.href = "/food-delivery-platform/profile";
+        } catch (err) {
+            setError(err.message || 'Failed to login. Please check your credentials.');
+        }
     };
+
 
     return (
         <div className="page-wrapper">
             <div className="register-container">
-                <h2>Create Your Account</h2>
+                <h2>Login to Foodie Delivery 🍔</h2>
+                {error && <p className="error-text">{error}</p>}
                 <form className="register-form" onSubmit={handleSubmit}>
-                    <input
-                        type="text"
-                        name="username"
-                        placeholder="Username"
-                        value={formData.username}
-                        onChange={handleChange}
-                        required
-                    />
-
                     <input
                         type="email"
                         name="email"
@@ -39,7 +44,6 @@ const RegisterForm = () => {
                         onChange={handleChange}
                         required
                     />
-
                     <input
                         type="password"
                         name="password"
@@ -48,15 +52,14 @@ const RegisterForm = () => {
                         onChange={handleChange}
                         required
                     />
-
-                    <button type="submit">Register</button>
+                    <button type="submit">Login</button>
                 </form>
                 <p className="login-text">
-                    Already have an account? <a href="#">Login</a>
+                    Don't have an account? <Link to="/register">Register</Link>
                 </p>
             </div>
         </div>
     );
 };
 
-export default RegisterForm;
+export default LoginForm;
