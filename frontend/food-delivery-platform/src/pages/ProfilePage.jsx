@@ -20,7 +20,7 @@ const ProfilePage = () => {
     const [isAvatarHovered, setIsAvatarHovered] = useState(false);
     const inputRef = useRef(null);
 
-    // ініціалізація форми після завантаження даних
+    // Initialize form after loading data
     useEffect(() => {
         if (user) {
             const currentAccount = accounts.find(a => a.id === currentAccountId);
@@ -72,7 +72,7 @@ const ProfilePage = () => {
             }, token);
 
             setEditingField(null);
-            await reloadUser(); // 🔥 оновлюємо контекст
+            await reloadUser();
         } catch (err) {
             setError(err.response?.data || err.message || "Failed to save profile");
         }
@@ -80,7 +80,7 @@ const ProfilePage = () => {
 
     const handleAccountSwitch = async (account) => {
         await switchAccount(account.id);
-        await reloadUser(); // 🔥 синхронізуємо зміни
+        await reloadUser();
     };
 
     if (loading) return <div className="page-wrapper"><div className="user-container">⏳ Loading profile...</div></div>;
