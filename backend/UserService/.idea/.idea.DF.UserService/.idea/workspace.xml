@@ -9,11 +9,16 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="cf553f13-aaa5-4858-bc31-f559536b7eae" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/aws.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/indexLayout.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DF.UserService.Application/Interfaces/IPromoService.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DF.UserService.Application/Services/PromoService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PromoService/DF.PromoService/app/controllers/promos_controller.rb" beforeDir="false" afterPath="$PROJECT_DIR$/../PromoService/DF.PromoService/app/controllers/api/promos_controller.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PromoService/DF.PromoService/config/routes.rb" beforeDir="false" afterPath="$PROJECT_DIR$/../PromoService/DF.PromoService/config/routes.rb" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.UserService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.UserService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.UserService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.UserService.Application/Services/AccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.UserService.Application/Services/AccountService.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +50,7 @@
 }</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/b13cb16f7e5749269b6922dc6752bd1c291448/99/b78a83f2/EventDefinition`1.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/1264716ff9b4e0a95257e6ae2f43f430838816aef4c4a68a27780f2d9ec31e/JsonContent.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2854ce6d56c18d0d837d3a3ef9c4f2c7c77691fa3528c8394986ac7ce7719/StackFrameIterator.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/294078ecfce6fdb942ecfee089f09717de7a6fcfe5efd9fdb6f4f93c0fb4813/ActionMethodExecutor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/2f2b1d92f1ffcf2dabd664473f8c9dafa6039595ac228ce4b75a0f1619c5991/AsyncTaskMethodBuilderT.cs" root0="FORCE_HIGHLIGHTING" />
@@ -55,18 +61,11 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/8f3a7e15a57a97f9c41ce549a191d1b41493b7ddad293fe1fbe41f1d4c6fb/SqlServerExecutionStrategy.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/9a6b1457cbcf17db31a383ba49ef9bcc786cf3ef77146d997eee499b27a46d/Object.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bd1d5c50194fea68ff3559c160230b0ab50f5acf4ce3061bffd6d62958e2182/ExceptionDispatchInfo.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/Controllers/AuthController.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/Controllers/UserController.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/Program.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/Properties/launchSettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.Application/Services/AccountService.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/de8c9d9014ed8851ff8db88744302e50dddf33c626b751126f43a9cbb5ef7b6/HttpClientJsonExtensions.Post.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.UserService.Application/Interfaces/IPromoService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.Application/Services/AuthService.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.UserService.Application/Services/PromoService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.UserService.Application/Services/UserService.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.Domain/Entities/User.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -92,7 +91,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "user-service",
+    "git-widget-placeholder": "promo-service",
     "junie.onboarding.icon.badge.shown": "true",
     "last_opened_file_path": "C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/UserService/DF.UserService.sln",
     "node.js.detected.package.eslint": "true",
@@ -110,7 +109,7 @@
     ]
   }
 }]]></component>
-  <component name="RunManager" selected="Docker.compose.yaml.df.userservice.api: Compose Deployment">
+  <component name="RunManager" selected=".NET Project.API">
     <configuration name="API" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="$PROJECT_DIR$/DF.UserService.API/bin/Debug/net9.0/DF.UserService.API.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
@@ -256,6 +255,7 @@
       <workItem from="1759057831063" duration="15479000" />
       <workItem from="1759077517723" duration="52646000" />
       <workItem from="1759689116622" duration="16788000" />
+      <workItem from="1760560220161" duration="2773000" />
     </task>
     <task id="LOCAL-00001" summary="database-connection/create-database">
       <option name="closed" value="true" />
@@ -412,6 +412,19 @@
           <properties exception="System.Threading.ThreadAbortException" breakIfHandledByOtherCode="false" displayValue="System.Threading.ThreadAbortException" />
           <option name="timeStamp" value="3" />
         </breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.UserService.Application/Services/PromoService.cs</url>
+          <line>12</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\UserService\DF.UserService.Application\Services\PromoService.cs" containingFunctionPresentation="Method 'AssignWelcomePromoAsync'">
+            <startOffsets>
+              <option value="548" />
+            </startOffsets>
+            <endOffsets>
+              <option value="549" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
     <pin-to-top-manager>

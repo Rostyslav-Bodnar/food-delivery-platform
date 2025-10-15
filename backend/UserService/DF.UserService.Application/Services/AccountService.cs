@@ -7,23 +7,40 @@ using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Services;
 
-public class AccountService(IAccountRepository accountRepository, IAccountFactory accountFactory) : IAccountService
+public class AccountService(
+    IAccountRepository accountRepository,
+    IAccountFactory accountFactory,
+    IPromoService promoService) : IAccountService
 {
     public async Task<AccountDTO> CreateAccountAsync(AccountDTO accountDto)
     {
         try
         {
             var entity = accountFactory.CreateAccount(accountDto);
-
             entity = await accountRepository.Create(entity);
 
-            return entity switch
+            var dto = entity switch
             {
-                CustomerAccount c => AccountMapper.ToDTO((CustomerAccount)c),
-                BusinessAccount b => AccountMapper.ToDTO((BusinessAccount)b),
-                CourierAccount co => AccountMapper.ToDTO((CourierAccount)co),
-                _ => AccountMapper.ToDTO(entity) // fallback
+                CustomerAccount c => AccountMapper.ToDTO(c),
+                BusinessAccount b => AccountMapper.ToDTO(b),
+                CourierAccount co => AccountMapper.ToDTO(co),
+                _ => AccountMapper.ToDTO(entity)
             };
+
+            if (entity is BusinessAccount business)
+            {
+                try
+                {
+                    await promoService.AssignWelcomePromoAsync(business.Id, business.Name);
+                }
+                catch (Exception ex)
+                {
+                    // Логування, але не зривати створення акаунта
+                    Console.WriteLine($"[WARN] Failed to assign promo for business {business.Id}: {ex.Message}");
+                }
+            }
+
+            return dto;
         }
         catch (Exception ex)
         {

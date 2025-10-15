@@ -76,6 +76,9 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
+//Clients
+builder.Services.AddHttpClient<IPromoService, PromoService>();
+
 //Builders
 builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 

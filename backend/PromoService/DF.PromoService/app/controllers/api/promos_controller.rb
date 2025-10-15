@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class Api::V1::PromosController < ApplicationController
+class Api::PromosController < ApplicationController
   def create
     promo = Promo.create!(promo_params)
     render json: promo, status: :created

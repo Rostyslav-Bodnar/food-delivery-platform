@@ -1,17 +1,36 @@
 version: '3.9'
 
 services:
-  mysql:
+  promoservice:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: promoservice
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql_promo_service
+    environment:
+      RAILS_ENV: development
+      DB_HOST: mysql_promo_service
+      DB_PORT: 3306
+      DB_USERNAME: promo_user
+      DB_PASSWORD: promoservice123!
+      DB_NAME: PromoServiceDb
+    networks:
+      - promo_network
+
+  mysql_promo_service:
     image: mysql:8.0
     container_name: mysql_promo_service
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword     # пароль root
-      MYSQL_DATABASE: PromoServiceDb        # база даних, яка створиться автоматично
-      MYSQL_USER: promo_user                # додатковий користувач
-      MYSQL_PASSWORD: promoservice123!        # пароль для promo_user
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: PromoServiceDb
+      MYSQL_USER: promo_user
+      MYSQL_PASSWORD: promoservice123!
     ports:
-      - "3307:3306"                         # проброс порту
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
@@ -20,6 +39,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - promo_network
 
 volumes:
   mysql_data:
+
+networks:
+  promo_network:
+    driver: bridge
