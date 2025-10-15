@@ -1,0 +1,24 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_promo_service
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword     # пароль root
+      MYSQL_DATABASE: PromoServiceDb        # база даних, яка створиться автоматично
+      MYSQL_USER: promo_user                # додатковий користувач
+      MYSQL_PASSWORD: promoservice123!        # пароль для promo_user
+    ports:
+      - "3307:3306"                         # проброс порту
+    volumes:
+      - mysql_data:/var/lib/mysql           # зберігання даних між рестартами
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:
