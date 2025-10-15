@@ -3,16 +3,15 @@ version: '3.9'
 services:
   promoservice:
     build:
-      context: .
       dockerfile: Dockerfile
     container_name: promoservice
     ports:
-      - "3000:3000"
+      - "3000:80" # всередині контейнера Rails слухає 80, а ззовні буде доступний на 3000
     depends_on:
-      - mysql_promo_service
+      - mysql
     environment:
       RAILS_ENV: development
-      DB_HOST: mysql_promo_service
+      DB_HOST: mysql
       DB_PORT: 3306
       DB_USERNAME: promo_user
       DB_PASSWORD: promoservice123!
@@ -20,7 +19,7 @@ services:
     networks:
       - promo_network
 
-  mysql_promo_service:
+  mysql:
     image: mysql:8.0
     container_name: mysql_promo_service
     restart: always
