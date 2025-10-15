@@ -1,0 +1,21 @@
+Index: DF.UserService.API/appsettings.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"ConnectionStrings\": {\r\n    // LOCAL\r\n    //\"UserServiceMSSQLDatabase\": \"Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\",\r\n    \r\n    //DOCKER\r\n    \"UserServiceMSSQLDatabase\": \"Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\"\r\n\r\n  },\r\n  \"Logging\": {\r\n    \"LogLevel\": {\r\n      \"Default\": \"Information\",\r\n      \"Microsoft.AspNetCore\": \"Warning\"\r\n    }\r\n  },\r\n  \"AllowedHosts\": \"*\"\r\n}\r\n
+===================================================================
+diff --git a/DF.UserService.API/appsettings.json b/DF.UserService.API/appsettings.json
+--- a/DF.UserService.API/appsettings.json	(revision f1b6a341754c7ca7f3fac3db27c64f5f2a8408e7)
++++ b/DF.UserService.API/appsettings.json	(date 1759072917206)
+@@ -1,10 +1,10 @@
+ {
+   "ConnectionStrings": {
+     // LOCAL
+-    //"UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True",
++    "UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True",
+     
+     //DOCKER
+-    "UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
++    //"UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
+ 
+   },
+   "Logging": {

@@ -1,0 +1,23 @@
+Index: DF.UserService.API/appsettings.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"ConnectionStrings\": {\r\n    // LOCAL\r\n    //\"UserServiceMSSQLDatabase\": \"Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\",\r\n    \r\n    //DOCKER\r\n    \"UserServiceMSSQLDatabase\": \"Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\"\r\n\r\n  },\r\n  \"Logging\": {\r\n    \"LogLevel\": {\r\n      \"Default\": \"Information\",\r\n      \"Microsoft.AspNetCore\": \"Warning\"\r\n    }\r\n  },\r\n  \"RabbitMQ\": {\r\n    \"HostName\": \"localhost\",\r\n    \"UserName\": \"guest\",\r\n    \"Password\": \"guest\",\r\n    \"Port\": 5672\r\n  },\r\n  \"Jwt\": {\r\n    \"Key\": \"food-delivery-platform-jwt-key-1234567890!\",\r\n    \"Issuer\": \"df.userservice\",\r\n    \"Audience\": \"df.userservice.client\",\r\n    \"AccessTokenExpirationMinutes\": 60,\r\n    \"RefreshTokenExpirationDays\": 30\r\n  },\r\n\r\n  \"AllowedHosts\": \"*\"\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DF.UserService.API/appsettings.json b/DF.UserService.API/appsettings.json
+--- a/DF.UserService.API/appsettings.json	(revision 9ccf8f560262ea4453af0dec51508a9fd626de02)
++++ b/DF.UserService.API/appsettings.json	(date 1759431872147)
+@@ -1,10 +1,10 @@
+ {
+   "ConnectionStrings": {
+     // LOCAL
+-    //"UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True",
++    "UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True",
+     
+     //DOCKER
+-    "UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
++    //"UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
+ 
+   },
+   "Logging": {
