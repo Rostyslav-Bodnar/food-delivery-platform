@@ -3,6 +3,6 @@
 class PromoUsage < ApplicationRecord
   belongs_to :promo
 
-  validates :user_id, presence: true
+  validates :account_id, presence: true
 end
 
