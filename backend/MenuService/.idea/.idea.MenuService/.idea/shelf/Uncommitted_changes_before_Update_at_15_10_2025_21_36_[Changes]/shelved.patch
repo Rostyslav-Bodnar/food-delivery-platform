@@ -1,0 +1,96 @@
+Index: ../UserService/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml b/../UserService/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml
+new file mode 100644
+--- /dev/null	(date 1759778794661)
++++ b/../UserService/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26__Changes_.xml	(date 1759778794661)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_06_10_2025_22_26_[Changes]" date="1759778772221" recycled="true" deleted="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/.idea.DF.UserService/.idea/shelf/Uncommitted_changes_before_Update_at_06_10_2025_22_26_[Changes]/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 06.10.2025 22:26 [Changes]" />
++</changelist>
+\ No newline at end of file
+Index: .idea/.idea.MenuService/.idea/indexLayout.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/indexLayout.xml b/.idea/.idea.MenuService/.idea/indexLayout.xml
+new file mode 100644
+--- /dev/null	(date 1759778771932)
++++ b/.idea/.idea.MenuService/.idea/indexLayout.xml	(date 1759778771932)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="UserContentModel">
++    <attachedFolders />
++    <explicitIncludes />
++    <explicitExcludes />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/.idea.MenuService/.idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/vcs.xml b/.idea/.idea.MenuService/.idea/vcs.xml
+new file mode 100644
+--- /dev/null	(date 1759778771920)
++++ b/.idea/.idea.MenuService/.idea/vcs.xml	(date 1759778771920)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$/../.." vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/.idea.MenuService/.idea/aws.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/aws.xml b/.idea/.idea.MenuService/.idea/aws.xml
+new file mode 100644
+--- /dev/null	(date 1760552812443)
++++ b/.idea/.idea.MenuService/.idea/aws.xml	(date 1760552812443)
+@@ -0,0 +1,11 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="accountSettings">
++    <option name="activeRegion" value="us-east-1" />
++    <option name="recentlyUsedRegions">
++      <list>
++        <option value="us-east-1" />
++      </list>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/.idea.MenuService/.idea/.gitignore
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/.gitignore b/.idea/.idea.MenuService/.idea/.gitignore
+new file mode 100644
+--- /dev/null	(date 1759778771943)
++++ b/.idea/.idea.MenuService/.idea/.gitignore	(date 1759778771943)
+@@ -0,0 +1,13 @@
++# Default ignored files
++/shelf/
++/workspace.xml
++# Rider ignored files
++/.idea.MenuService.iml
++/modules.xml
++/projectSettingsUpdater.xml
++/contentModel.xml
++# Editor-based HTTP Client requests
++/httpRequests/
++# Datasource local storage ignored files
++/dataSources/
++/dataSources.local.xml
