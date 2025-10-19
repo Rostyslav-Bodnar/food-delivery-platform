@@ -1,7 +1,32 @@
-﻿services:
+﻿version: '3.9'
+
+services:
   df.menuservice.api:
     image: df.menuservice.api
     build:
       context: .
       dockerfile: DF.MenuService.API/Dockerfile
+    container_name: df.menuservice.api
+    ports:
+      - "5004:8080"        # 5004 — порт на твоїй машині, 8080 — у контейнері
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=df.menuservice.db;Port=5432;Database=MenuServiceDb;Username=MenuService;Password=MenuService2025!
+    depends_on:
+      - df.menuservice.db
 
+  df.menuservice.db:
+    image: postgres:16
+    container_name: df.menuservice.db
+    restart: always
+    environment:
+      POSTGRES_USER: MenuService
+      POSTGRES_PASSWORD: MenuService2025!
+      POSTGRES_DB: MenuServiceDb
+    ports:
+      - "5433:5432"        # 5433 — локальний порт, щоб можна було підключитися ззовні
+    volumes:
+      - menu_service_data:/var/lib/postgresql/data
+
+volumes:
+  menu_service_data:
