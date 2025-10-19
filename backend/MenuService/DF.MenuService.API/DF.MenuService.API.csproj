@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\DF.MenuService.Application\DF.MenuService.Application.csproj" />
       <ProjectReference Include="..\DF.MenuService.Infrastructure\DF.MenuService.Infrastructure.csproj" />
     </ItemGroup>
 

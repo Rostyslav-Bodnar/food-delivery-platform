@@ -1,3 +1,7 @@
+using DF.MenuService.Application.Repositories;
+using DF.MenuService.Application.Repositories.Interfaces;
+using DF.MenuService.Application.Services;
+using DF.MenuService.Application.Services.Interfaces;
 using DF.MenuService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,6 +17,16 @@ builder.Services.AddSwaggerGen();
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//Services
+builder.Services.AddScoped<IDishService, DishService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
+
+//Repositories
+builder.Services.AddScoped<IDishRepository, DishRepository>();
+builder.Services.AddScoped<IMenuRepository, MenuRepository>();
+
 
 // Build the app
 var app = builder.Build();

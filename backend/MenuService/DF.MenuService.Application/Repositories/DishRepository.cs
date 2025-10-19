@@ -7,7 +7,6 @@ namespace DF.MenuService.Application.Repositories;
 
 public class DishRepository(AppDbContext dbContext) : IDishRepository
 {
-
     public async Task<Dish?> Get(Guid id)
     {
         return await dbContext.Dishes.FindAsync(id);
