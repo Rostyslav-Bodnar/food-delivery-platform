@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Mappers\" />
+      <Folder Include="Services\Interfaces\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DF.MenuService.Domain\DF.MenuService.Domain.csproj" />
+        <ProjectReference Include="..\DF.MenuService.Infrastructure\DF.MenuService.Infrastructure.csproj" />
+    </ItemGroup>
+
+</Project>
