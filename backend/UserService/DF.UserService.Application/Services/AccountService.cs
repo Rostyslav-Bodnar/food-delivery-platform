@@ -51,7 +51,7 @@ public class AccountService(
                 if (!string.IsNullOrEmpty(publicId))
                     await cloudinaryService.DeleteAsync(publicId);
 
-                var uploadResult = await cloudinaryService.UploadAsync(accountRequest.ImageFile);
+                var uploadResult = await cloudinaryService.UploadAsync(accountRequest.ImageFile, "users");
                 imageUrl = uploadResult.Url;
                 publicId = uploadResult.PublicId;
             }

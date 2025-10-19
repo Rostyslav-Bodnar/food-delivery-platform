@@ -14,7 +14,7 @@ public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFact
         UploadImageResult? image = null;
         if (request.ImageFile != null && request.ImageFile.Length > 0)
         {
-            image = await cloudinaryService.UploadAsync(request.ImageFile);
+            image = await cloudinaryService.UploadAsync(request.ImageFile,  "users");
         }
         return request switch
         {
