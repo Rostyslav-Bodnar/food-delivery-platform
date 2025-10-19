@@ -1,0 +1,23 @@
+# This is a generated file. Not intended for manual editing.
+version: "3.9"
+services:
+  df.menuservice.api:
+    build:
+      context: "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\\
+        MenuService"
+      dockerfile: "DF.MenuService.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net9.0/DF.MenuService.API.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "df.menuservice.api:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService\\\
+      DF.MenuService.API:/app:rw"
+    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService:/src:rw"
+    - "C:\\Users\\User\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
