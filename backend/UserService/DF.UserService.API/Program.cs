@@ -2,10 +2,10 @@
 using System.Text.Json.Serialization;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
-using DF.UserService.Application.Interfaces;
 using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using DF.UserService.Infrastructure.Messaging;
@@ -75,6 +75,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
 
 //Builders
 builder.Services.AddScoped<IAccountFactory, AccountFactory>();

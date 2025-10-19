@@ -6,7 +6,7 @@ import { useUser } from "../../context/UserContext";
 
 const CustomerForm = () => {
     const navigate = useNavigate();
-    const { reloadUser } = useUser(); // Access reloadUser from UserContext
+    const { reloadUser } = useUser();
 
     const [formData, setFormData] = useState({
         firstName: "",
@@ -18,32 +18,29 @@ const CustomerForm = () => {
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
-        setFormData({
-            ...formData,
-            [name]: files ? files[0] : value,
-        });
+        setFormData({ ...formData, [name]: files ? files[0] : value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const account = {
-            accountType: "Customer",
             name: formData.firstName,
             surname: formData.lastName,
             phoneNumber: formData.phone,
             address: formData.address,
-            imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : null
+            imageFile: formData.photo,
+            accountType: 0
         };
 
         try {
-            await createAccount(account);
-            await reloadUser(); // Refresh user data to include new account
+            await createAccount("customer", account);
+            await reloadUser();
             alert("Customer account created successfully!");
             navigate("/profile");
         } catch (err) {
             console.error(err);
-            alert("Failed to create account");
+            alert("Failed to create customer account");
         }
     };
 
@@ -57,7 +54,7 @@ const CustomerForm = () => {
                 <label className="file-label">Upload Profile Photo</label>
                 <input type="file" name="photo" accept="image/*" onChange={handleChange} className="file-input" />
             </div>
-            <button type="submit">Create Account</button>
+            <button type="submit">Create Customer Account</button>
         </form>
     );
 };

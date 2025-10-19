@@ -1,4 +1,4 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
@@ -30,11 +30,10 @@ public class AuthService(
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-        var customerDto = new CustomerAccountDTO(
-            Id: null,
+        var customerDto = new CreateCustomerAccountRequest(
             UserId: user.Id.ToString(),
-            AccountType: "Customer",
-            ImageUrl: null,
+            AccountType: 0,
+            ImageFile: null,
             PhoneNumber: null,
             Name: user.Name,
             Surname: user.Surname,

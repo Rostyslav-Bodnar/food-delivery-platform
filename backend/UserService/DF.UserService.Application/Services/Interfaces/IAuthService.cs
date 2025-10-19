@@ -1,7 +1,7 @@
 ﻿using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 
-namespace DF.UserService.Application.Interfaces;
+namespace DF.UserService.Application.Services.Interfaces;
 
 public interface IAuthService
 {

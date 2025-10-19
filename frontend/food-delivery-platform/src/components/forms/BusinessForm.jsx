@@ -6,7 +6,7 @@ import { useUser } from "../../context/UserContext";
 
 const BusinessForm = () => {
     const navigate = useNavigate();
-    const { reloadUser } = useUser(); // Access reloadUser from UserContext
+    const { reloadUser } = useUser();
 
     const [formData, setFormData] = useState({
         companyName: "",
@@ -17,26 +17,23 @@ const BusinessForm = () => {
 
     const handleChange = (e) => {
         const { name, value, files } = e.target;
-        setFormData({
-            ...formData,
-            [name]: files ? files[0] : value,
-        });
+        setFormData({ ...formData, [name]: files ? files[0] : value });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const account = {
-            accountType: "Business",
             name: formData.companyName,
             description: formData.description,
             phoneNumber: formData.phone,
-            imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : null
+            imageFile: formData.photo,
+            accountType: 1
         };
 
         try {
-            await createAccount(account);
-            await reloadUser(); // Refresh user data to include new account
+            await createAccount("business", account);
+            await reloadUser();
             alert("Business account created successfully!");
             navigate("/profile");
         } catch (err) {

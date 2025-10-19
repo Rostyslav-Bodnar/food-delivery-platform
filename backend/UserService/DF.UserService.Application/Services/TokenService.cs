@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;

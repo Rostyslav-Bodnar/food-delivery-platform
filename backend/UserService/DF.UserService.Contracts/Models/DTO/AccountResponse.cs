@@ -3,11 +3,11 @@
 namespace DF.UserService.Contracts.Models.DTO
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "$type")]
-    [JsonDerivedType(typeof(CustomerAccountDTO), "customer")]
-    [JsonDerivedType(typeof(BusinessAccountDTO), "business")]
-    [JsonDerivedType(typeof(CourierAccountDTO), "courier")]
+    [JsonDerivedType(typeof(CustomerAccountResponse), "customer")]
+    [JsonDerivedType(typeof(BusinessAccountResponse), "business")]
+    [JsonDerivedType(typeof(CourierAccountResponse), "courier")]
     // === BASE DTO ===
-    public abstract record AccountDTO(
+    public abstract record AccountResponse(
         string? Id,
         string? UserId,
         string? AccountType,
@@ -15,7 +15,7 @@ namespace DF.UserService.Contracts.Models.DTO
     );
 
     // === CUSTOMER ACCOUNT DTO ===
-    public record CustomerAccountDTO(
+    public record CustomerAccountResponse(
         string? Id,
         string? UserId,
         string? AccountType,
@@ -24,20 +24,20 @@ namespace DF.UserService.Contracts.Models.DTO
         string? Name,
         string? Surname,
         string? Address
-    ) : AccountDTO(Id, UserId, AccountType, ImageUrl);
+    ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
 
     // === BUSINESS ACCOUNT DTO ===
-    public record BusinessAccountDTO(
+    public record BusinessAccountResponse(
         string? Id,
         string UserId,
         string AccountType,
         string? ImageUrl,
         string Name,
         string? Description
-    ) : AccountDTO(Id, UserId, AccountType, ImageUrl);
+    ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
 
     // === COURIER ACCOUNT DTO ===
-    public record CourierAccountDTO(
+    public record CourierAccountResponse(
         string? Id,
         string? UserId,
         string? AccountType,
@@ -47,7 +47,7 @@ namespace DF.UserService.Contracts.Models.DTO
         string? Surname,
         string? Address,
         string? Description
-    ) : AccountDTO(Id, UserId, AccountType, ImageUrl);
+    ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
 
 
 

@@ -1,20 +1,24 @@
 ﻿using DF.UserService.Application.Factories.Interfaces;
-using DF.UserService.Application.Interfaces;
 using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Services;
 
-public class AccountService(IAccountRepository accountRepository, IAccountFactory accountFactory) : IAccountService
+public class AccountService(
+    IAccountRepository accountRepository, 
+    IAccountFactory accountFactory,
+    ICloudinaryService cloudinaryService) : IAccountService
 {
-    public async Task<AccountDTO> CreateAccountAsync(AccountDTO accountDto)
+    public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest)
     {
         try
         {
-            var entity = accountFactory.CreateAccount(accountDto);
-
+            var entity = await accountFactory.CreateAccount(accountRequest);
+            
             entity = await accountRepository.Create(entity);
 
             return entity switch
@@ -27,23 +31,45 @@ public class AccountService(IAccountRepository accountRepository, IAccountFactor
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error creating account for user {accountDto.UserId}", ex);
+            throw new ApplicationException($"Error creating account for user {accountRequest.UserId}", ex);
         }
     }
 
-    public async Task<AccountDTO> UpdateAccountAsync(AccountDTO account)
+    public async Task<AccountResponse> UpdateAccountAsync(CreateAccountRequest accountRequest)
     {
         try
         {
-            var entity = AccountMapper.ToEntity(account);
-            await accountRepository.Update(entity);
-            return AccountMapper.ToDTO(entity);
+            var existingAccount = await accountRepository.Get(Guid.NewGuid());
+            if (existingAccount == null)
+                throw new ApplicationException($"Account with Id {Guid.NewGuid()} not found.");
+
+            string? imageUrl = existingAccount.ImageUrl;
+            string? publicId = existingAccount.ImagePublicId; 
+
+            if (accountRequest.ImageFile is { Length: > 0 })
+            {
+                if (!string.IsNullOrEmpty(publicId))
+                    await cloudinaryService.DeleteAsync(publicId);
+
+                var uploadResult = await cloudinaryService.UploadAsync(accountRequest.ImageFile);
+                imageUrl = uploadResult.Url;
+                publicId = uploadResult.PublicId;
+            }
+
+            var updatedEntity = AccountMapper.ToEntity(accountRequest, imageUrl);
+            updatedEntity.ImagePublicId = publicId; 
+
+            await accountRepository.Update(updatedEntity);
+
+            return AccountMapper.ToDTO(updatedEntity);
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error updating account with Id {account}", ex);
+            throw new ApplicationException($"Error updating account with Id {Guid.NewGuid()}", ex);
         }
     }
+
+
 
     public async Task<bool> DeleteAccountAsync(Guid id)
     {
@@ -58,7 +84,7 @@ public class AccountService(IAccountRepository accountRepository, IAccountFactor
         }
     }
 
-    public async Task<AccountDTO?> GetAccountByUserAsync(Guid userId)
+    public async Task<AccountResponse?> GetAccountByUserAsync(Guid userId)
     {
         try
         {
@@ -71,14 +97,14 @@ public class AccountService(IAccountRepository accountRepository, IAccountFactor
         }
     }
 
-    public async Task<IEnumerable<AccountDTO>?> GetAccountsByUserAsync(Guid userId)
+    public async Task<IEnumerable<AccountResponse>?> GetAccountsByUserAsync(Guid userId)
     {
         try
         {
             var entities = (await accountRepository.GetAccountsByUserAsync(userId)).ToList();
 
             if (!entities.Any())
-                return Enumerable.Empty<AccountDTO>();
+                return Enumerable.Empty<AccountResponse>();
 
             return entities
                 .Select(AccountMapper.ToDTO)
@@ -89,5 +115,27 @@ public class AccountService(IAccountRepository accountRepository, IAccountFactor
             throw new ApplicationException($"Error retrieving accounts for user {userId}", ex);
         }
     }
+    
+    private string? ExtractPublicIdFromUrl(string imageUrl)
+    {
+        // Наприклад, якщо URL = https://res.cloudinary.com/demo/image/upload/v123456/accounts/abc123.jpg
+        // Ми беремо "accounts/abc123" як PublicId
+        try
+        {
+            var uri = new Uri(imageUrl);
+            var segments = uri.AbsolutePath.Split('/');
+            if (segments.Length >= 3)
+            {
+                // видаляємо розширення файлу
+                var filename = segments[^1];
+                var publicIdWithoutExtension = Path.GetFileNameWithoutExtension(filename);
+                return $"{segments[^2]}/{publicIdWithoutExtension}"; // "accounts/abc123"
+            }
+        }
+        catch { }
+
+        return null;
+    }
+
 
 }

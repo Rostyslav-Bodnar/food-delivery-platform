@@ -1,7 +1,8 @@
 ﻿using System.Security.Claims;
 using System.Text.Json;
-using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +17,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
     /// Get account by userId
     /// </summary>
     [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<AccountDTO>> GetAccount(Guid userId)
+    public async Task<ActionResult<AccountResponse>> GetAccount(Guid userId)
     {
         var account = await accountService.GetAccountByUserAsync(userId);
 
@@ -30,50 +31,59 @@ public class AccountController(IAccountService accountService) : ControllerBase
     /// Get accounts by userId
     /// </summary>
     [HttpGet("all/{userId:guid}")]
-    public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccounts(Guid userId)
+    public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAccounts(Guid userId)
     {
         var accounts = await accountService.GetAccountsByUserAsync(userId);
 
         return Ok(accounts);
     }
 
-    /// <summary>
-    /// Create account
-    /// </summary>
-    [HttpPost]
-    public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] JsonElement json)
+    [HttpPost("courier")]
+    public async Task<ActionResult<AccountResponse>> CreateCourierAccount([FromForm] CreateCourierAccountRequest request)
     {
-        // Отримуємо тип акаунту
-        if (!json.TryGetProperty("accountType", out var accountTypeProp))
-            return BadRequest("Account type is required.");
-
-        var accountType = accountTypeProp.GetString();
-        if (string.IsNullOrWhiteSpace(accountType))
-            return BadRequest("Invalid account type.");
-
-        // Отримуємо userId з токена
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
 
-        var userId = userIdClaim.Value;
+        request = request with { UserId = userIdClaim.Value };
 
-        var account = DeserializeAccount(json, accountType, userId);
-
-        if (account == null)
-            return BadRequest($"Unknown account type: {accountType}");
-
-        // Створюємо акаунт
-        var created = await accountService.CreateAccountAsync(account);
-
+        var created = await accountService.CreateAccountAsync(request);
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
+
+    [HttpPost("customer")]
+    public async Task<ActionResult<AccountResponse>> CreateCustomerAccount([FromForm] CreateCustomerAccountRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("User ID not found in token");
+
+        request = request with { UserId = userIdClaim.Value };
+
+        var created = await accountService.CreateAccountAsync(request);
+        return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
+    }
+
+    [HttpPost("business")]
+    public async Task<ActionResult<AccountResponse>> CreateBusinessAccount([FromForm] CreateBusinessAccountRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("User ID not found in token");
+
+        request = request with { UserId = userIdClaim.Value };
+
+        var created = await accountService.CreateAccountAsync(request);
+        return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
+    }
+
+
     
     /// <summary>
     /// Update account
     /// </summary>
     [HttpPut]
-    public async Task<ActionResult<AccountDTO>> UpdateAccount([FromBody] JsonElement json)
+    public async Task<ActionResult<AccountResponse>> UpdateAccount([FromBody] JsonElement json)
     {
         if (!json.TryGetProperty("accountType", out var accountTypeProp))
             return BadRequest("Account type is required.");
@@ -111,15 +121,15 @@ public class AccountController(IAccountService accountService) : ControllerBase
         return NoContent();
     }
     
-    private static AccountDTO? DeserializeAccount(JsonElement json, string accountType, string userId)
+    private static CreateAccountRequest? DeserializeAccount(JsonElement json, string accountType, string userId)
     {
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
 
         return accountType switch
         {
-            "Customer" => JsonSerializer.Deserialize<CustomerAccountDTO>(json, options) with { UserId = userId },
-            "Business" => JsonSerializer.Deserialize<BusinessAccountDTO>(json, options) with { UserId = userId },
-            "Courier"  => JsonSerializer.Deserialize<CourierAccountDTO>(json, options) with { UserId = userId },
+            "Customer" => JsonSerializer.Deserialize<CreateCustomerAccountRequest>(json, options) with { UserId = userId },
+            "Business" => JsonSerializer.Deserialize<CreateBusinessAccountRequest>(json, options) with { UserId = userId },
+            "Courier"  => JsonSerializer.Deserialize<CreateCourierAccountRequest>(json, options) with { UserId = userId },
             _ => null
         };
     }

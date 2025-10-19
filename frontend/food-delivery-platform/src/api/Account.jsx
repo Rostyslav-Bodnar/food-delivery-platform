@@ -25,8 +25,24 @@ export const getAccounts = async (userId) => {
     return response.data;
 };
 
-export const createAccount = async (accountData) => {
-    const response = await accountApi.post("/", accountData);
+export const createAccount = async (accountType, accountData) => {
+    const formData = new FormData();
+
+    for (const key in accountData) {
+        if (accountData[key] !== null && accountData[key] !== undefined) {
+            if (key === "imageFile") {
+                formData.append("ImageFile", accountData[key]);
+            } else {
+                formData.append(key, accountData[key]);
+            }
+        }
+    }
+
+    const endpoint = `/${accountType.toLowerCase()}`; // /courier, /customer, /business
+    const response = await accountApi.post(endpoint, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+    });
+
     return response.data;
 };
 

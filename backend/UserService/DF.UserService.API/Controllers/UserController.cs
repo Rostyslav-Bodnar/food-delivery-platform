@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-using DF.UserService.Application.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
+﻿using DF.UserService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,7 +7,7 @@ namespace DF.UserService.API.Controllers;
 [Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService, IAccountService accountService) : ControllerBase
+public class UserController(IUserService userService) : ControllerBase
 {
     [HttpGet("profile")]
     [Authorize]
