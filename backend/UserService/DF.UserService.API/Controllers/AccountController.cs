@@ -79,32 +79,33 @@ public class AccountController(IAccountService accountService) : ControllerBase
 
 
     
-    /// <summary>
-    /// Update account
-    /// </summary>
-    [HttpPut]
-    public async Task<ActionResult<AccountResponse>> UpdateAccount([FromBody] JsonElement json)
+    [HttpPut("customer")]
+    public async Task<ActionResult<AccountResponse>> UpdateCustomer([FromForm] UpdateCustomerAccountRequest request)
     {
-        if (!json.TryGetProperty("accountType", out var accountTypeProp))
-            return BadRequest("Account type is required.");
-
-        var accountType = accountTypeProp.GetString();
-        if (string.IsNullOrWhiteSpace(accountType))
-            return BadRequest("Invalid account type.");
-
-        var account = DeserializeAccount(json, accountType, userId: null);
-        if (account == null)
-            return BadRequest($"Unknown account type: {accountType}");
-        
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized("Invalid token or user id");
-
-        account = account with { UserId = userId.ToString() };
-
-        var updated = await accountService.UpdateAccountAsync(account);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
         return Ok(updated);
     }
+
+    [HttpPut("business")]
+    public async Task<ActionResult<AccountResponse>> UpdateBusiness([FromForm] UpdateBusinessAccountRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
+        return Ok(updated);
+    }
+
+    [HttpPut("courier")]
+    public async Task<ActionResult<AccountResponse>> UpdateCourier([FromForm] UpdateCourierAccountRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
+        return Ok(updated);
+    }
+
 
 
     /// <summary>
@@ -119,19 +120,6 @@ public class AccountController(IAccountService accountService) : ControllerBase
             return NotFound($"Account with id {id} not found.");
 
         return NoContent();
-    }
-    
-    private static CreateAccountRequest? DeserializeAccount(JsonElement json, string accountType, string userId)
-    {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        return accountType switch
-        {
-            "Customer" => JsonSerializer.Deserialize<CreateCustomerAccountRequest>(json, options) with { UserId = userId },
-            "Business" => JsonSerializer.Deserialize<CreateBusinessAccountRequest>(json, options) with { UserId = userId },
-            "Courier"  => JsonSerializer.Deserialize<CreateCourierAccountRequest>(json, options) with { UserId = userId },
-            _ => null
-        };
     }
 
 }

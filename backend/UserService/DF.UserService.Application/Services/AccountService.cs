@@ -35,13 +35,13 @@ public class AccountService(
         }
     }
 
-    public async Task<AccountResponse> UpdateAccountAsync(CreateAccountRequest accountRequest)
+    public async Task<AccountResponse> UpdateAccountAsync(UpdateAccountRequest accountRequest)
     {
         try
         {
-            var existingAccount = await accountRepository.Get(Guid.NewGuid());
+            var existingAccount = await accountRepository.Get(Guid.Parse(accountRequest.Id));
             if (existingAccount == null)
-                throw new ApplicationException($"Account with Id {Guid.NewGuid()} not found.");
+                throw new ApplicationException($"Account with Id {accountRequest.Id} not found.");
 
             string? imageUrl = existingAccount.ImageUrl;
             string? publicId = existingAccount.ImagePublicId; 
@@ -56,7 +56,7 @@ public class AccountService(
                 publicId = uploadResult.PublicId;
             }
 
-            var updatedEntity = AccountMapper.ToEntity(accountRequest, imageUrl);
+            var updatedEntity = UpdatedAccountMapper.ToEntity(accountRequest, existingAccount, imageUrl);
             updatedEntity.ImagePublicId = publicId; 
 
             await accountRepository.Update(updatedEntity);
@@ -65,7 +65,7 @@ public class AccountService(
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error updating account with Id {Guid.NewGuid()}", ex);
+            throw new ApplicationException($"Error updating account with Id {accountRequest.Id}", ex);
         }
     }
 

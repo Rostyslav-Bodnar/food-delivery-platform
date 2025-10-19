@@ -16,9 +16,21 @@ export const switchAccount = async (accountId, token) => {
     return response.data;
 };
 
-export const updateProfile = async (userId, body, token) => {
-    const response = await axios.put(`${API_BASE}/account`, body, {
-        headers: { Authorization: `Bearer ${token}` },
+export const updateProfile = async (accountType, body, token) => {
+    const formData = new FormData();
+
+    for (const key in body) {
+        if (body[key] !== undefined && body[key] !== null) {
+            formData.append(key, body[key]);
+        }
+    }
+
+    const response = await axios.put(`${API_BASE}/account/${accountType}`, formData, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+        },
     });
     return response.data;
 };
+

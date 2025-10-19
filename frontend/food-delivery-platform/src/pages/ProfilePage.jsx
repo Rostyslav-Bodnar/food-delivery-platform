@@ -19,7 +19,8 @@ const ProfilePage = () => {
     const [formData, setFormData] = useState({ name: "", phone: "", address: "", avatar: null });
     const [isAvatarHovered, setIsAvatarHovered] = useState(false);
     const inputRef = useRef(null);
-
+    const accountTypeMap = { Customer: 0, Business: 1, Courier: 2 };
+    
     // Initialize form after loading data
     useEffect(() => {
         if (user) {
@@ -47,7 +48,36 @@ const ProfilePage = () => {
         const avatarUrl = URL.createObjectURL(file);
         setFormData(prev => ({ ...prev, avatar: avatarUrl }));
         setIsAvatarHovered(false);
+
+        try {
+            let token = localStorage.getItem("accessToken");
+            if (!token) {
+                const tokens = await refresh();
+                token = tokens.accessToken;
+            }
+
+            const currentAccount = accounts.find(a => a.id === currentAccountId);
+            if (!currentAccount) throw new Error("No active account found");
+
+            const body = {
+                Id: currentAccount.id,
+                UserId: currentAccount.userId,
+                AccountType: accountTypeMap[currentAccount.accountType] ?? 0,
+                Name: formData.name || currentAccount.name,
+                PhoneNumber: formData.phone || currentAccount.phoneNumber || "",
+                Address: formData.address || currentAccount.address || "",
+                Surname: currentAccount.surname || "",
+                Description: currentAccount.description || "",
+                ImageFile: file
+            };
+
+            await updateProfile(currentAccount.accountType.toLowerCase(), body, token);
+            await reloadUser();
+        } catch (err) {
+            setError(err.response?.data || err.message || "Failed to update avatar");
+        }
     };
+
 
     const handleSave = async (field) => {
         try {
@@ -60,16 +90,22 @@ const ProfilePage = () => {
             const currentAccount = accounts.find(a => a.id === currentAccountId);
             if (!currentAccount) throw new Error("No active account found");
 
-            await updateProfile(user.id, {
-                id: currentAccount.id,
-                userId: currentAccount.userId,
-                accountType: currentAccount.accountType,
-                name: field === "name" ? formData.name : currentAccount.name,
-                surname: currentAccount.surname,
-                phoneNumber: field === "phone" ? formData.phone || null : currentAccount.phoneNumber,
-                address: field === "address" ? formData.address || null : currentAccount.address,
-                imageUrl: formData.avatar || currentAccount.imageUrl
-            }, token);
+            const body = {
+                Id: currentAccount.id,
+                UserId: currentAccount.userId,
+                AccountType: accountTypeMap[currentAccount.accountType] ?? 0,
+                Name: field === "name" ? formData.name : currentAccount.name,
+                PhoneNumber: field === "phone" ? formData.phone || "" : currentAccount.phoneNumber || "",
+                Address: field === "address" ? formData.address || "" : currentAccount.address || "",
+                Surname: currentAccount.surname || "",
+                Description: currentAccount.description || "",
+            };
+
+            if (inputRef.current?.files?.[0]) {
+                body.ImageFile = inputRef.current.files[0];
+            }
+
+            await updateProfile(currentAccount.accountType.toLowerCase(), body, token);
 
             setEditingField(null);
             await reloadUser();
