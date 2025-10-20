@@ -17,6 +17,12 @@ public class DishRepository(AppDbContext dbContext) : IDishRepository
         return await dbContext.Dishes.ToListAsync();
     }
 
+    public async Task<IEnumerable<Dish>> GetByBusinessIdAsync(Guid businessId)
+    {
+        return await dbContext.Dishes.Where(d => d.BusinessId == businessId).ToListAsync();
+    }
+
+
     public async Task<Dish> Create(Dish entity)
     {
         await dbContext.Dishes.AddAsync(entity);

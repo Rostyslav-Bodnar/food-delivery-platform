@@ -7,4 +7,7 @@ public interface IDishService
 {
     Task<DishResponse> CreateDishAsync(CreateDishRequest request);
     Task<IEnumerable<DishResponse>> GetAllAsync();
+    Task<DishResponse> GetByIdAsync(Guid id);
+    Task<IEnumerable<DishResponse>> GetByBusinessId(Guid businessId);
+    Task<bool> DeleteAsync(Guid id);
 }

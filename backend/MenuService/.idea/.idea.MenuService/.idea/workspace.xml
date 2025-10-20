@@ -11,6 +11,14 @@
   <component name="ChangeListManager">
     <list default="true" id="1b51eaab-029b-487e-8820-5caaf6ba4b13" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,10 +74,10 @@
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Menu.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Infrastructure/Data/AppDbContext.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="false" />
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -80,26 +88,26 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    ".NET Launch Settings Profile.DF.MenuService.API: http.executor": "Debug",
-    ".NET Project.API.executor": "Debug",
-    "Docker.compose.yaml.df.menuservice.api: Compose Deployment.executor": "Run",
-    "Docker.compose.yaml: Compose Deployment.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "menu-service",
-    "junie.onboarding.icon.badge.shown": "true",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "to.speed.mode.migration.done": "true",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;.NET Launch Settings Profile.DF.MenuService.API: http.executor&quot;: &quot;Debug&quot;,
+    &quot;.NET Project.API.executor&quot;: &quot;Debug&quot;,
+    &quot;Docker.compose.yaml.df.menuservice.api: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.compose.yaml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;menu-service&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected=".NET Launch Settings Profile.DF.MenuService.API: http">
     <configuration name="API" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="$PROJECT_DIR$/DF.MenuService.API/bin/Debug/net9.0/DF.MenuService.API.exe" />
@@ -154,7 +162,10 @@
       <method v="2" />
     </configuration>
     <configuration default="true" type="docker-deploy" factoryName="docker-compose.yml" temporary="true">
-      <deployment type="docker-compose.yml" />
+      <deployment type="docker-compose.yml">
+        <settings />
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
       <method v="2" />
     </configuration>
     <configuration default="true" type="docker-deploy" factoryName="dockerfile" temporary="true">
@@ -235,6 +246,7 @@
       <updated>1760631892434</updated>
       <workItem from="1760631900217" duration="98000" />
       <workItem from="1760882296490" duration="12551000" />
+      <workItem from="1760982159258" duration="4546000" />
     </task>
     <task id="LOCAL-00004" summary="menu-service/init database">
       <option name="closed" value="true" />
@@ -323,13 +335,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
-          <line>20</line>
+          <line>50</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'CreateDish'">
             <startOffsets>
-              <option value="595" />
+              <option value="1296" />
             </startOffsets>
             <endOffsets>
-              <option value="596" />
+              <option value="1297" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="9" />

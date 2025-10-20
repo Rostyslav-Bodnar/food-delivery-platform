@@ -9,4 +9,5 @@ public class Dish
     public string? Image { get; set; }
     public decimal Price { get; set; }
     public Category Category { get; set; }
+    public Guid BusinessId { get; set; }
 }

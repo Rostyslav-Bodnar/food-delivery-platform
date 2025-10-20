@@ -14,6 +14,36 @@ public class DishController(IDishService dishService) : ControllerBase
         var dishes = await dishService.GetAllAsync();
         return Ok(dishes);
     }
+
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> Get(Guid id)
+    {
+        var dish = await dishService.GetByIdAsync(id);
+
+        if (dish == null)
+            return NotFound();
+
+        return Ok(dish);
+    }
+
+
+    [HttpGet("{businessId:guid}/dish")]
+    public async Task<IActionResult> GetByBusinessId(Guid businessId)
+    {
+        var result =  await dishService.GetByBusinessId(businessId);
+        
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> DeleteDish(Guid id)
+    {
+        var result = await dishService.DeleteAsync(id);
+        return Ok(result);
+    }
     
     [HttpPost]
     [Consumes("multipart/form-data")]
