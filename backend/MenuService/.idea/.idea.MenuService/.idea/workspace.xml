@@ -10,14 +10,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1b51eaab-029b-487e-8820-5caaf6ba4b13" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Mappers/UpdatedAccountMapper.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/Request/UpdateAccountRequest.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IAccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IAccountService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Profile.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Profile.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/ProfilePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/ProfilePage.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -241,7 +234,7 @@
       <option name="presentableId" value="Default" />
       <updated>1760631892434</updated>
       <workItem from="1760631900217" duration="98000" />
-      <workItem from="1760882296490" duration="12550000" />
+      <workItem from="1760882296490" duration="12551000" />
     </task>
     <task id="LOCAL-00004" summary="menu-service/init database">
       <option name="closed" value="true" />
