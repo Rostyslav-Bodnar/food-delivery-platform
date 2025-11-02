@@ -44,10 +44,8 @@ public class AccountController(IAccountService accountService) : ControllerBase
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
-
-        request = request with { UserId = userIdClaim.Value };
-
-        var created = await accountService.CreateAccountAsync(request);
+        
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 
@@ -58,9 +56,8 @@ public class AccountController(IAccountService accountService) : ControllerBase
         if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
 
-        request = request with { UserId = userIdClaim.Value };
 
-        var created = await accountService.CreateAccountAsync(request);
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 
@@ -71,9 +68,8 @@ public class AccountController(IAccountService accountService) : ControllerBase
         if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
 
-        request = request with { UserId = userIdClaim.Value };
 
-        var created = await accountService.CreateAccountAsync(request);
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 

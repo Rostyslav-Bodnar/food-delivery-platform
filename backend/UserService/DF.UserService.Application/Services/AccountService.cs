@@ -13,7 +13,7 @@ public class AccountService(
     IAccountFactory accountFactory,
     ICloudinaryService cloudinaryService) : IAccountService
 {
-    public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest)
+    public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest, Guid userId)
     {
         try
         {
@@ -31,7 +31,7 @@ public class AccountService(
         }
         catch (Exception ex)
         {
-            throw new ApplicationException($"Error creating account for user {accountRequest.UserId}", ex);
+            throw new ApplicationException($"Error creating account for user {accountRequest.AccountType}", ex);
         }
     }
 

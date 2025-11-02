@@ -10,34 +10,30 @@ namespace DF.UserService.Contracts.Models.Request;
 [JsonDerivedType(typeof(CourierAccountResponse), "courier")]
 // === BASE DTO ===
 public abstract record CreateAccountRequest(
-    string? UserId,
     int AccountType,
     IFormFile? ImageFile = null
 );
 
 // === CUSTOMER ACCOUNT DTO ===
 public record CreateCustomerAccountRequest(
-    string? UserId,
     int AccountType,
     IFormFile? ImageFile,
     string? PhoneNumber,
     string? Name,
     string? Surname,
     string? Address
-) : CreateAccountRequest(UserId, AccountType, ImageFile);
+) : CreateAccountRequest(AccountType, ImageFile);
 
 // === BUSINESS ACCOUNT DTO ===
 public record CreateBusinessAccountRequest(
-    string? UserId,
     int AccountType,
     IFormFile? ImageFile,
     string? Name,
     string? Description
-) : CreateAccountRequest(UserId, AccountType, ImageFile);
+) : CreateAccountRequest(AccountType, ImageFile);
 
 // === COURIER ACCOUNT DTO ===
 public record CreateCourierAccountRequest(
-    string? UserId,
     int AccountType,
     IFormFile? ImageFile,
     string? PhoneNumber,
@@ -45,4 +41,4 @@ public record CreateCourierAccountRequest(
     string? Surname,
     string? Address,
     string? Description
-) : CreateAccountRequest(UserId, AccountType, ImageFile);
+) : CreateAccountRequest(AccountType, ImageFile);

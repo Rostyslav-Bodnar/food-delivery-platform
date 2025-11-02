@@ -31,7 +31,6 @@ public class AuthService(
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
         var customerDto = new CreateCustomerAccountRequest(
-            UserId: user.Id.ToString(),
             AccountType: 0,
             ImageFile: null,
             PhoneNumber: null,
@@ -40,7 +39,7 @@ public class AuthService(
             Address: null
         );
 
-        var accountDto = await accountService.CreateAccountAsync(customerDto);
+        var accountDto = await accountService.CreateAccountAsync(customerDto, user.Id);
 
         user.AccountId = Guid.Parse(accountDto.Id);
 

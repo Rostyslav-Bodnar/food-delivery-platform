@@ -45,13 +45,13 @@ public static class AccountMapper
     }
 
     // === DTO → ENTITY ===
-    public static Account ToEntity(CreateAccountRequest request, string? imageUrl = null)
+    public static Account ToEntity(CreateAccountRequest request, Guid userId, string? imageUrl = null)
     {
         return request switch
         {
             CreateCourierAccountRequest courier => new CourierAccount
             {
-                UserId = Guid.Parse(courier.UserId),
+                UserId = userId,
                 AccountType = (AccountType)courier.AccountType,
                 ImageUrl = imageUrl,
                 PhoneNumber = courier.PhoneNumber,
@@ -62,7 +62,7 @@ public static class AccountMapper
             },
             CreateCustomerAccountRequest customer => new CustomerAccount
             {
-                UserId = Guid.Parse(customer.UserId),
+                UserId = userId,
                 AccountType = (AccountType)customer.AccountType,
                 ImageUrl = imageUrl,
                 PhoneNumber = customer.PhoneNumber,
@@ -72,7 +72,7 @@ public static class AccountMapper
             },
             CreateBusinessAccountRequest business => new BusinessAccount
             {
-                UserId = Guid.Parse(business.UserId),
+                UserId = userId,
                 AccountType = (AccountType)business.AccountType,
                 ImageUrl = imageUrl,
                 Name = business.Name,
