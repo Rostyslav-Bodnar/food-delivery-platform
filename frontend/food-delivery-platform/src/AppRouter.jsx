@@ -1,4 +1,5 @@
-﻿import React from "react";
+﻿// src/AppRouter.jsx
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/HeaderComponent.jsx";
 import HomePage from "./pages/HomePage.jsx";
@@ -6,6 +7,7 @@ import LoginForm from "./pages/LoginForm.jsx";
 import RegisterForm from "./pages/RegisterForm.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CreateAccountPage from "./pages/CreateAccountPage.jsx";
+import DishPage from "./pages/DishPage.jsx"; // НОВИЙ ІМПОРТ
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 
 const AppRouter = () => {
@@ -18,6 +20,8 @@ const AppRouter = () => {
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginForm />} />
                         <Route path="/register" element={<RegisterForm />} />
+                        <Route path="/dish/:id" element={<DishPage />} /> {/* НОВИЙ МАРШРУТ */}
+
                         <Route
                             path="/profile"
                             element={
@@ -34,7 +38,6 @@ const AppRouter = () => {
                                 </ProtectedRoute>
                             }
                         />
-                        {/* Приклад майбутньої захищеної сторінки */}
                         <Route
                             path="/dashboard"
                             element={
