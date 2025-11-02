@@ -28,10 +28,10 @@ public record CreateCustomerAccountRequest(
 
 // === BUSINESS ACCOUNT DTO ===
 public record CreateBusinessAccountRequest(
-    string UserId,
+    string? UserId,
     int AccountType,
     IFormFile? ImageFile,
-    string Name,
+    string? Name,
     string? Description
 ) : CreateAccountRequest(UserId, AccountType, ImageFile);
 
