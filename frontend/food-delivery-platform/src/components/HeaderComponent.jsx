@@ -59,7 +59,7 @@ const Header = () => {
 
     return (
         <header className="header">
-            <NavLink className="page-header" to="/">Foodie Delivery 🍔</NavLink>
+            <NavLink className="page-header" to="/">Foodie Delivery</NavLink>
             <nav>
                 <NavLink className="nav-link" to="/">Home</NavLink>
                 {!user && (
