@@ -22,19 +22,17 @@ const CreateAccountPage = () => {
                 const existingTypes = accounts.map(acc => acc.accountType);
                 setExistingAccounts(existingTypes);
 
-                // Знаходимо перший доступний тип акаунта
                 const availableType = allAccountTypes.find(
                     type => !existingTypes.includes(type)
                 );
                 setAccountType(availableType || null);
 
-                await reloadUser();
             } catch (err) {
                 console.error("Failed to fetch accounts:", err);
             }
         };
         fetchAccounts();
-    }, [user, reloadUser]);
+    }, [user]);
 
     const renderForm = () => {
         switch (accountType) {

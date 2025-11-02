@@ -11,7 +11,6 @@ const BusinessForm = () => {
     const [formData, setFormData] = useState({
         companyName: "",
         description: "",
-        phone: "",
         photo: null
     });
 
@@ -26,7 +25,6 @@ const BusinessForm = () => {
         const account = {
             name: formData.companyName,
             description: formData.description,
-            phoneNumber: formData.phone,
             imageFile: formData.photo,
             accountType: 1
         };
@@ -46,7 +44,6 @@ const BusinessForm = () => {
         <form className="account-form" onSubmit={handleSubmit}>
             <input type="text" name="companyName" placeholder="Business Name" value={formData.companyName} onChange={handleChange} required />
             <textarea name="description" placeholder="Description" value={formData.description} onChange={handleChange} required />
-            <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} required />
             <div className="file-input-wrapper">
                 <label className="file-label">Upload Business Photo</label>
                 <input type="file" name="photo" accept="image/*" onChange={handleChange} className="file-input" />

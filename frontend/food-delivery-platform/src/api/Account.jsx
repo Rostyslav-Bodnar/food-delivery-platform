@@ -1,6 +1,6 @@
 ﻿import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/Account";
+const API_URL = "http://localhost:5000/api/account";
 
 const accountApi = axios.create({
     baseURL: API_URL,
@@ -30,21 +30,20 @@ export const createAccount = async (accountType, accountData) => {
 
     for (const key in accountData) {
         if (accountData[key] !== null && accountData[key] !== undefined) {
-            if (key === "imageFile") {
-                formData.append("ImageFile", accountData[key]);
-            } else {
-                formData.append(key, accountData[key]);
-            }
+            formData.append(key, accountData[key]);
         }
     }
 
-    const endpoint = `/${accountType.toLowerCase()}`; // /courier, /customer, /business
+    const endpoint = `/${accountType.toLowerCase()}`;
     const response = await accountApi.post(endpoint, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+        headers: {
+            "Content-Type": "multipart/form-data"
+        }
     });
 
     return response.data;
 };
+
 
 export const updateAccount = async (id, accountData) => {
     const response = await accountApi.put(`/${id}`, accountData);
