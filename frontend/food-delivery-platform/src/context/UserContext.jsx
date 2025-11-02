@@ -1,4 +1,5 @@
-﻿import React, { createContext, useContext, useState, useEffect } from "react";
+﻿// src/context/UserContext.jsx
+import React, { createContext, useContext, useState, useEffect } from "react";
 import { getProfileData, switchAccount } from "../api/Profile.jsx";
 import { refresh, logout } from "../api/Auth.jsx";
 
@@ -17,11 +18,16 @@ export const UserProvider = ({ children }) => {
                 const tokens = await refresh();
                 token = tokens.accessToken;
             }
-
             const data = await getProfileData(token);
             setUser(data.user);
             setAccounts(data.accounts);
             setCurrentAccountId(data.currentAccount.id);
+
+            // Зберігаємо accountType у localStorage
+            const currentAcc = data.accounts.find(a => a.id === data.currentAccount.id);
+            if (currentAcc) {
+                localStorage.setItem("currentAccountType", currentAcc.accountType);
+            }
         } catch (err) {
             console.error("Load user error:", err);
             setUser(null);
@@ -43,7 +49,10 @@ export const UserProvider = ({ children }) => {
             }
 
             await switchAccount(accountId, token);
-            await loadUser(); // оновлюємо дані після перемикання
+            await loadUser(); // оновлюємо дані
+
+            // ПЕРЕЗАВАНТАЖУЄМО СТОРІНКУ ПІСЛЯ ПЕРЕМИКАННЯ
+            window.location.reload();
         } catch (err) {
             console.error("Switch account error:", err);
         }
