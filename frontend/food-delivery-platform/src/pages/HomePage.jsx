@@ -6,6 +6,7 @@ import './styles/HomePage.css';
 // Підкомпоненти
 import UnauthenticatedHome from '../components/UnauthenticatedHome';
 import CustomerHomePage from '../components/CustomerHomePage.jsx';
+import BusinessHomePage from "../components/BusinessHomePage.jsx";
 // (за потреби згодом можна буде додати інші типи, наприклад BusinessHomePage, CourierHomePage)
 
 const HomePage = () => {
@@ -64,8 +65,8 @@ const HomePage = () => {
     switch (accountType?.toLowerCase()) {
         case 'customer':
             return <CustomerHomePage />;
-        // case 'business':
-        //     return <BusinessHomePage />;
+        case 'business':
+            return <BusinessHomePage />;
         // case 'courier':
         //     return <CourierHomePage />;
         default:
