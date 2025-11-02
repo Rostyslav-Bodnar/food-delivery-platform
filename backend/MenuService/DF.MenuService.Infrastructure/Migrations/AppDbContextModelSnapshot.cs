@@ -28,7 +28,13 @@ namespace DF.MenuService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<Guid>("BusinessId")
+                        .HasColumnType("uuid");
+
                     b.Property<int>("Category")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("CookingTime")
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
@@ -39,7 +45,7 @@ namespace DF.MenuService.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<Guid>("MenuId")
+                    b.Property<Guid?>("MenuId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("Name")
@@ -55,6 +61,35 @@ namespace DF.MenuService.Infrastructure.Migrations
                     b.HasIndex("MenuId");
 
                     b.ToTable("Dishes", (string)null);
+                });
+
+            modelBuilder.Entity("DF.MenuService.Domain.Entities.Ingredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DishId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("DishId1")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("Weight")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DishId");
+
+                    b.HasIndex("DishId1");
+
+                    b.ToTable("Ingredients", (string)null);
                 });
 
             modelBuilder.Entity("DF.MenuService.Domain.Entities.Menu", b =>
@@ -84,8 +119,24 @@ namespace DF.MenuService.Infrastructure.Migrations
                     b.HasOne("DF.MenuService.Domain.Entities.Menu", null)
                         .WithMany()
                         .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("DF.MenuService.Domain.Entities.Ingredient", b =>
+                {
+                    b.HasOne("DF.MenuService.Domain.Entities.Dish", null)
+                        .WithMany()
+                        .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("DF.MenuService.Domain.Entities.Dish", "Dish")
+                        .WithMany()
+                        .HasForeignKey("DishId1")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Dish");
                 });
 #pragma warning restore 612, 618
         }

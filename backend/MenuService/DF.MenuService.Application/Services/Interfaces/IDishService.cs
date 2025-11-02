@@ -10,4 +10,6 @@ public interface IDishService
     Task<DishResponse> GetByIdAsync(Guid id);
     Task<IEnumerable<DishResponse>> GetByBusinessId(Guid businessId);
     Task<bool> DeleteAsync(Guid id);
+
+    Task<DishResponse> UpdateDishAsync(UpdateDishRequest request);
 }

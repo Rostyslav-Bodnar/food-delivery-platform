@@ -7,6 +7,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Menu> Menus { get; set; }
     public DbSet<Dish> Dishes { get; set; }
+    
+    public DbSet<Ingredient> Ingredients { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -48,7 +50,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.HasOne<Menu>()
                 .WithMany()
                 .HasForeignKey(d => d.MenuId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.Restrict);
         });
+
+        modelBuilder.Entity<Ingredient>(entity =>
+            {
+                entity.ToTable("Ingredients");
+                entity.HasKey(i => i.Id);
+                
+                entity.Property(i => i.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+                
+                entity.HasOne<Dish>()
+                    .WithMany()
+                    .HasForeignKey(d => d.DishId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            }
+        );
     }
 }

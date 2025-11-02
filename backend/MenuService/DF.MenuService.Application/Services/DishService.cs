@@ -74,4 +74,30 @@ public class DishService(IDishRepository repository, ICloudinaryService cloudina
         return await repository.Delete(id);
     }
 
+    public async Task<DishResponse> UpdateDishAsync(UpdateDishRequest request)
+    {
+        string? imageUrl = null;
+        if (request.Image != null)
+        {
+            var uploadResult = await cloudinaryService.UploadAsync(request.Image, "dishes");
+            imageUrl = uploadResult.Url;
+        }
+        
+        var dish = new Dish
+        {
+            Id = Guid.NewGuid(),
+            MenuId = request.MenuId,
+            Name = request.Name,
+            Description = request.Description,
+            Image = imageUrl,
+            Price = request.Price,
+            Category = request.Category
+        };
+
+        var result = await repository.Update(dish);
+            
+        return new DishResponse(result.Id, result.MenuId, result.Name, result.Description, result.Image, result.Price,
+            result.Category);
+    }
+
 }
