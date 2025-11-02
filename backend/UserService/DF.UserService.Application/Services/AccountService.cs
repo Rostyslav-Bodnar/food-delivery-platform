@@ -17,7 +17,7 @@ public class AccountService(
     {
         try
         {
-            var entity = await accountFactory.CreateAccount(accountRequest);
+            var entity = await accountFactory.CreateAccount(accountRequest, userId);
             
             entity = await accountRepository.Create(entity);
 

@@ -9,7 +9,7 @@ namespace DF.UserService.Application.Factories;
 
 public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFactory
 {
-    public async Task<Account> CreateAccount(CreateAccountRequest request)
+    public async Task<Account> CreateAccount(CreateAccountRequest request, Guid userId)
     {
         UploadImageResult? image = null;
         if (request.ImageFile != null && request.ImageFile.Length > 0)
@@ -20,7 +20,7 @@ public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFact
         {
             CreateCustomerAccountRequest c => new CustomerAccount
             {
-                UserId = Guid.TryParse(c.UserId, out var uid) ? uid : Guid.Empty,
+                UserId = userId,
                 AccountType = (AccountType)c.AccountType,
                 Name = c.Name,
                 Surname = c.Surname,
@@ -30,7 +30,7 @@ public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFact
             },
             CreateBusinessAccountRequest b => new BusinessAccount
             {
-                UserId = Guid.TryParse(b.UserId, out var uid) ? uid : Guid.Empty,
+                UserId = userId,
                 AccountType = (AccountType)b.AccountType,
                 Name = b.Name,
                 Description = b.Description,
@@ -38,7 +38,7 @@ public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFact
             },
             CreateCourierAccountRequest co => new CourierAccount
             {
-                UserId = Guid.TryParse(co.UserId, out var uid) ? uid : Guid.Empty,
+                UserId = userId,
                 AccountType = (AccountType)co.AccountType,
                 Name = co.Name,
                 Surname = co.Surname,

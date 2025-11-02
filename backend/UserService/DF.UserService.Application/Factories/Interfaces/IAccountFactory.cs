@@ -6,5 +6,5 @@ namespace DF.UserService.Application.Factories.Interfaces;
 
 public interface IAccountFactory
 {
-    Task<Account> CreateAccount(CreateAccountRequest response);
+    Task<Account> CreateAccount(CreateAccountRequest request, Guid userId);
 }
