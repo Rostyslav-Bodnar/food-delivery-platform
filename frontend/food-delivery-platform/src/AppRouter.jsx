@@ -9,6 +9,7 @@ import ProfilePage from "./pages/ProfilePage.jsx";
 import CreateAccountPage from "./pages/CreateAccountPage.jsx";
 import DishPage from "./pages/DishPage.jsx"; // НОВИЙ ІМПОРТ
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
+import CartPage from "./pages/CartPage.jsx"; 
 
 const AppRouter = () => {
     return (
@@ -21,6 +22,7 @@ const AppRouter = () => {
                         <Route path="/login" element={<LoginForm />} />
                         <Route path="/register" element={<RegisterForm />} />
                         <Route path="/dish/:id" element={<DishPage />} /> {/* НОВИЙ МАРШРУТ */}
+                        <Route path="/cart" element={<CartPage />} />
 
                         <Route
                             path="/profile"

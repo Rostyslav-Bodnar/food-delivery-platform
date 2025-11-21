@@ -247,3 +247,81 @@
 /* Small details */
 a { color: inherit; }
 button { font-family: inherit; }
+/* === МЕНЮ ЗЛІВА — мінімально, красиво, не ламає твій дизайн === */
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.customer-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 280px;
+    background: rgba(11, 15, 22, 0.95);
+    border-right: 1px solid var(--glass-border);
+    padding: 30px 20px;
+    z-index: 100;
+    backdrop-filter: blur(12px);
+}
+
+.sidebar-logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+    margin-bottom: 50px;
+    padding-left: 10px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: var(--muted-2);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+    .sidebar-item span {
+        margin-top: 2px;
+    }
+
+    .sidebar-item:hover,
+    .sidebar-item.active {
+        background: rgba(124, 92, 255, 0.15);
+        color: var(--text);
+        transform: translateX(6px);
+    }
+
+    .sidebar-item.active {
+        background: linear-gradient(90deg, rgba(124, 92, 255, 0.2), rgba(0, 212, 255, 0.1));
+        color: white;
+    }
+
+/* Контент зсувається вправо, щоб не перекривався меню */
+.auth-homepage {
+    margin-left: 280px !important;
+    width: calc(100% - 280px) !important;
+}
+
+/* На мобілці меню просто видно (ти сам потім зробиш бургер, якщо захочеш) */
+@media (max-width: 768px) {
+    .customer-sidebar {
+        display: none;
+    }
+
+    .auth-homepage {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}

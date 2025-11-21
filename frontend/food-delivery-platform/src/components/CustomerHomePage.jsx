@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Search, Filter, Star, MapPin, ShoppingCart,
-    ChevronLeft, ChevronRight, X, SlidersHorizontal, Zap
+    ChevronLeft, ChevronRight, X, Zap, Home, Store, User, Package
 } from 'lucide-react';
 import './styles/CustomerHomePage.css';
 
@@ -18,7 +18,6 @@ const CustomerHomePage = () => {
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    // Mock data
     useEffect(() => {
         const mockDishes = [
             { id: 1, name: "Маргарита Піца", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500", rating: 4.8, restaurant: "Pizza Palace", price: 249, category: "pizza", popular: true },
@@ -28,7 +27,6 @@ const CustomerHomePage = () => {
             { id: 5, name: "Шаурма Преміум", image: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500", rating: 4.5, restaurant: "Shawarma King", price: 149, category: "street", popular: true },
             { id: 6, name: "Салат Цезар з куркою", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500", rating: 4.4, restaurant: "Green Bowl", price: 179, category: "salad" },
         ];
-
         const topDishes = mockDishes.filter(d => d.popular).sort((a, b) => b.rating - a.rating);
         setPopularDishes(topDishes);
         setAllDishes(mockDishes);
@@ -36,21 +34,17 @@ const CustomerHomePage = () => {
         setLoading(false);
     }, []);
 
-    // Фільтрація
     useEffect(() => {
         let filtered = allDishes;
-
         if (searchTerm) {
             filtered = filtered.filter(d =>
                 d.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 d.restaurant.toLowerCase().includes(searchTerm.toLowerCase())
             );
         }
-
         if (selectedCategory !== 'all') filtered = filtered.filter(d => d.category === selectedCategory);
         if (selectedRating !== 'all') filtered = filtered.filter(d => d.rating >= parseFloat(selectedRating));
         filtered = filtered.filter(d => d.price >= priceRange[0] && d.price <= priceRange[1]);
-
         setFilteredDishes(filtered);
     }, [searchTerm, selectedCategory, selectedRating, priceRange, allDishes]);
 
@@ -61,241 +55,141 @@ const CustomerHomePage = () => {
     };
 
     return (
-        <div className="auth-homepage">
-            {/* Анімовані частинки */}
-            <div className="particles">
-                {[...Array(6)].map((_, i) => (
-                    <motion.div
-                        key={i}
-                        className="particle"
-                        initial={{ y: -100, x: Math.random() * window.innerWidth }}
-                        animate={{ y: window.innerHeight + 100 }}
-                        transition={{
-                            duration: 15 + Math.random() * 10,
-                            repeat: Infinity,
-                            ease: "linear",
-                            delay: Math.random() * 5
-                        }}
-                    />
-                ))}
-            </div>
+        <div className="app-wrapper">
+            {/* МЕНЮ ЗЛІВА — просто додано, нічого не зламано */}
+            <aside className="customer-sidebar">
+                <div className="sidebar-logo">FoodEx</div>
+                <nav className="sidebar-nav">
+                    <Link to="/" className="sidebar-item active">
+                        <Home size={22} /> <span>Головна</span>
+                    </Link>
+                    <Link to="/cart" className="sidebar-item">
+                        <ShoppingCart size={22} /> <span>Кошик</span>
+                    </Link>
+                    <Link to="/restaurants" className="sidebar-item">
+                        <Store size={22} /> <span>Заклади</span>
+                    </Link>
+                    <Link to="/orders" className="sidebar-item">
+                        <Package size={22} /> <span>Замовлення</span>
+                    </Link>
+                    <Link to="/profile" className="sidebar-item">
+                        <User size={22} /> <span>Профіль</span>
+                    </Link>
+                </nav>
+            </aside>
 
-            {/* Пошук */}
-            <motion.section
-                className="search-hero"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-            >
-                <div className="search-container">
-                    <Search size={24} className="search-icon" />
-                    <input
-                        type="text"
-                        placeholder="Що бажаєте поїсти?.."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="search-input"
-                    />
-                    {searchTerm && (
+            {/* ТВІЙ ОРИГІНАЛЬНИЙ КОНТЕНТ — 1 в 1 */}
+            <div className="auth-homepage">
+                <div className="particles">
+                    {[...Array(6)].map((_, i) => (
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="search-suggestions"
-                        >
-                            <p>Пошук: <strong>"{searchTerm}"</strong> — знайдено {filteredDishes.length} страв</p>
-                        </motion.div>
-                    )}
-                </div>
-
-                <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setIsFilterOpen(true)}
-                    className="filter-toggle"
-                >
-                    <Filter size={20} /> Фільтри
-                </motion.button>
-            </motion.section>
-
-            {/* Фільтри */}
-            <AnimatePresence>
-                {isFilterOpen && (
-                    <>
-                        <motion.aside
-                            className="filter-sidebar"
-                            initial={{ x: -350 }}
-                            animate={{ x: 0 }}
-                            exit={{ x: -350 }}
-                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                        >
-                            <div className="filter-header">
-                                <h3>Фільтри</h3>
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setIsFilterOpen(false)}
-                                    className="close-btn"
-                                >
-                                    <X size={26} />
-                                </motion.button>
-                            </div>
-
-                            <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
-                                <label>Категорія</label>
-                                <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-                                    <option value="all">Всі страви</option>
-                                    <option value="pizza">Піца</option>
-                                    <option value="burger">Бургери</option>
-                                    <option value="sushi">Суші</option>
-                                    <option value="pasta">Паста</option>
-                                    <option value="street">Стрітфуд</option>
-                                    <option value="salad">Салати</option>
-                                </select>
-                            </motion.div>
-
-                            <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
-                                <label>Мінімальний рейтинг</label>
-                                <select value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
-                                    <option value="all">Без обмежень</option>
-                                    <option value="4.5">4.5+</option>
-                                    <option value="4.0">4.0+</option>
-                                    <option value="3.5">3.5+</option>
-                                </select>
-                            </motion.div>
-
-                            <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
-                                <label>Ціна: {priceRange[0]}₴ — {priceRange[1]}₴</label>
-                                <div className="range-container">
-                                    <div className="range-label">
-                                        <span>{priceRange[0]}₴</span>
-                                        <span>{priceRange[1]}₴</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="500"
-                                        value={priceRange[1]}
-                                        onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
-                                        className="range-slider"
-                                    />
-                                </div>
-                            </motion.div>
-
-                            <motion.button
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.98 }}
-                                onClick={() => setIsFilterOpen(false)}
-                                className="apply-filters-btn"
-                            >
-                                Показати {filteredDishes.length} страв
-                            </motion.button>
-                        </motion.aside>
-
-                        <motion.div
-                            className="filter-overlay"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsFilterOpen(false)}
+                            key={i}
+                            className="particle"
+                            initial={{ y: -100, x: Math.random() * window.innerWidth }}
+                            animate={{ y: window.innerHeight + 100 }}
+                            transition={{
+                                duration: 15 + Math.random() * 10,
+                                repeat: Infinity,
+                                ease: "linear",
+                                delay: Math.random() * 5
+                            }}
                         />
-                    </>
-                )}
-            </AnimatePresence>
-
-            {/* Топ-страви */}
-            <motion.section
-                className="popular-section"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3 }}
-            >
-                <div className="section-header">
-                    <h2 className="gradient-title">Топ-страви дня</h2>
-                    <div className="scroll-controls">
-                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => scrollPopular('left')} className="scroll-btn">
-                            <ChevronLeft />
-                        </motion.button>
-                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => scrollPopular('right')} className="scroll-btn">
-                            <ChevronRight />
-                        </motion.button>
-                    </div>
-                </div>
-
-                <div className="popular-scroll">
-                    {popularDishes.map((dish, index) => (
-                        <motion.div
-                            key={dish.id}
-                            initial={{ opacity: 0, y: 50 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <Link to={`/dish/${dish.id}`} className="dish-card popular-card">
-                                <div className="image-wrapper">
-                                    <img src={dish.image} alt={dish.name} />
-                                    <div className="rating-badge">
-                                        <Star size={16} fill="gold" /> {dish.rating}
-                                    </div>
-                                    {dish.popular && <div className="popular-tag"><Zap size={14} /> ХІТ</div>}
-                                </div>
-                                <div className="dish-info">
-                                    <h3>{dish.name}</h3>
-                                    <p className="restaurant"><MapPin size={14} /> {dish.restaurant}</p>
-                                    <div className="price-tag">{dish.price} ₴</div>
-                                </div>
-                            </Link>
-                        </motion.div>
                     ))}
                 </div>
-            </motion.section>
 
-            {/* Усі страви */}
-            <motion.section
-                className="dishes-section"
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-            >
-                <h2 className="section-title">Усі страви</h2>
-
-                {loading ? (
-                    <div className="skeleton-grid">
-                        {[...Array(6)].map((_, i) => (
-                            <motion.div
-                                key={i}
-                                className="skeleton-card"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ delay: i * 0.1 }}
-                            />
-                        ))}
+                <motion.section className="search-hero" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}>
+                    <div className="search-container">
+                        <Search size={24} className="search-icon" />
+                        <input
+                            type="text"
+                            placeholder="Що бажаєте поїсти?.."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="search-input"
+                        />
+                        {searchTerm && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="search-suggestions">
+                                <p>Пошук: <strong>"{searchTerm}"</strong> — знайдено {filteredDishes.length} страв</p>
+                            </motion.div>
+                        )}
                     </div>
-                ) : filteredDishes.length === 0 ? (
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="no-results"
-                    >
-                        Нічого не знайдено
-                    </motion.p>
-                ) : (
-                    <motion.div className="dishes-grid">
-                        {filteredDishes.map((dish, index) => (
-                            <motion.div
-                                key={dish.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                whileInView={{ opacity: 1, scale: 1 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: index * 0.05 }}
-                                whileHover={{ y: -8 }}
-                            >
-                                <Link to={`/dish/${dish.id}`} className="dish-card">
+                    <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => setIsFilterOpen(true)} className="filter-toggle">
+                        <Filter size={20} /> Фільтри
+                    </motion.button>
+                </motion.section>
+
+                <AnimatePresence>
+                    {isFilterOpen && (
+                        <>
+                            <motion.aside className="filter-sidebar" initial={{ x: -350 }} animate={{ x: 0 }} exit={{ x: -350 }} transition={{ type: "spring", stiffness: 300, damping: 30 }}>
+                                <div className="filter-header">
+                                    <h3>Фільтри</h3>
+                                    <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => setIsFilterOpen(false)} className="close-btn">
+                                        <X size={26} />
+                                    </motion.button>
+                                </div>
+                                <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
+                                    <label>Категорія</label>
+                                    <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
+                                        <option value="all">Всі страви</option>
+                                        <option value="pizza">Піца</option>
+                                        <option value="burger">Бургери</option>
+                                        <option value="sushi">Суші</option>
+                                        <option value="pasta">Паста</option>
+                                        <option value="street">Стрітфуд</option>
+                                        <option value="salad">Салати</option>
+                                    </select>
+                                </motion.div>
+                                <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
+                                    <label>Мінімальний рейтинг</label>
+                                    <select value={selectedRating} onChange={(e) => setSelectedRating(e.target.value)}>
+                                        <option value="all">Без обмежень</option>
+                                        <option value="4.5">4.5+</option>
+                                        <option value="4.0">4.0+</option>
+                                        <option value="3.5">3.5+</option>
+                                    </select>
+                                </motion.div>
+                                <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
+                                    <label>Ціна: {priceRange[0]}₴ — {priceRange[1]}₴</label>
+                                    <div className="range-container">
+                                        <div className="range-label">
+                                            <span>{priceRange[0]}₴</span>
+                                            <span>{priceRange[1]}₴</span>
+                                        </div>
+                                        <input type="range" min="0" max="500" value={priceRange[1]}
+                                            onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                                            className="range-slider" />
+                                    </div>
+                                </motion.div>
+                                <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} onClick={() => setIsFilterOpen(false)} className="apply-filters-btn">
+                                    Показати {filteredDishes.length} страв
+                                </motion.button>
+                            </motion.aside>
+                            <motion.div className="filter-overlay" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsFilterOpen(false)} />
+                        </>
+                    )}
+                </AnimatePresence>
+
+                <motion.section className="popular-section" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
+                    <div className="section-header">
+                        <h2 className="gradient-title">Топ-страви дня</h2>
+                        <div className="scroll-controls">
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => scrollPopular('left')} className="scroll-btn">
+                                <ChevronLeft />
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => scrollPopular('right')} className="scroll-btn">
+                                <ChevronRight />
+                            </motion.button>
+                        </div>
+                    </div>
+                    <div className="popular-scroll">
+                        {popularDishes.map((dish, index) => (
+                            <motion.div key={dish.id} initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.1 }}>
+                                <Link to={`/dish/${dish.id}`} className="dish-card popular-card">
                                     <div className="image-wrapper">
                                         <img src={dish.image} alt={dish.name} />
-                                        <div className="rating-badge">
-                                            <Star size={16} fill="gold" /> {dish.rating}
-                                        </div>
+                                        <div className="rating-badge"><Star size={16} fill="gold" /> {dish.rating}</div>
+                                        {dish.popular && <div className="popular-tag"><Zap size={14} /> ХІТ</div>}
                                     </div>
                                     <div className="dish-info">
                                         <h3>{dish.name}</h3>
@@ -305,9 +199,42 @@ const CustomerHomePage = () => {
                                 </Link>
                             </motion.div>
                         ))}
-                    </motion.div>
-                )}
-            </motion.section>
+                    </div>
+                </motion.section>
+
+                <motion.section className="dishes-section" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>
+                    <h2 className="section-title">Усі страви</h2>
+                    {loading ? (
+                        <div className="skeleton-grid">
+                            {[...Array(6)].map((_, i) => (
+                                <motion.div key={i} className="skeleton-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.1 }} />
+                            ))}
+                        </div>
+                    ) : filteredDishes.length === 0 ? (
+                        <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="no-results">
+                            Нічого не знайдено
+                        </motion.p>
+                    ) : (
+                        <motion.div className="dishes-grid">
+                            {filteredDishes.map((dish, index) => (
+                                <motion.div key={dish.id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} whileHover={{ y: -8 }}>
+                                    <Link to={`/dish/${dish.id}`} className="dish-card">
+                                        <div className="image-wrapper">
+                                            <img src={dish.image} alt={dish.name} />
+                                            <div className="rating-badge"><Star size={16} fill="gold" /> {dish.rating}</div>
+                                        </div>
+                                        <div className="dish-info">
+                                            <h3>{dish.name}</h3>
+                                            <p className="restaurant"><MapPin size={14} /> {dish.restaurant}</p>
+                                            <div className="price-tag">{dish.price} ₴</div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    )}
+                </motion.section>
+            </div>
         </div>
     );
 };
