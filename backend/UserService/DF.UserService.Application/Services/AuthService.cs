@@ -1,9 +1,7 @@
 ﻿using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
-using DF.UserService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
 
 namespace DF.UserService.Application.Services;
@@ -11,7 +9,6 @@ namespace DF.UserService.Application.Services;
 public class AuthService(
     UserManager<User> userManager, 
     ITokenService tokenService, 
-    IMessageBroker broker,
     IAccountService accountService)
     : IAuthService
 {
@@ -46,16 +43,6 @@ public class AuthService(
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
             throw new Exception(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
-
-        broker.Publish("user.registered", new
-        {
-            user.Id,
-            user.Email,
-            user.Name,
-            user.Surname,
-            user.CreatedAt,
-            accountDto.AccountType
-        });
 
         return await tokenService.GenerateTokensAsync(user);
     }
