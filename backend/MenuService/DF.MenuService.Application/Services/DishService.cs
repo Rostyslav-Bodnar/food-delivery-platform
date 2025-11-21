@@ -1,3 +1,5 @@
+using DF.Contracts.RPC.Requests;
+using DF.MenuService.Application.Messaging;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
 using DF.MenuService.Contracts.Models.Request;
@@ -6,11 +8,13 @@ using DF.MenuService.Domain.Entities;
 
 namespace DF.MenuService.Application.Services;
 
-public class DishService(IDishRepository repository, ICloudinaryService cloudinaryService)
+public class DishService(IDishRepository repository, ICloudinaryService cloudinaryService, UserServiceRpcClient  userServiceRpcClient)
     : IDishService
 {
     public async Task<DishResponse> CreateDishAsync(CreateDishRequest request)
     {
+        var accountResponse = await userServiceRpcClient.GetAccountAsync(new GetAccountRequest(request.UserId));
+        
         string? imageUrl = null;
         if (request.Image != null)
         {
@@ -26,7 +30,8 @@ public class DishService(IDishRepository repository, ICloudinaryService cloudina
             Description = request.Description,
             Image = imageUrl,
             Price = request.Price,
-            Category = request.Category
+            Category = request.Category,
+            BusinessId = accountResponse.AccountId
         };
 
         await repository.Create(dish);

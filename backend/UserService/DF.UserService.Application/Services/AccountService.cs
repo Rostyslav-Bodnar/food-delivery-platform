@@ -20,7 +20,7 @@ public class AccountService(
             var entity = await accountFactory.CreateAccount(accountRequest, userId);
             
             entity = await accountRepository.Create(entity);
-
+            
             return entity switch
             {
                 CustomerAccount c => AccountMapper.ToDTO((CustomerAccount)c),
@@ -68,9 +68,7 @@ public class AccountService(
             throw new ApplicationException($"Error updating account with Id {accountRequest.Id}", ex);
         }
     }
-
-
-
+    
     public async Task<bool> DeleteAccountAsync(Guid id)
     {
         try

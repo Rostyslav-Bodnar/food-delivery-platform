@@ -17,6 +17,7 @@
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
       <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="2.3.0" />
+      <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     </ItemGroup>
 
 </Project>

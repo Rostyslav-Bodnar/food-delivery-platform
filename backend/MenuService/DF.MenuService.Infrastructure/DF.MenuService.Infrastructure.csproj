@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Messaging\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\DF.MenuService.Domain\DF.MenuService.Domain.csproj" />
     </ItemGroup>
 
@@ -20,7 +16,13 @@
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
       <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+      <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Messaging\" />
     </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 namespace DF.MenuService.Contracts.Models.Request;
 
 public record CreateDishRequest(
+    Guid UserId,
     Guid? MenuId, 
     string Name, 
     string? Description, 
