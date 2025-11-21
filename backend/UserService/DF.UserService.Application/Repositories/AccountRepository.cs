@@ -5,15 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DF.UserService.Application.Repositories;
 
-public class AccountRepository : IAccountRepository
+public class AccountRepository(AppDbContext dbContext) : IAccountRepository
 {
-    private readonly AppDbContext dbContext;
-
-    public AccountRepository(AppDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
-    
     public async Task<Account?> Get(Guid id)
     {
         return await dbContext.Accounts
@@ -65,5 +58,14 @@ public class AccountRepository : IAccountRepository
             .Include(a => a.User)
             .Where(a => a.UserId == userId)
             .ToListAsync();
+    }
+
+    public async Task<Account?> GetCurrentAccountByUserId(Guid userId)
+    {
+        return await dbContext.Users
+            .Include(u => u.CurrentAccount)
+            .Where(u => u.Id == userId)
+            .Select(u => u.CurrentAccount)
+            .FirstOrDefaultAsync();
     }
 }
