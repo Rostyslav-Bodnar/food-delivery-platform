@@ -10,6 +10,8 @@ import CreateAccountPage from "./pages/CreateAccountPage.jsx";
 import DishPage from "./pages/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import CartPage from "./pages/CartPage.jsx"; 
+import RestaurantsPage from "./pages/RestaurantsPage.jsx";
+import RestaurantPage from './pages/RestaurantPage';
 
 const AppRouter = () => {
     return (
@@ -23,6 +25,8 @@ const AppRouter = () => {
                         <Route path="/register" element={<RegisterForm />} />
                         <Route path="/dish/:id" element={<DishPage />} /> {/* НОВИЙ МАРШРУТ */}
                         <Route path="/cart" element={<CartPage />} />
+                        <Route path="/restaurants" element={<RestaurantsPage />} />
+                        <Route path="/restaurant/:id" element={<RestaurantPage />} />
 
                         <Route
                             path="/profile"
