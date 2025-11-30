@@ -6,8 +6,9 @@ import {
     ChevronLeft, ChevronRight, X, Zap, Home, Store, User, Package
 } from 'lucide-react';
 import './styles/CustomerHomePage.css';
-import { getAllDishes } from "../api/Dish.jsx";
-import CustomerSidebar from './customer-home-page-components/CustomerSidebar';
+import { getAllDishesForCustomer} from "../api/Dish.jsx";
+import CustomerSidebar from './customer-components/CustomerSidebar';
+import DishCardComponent from './customer-components/DishCardComponent';
 
 const CustomerHomePage = () => {
     const [popularDishes, setPopularDishes] = useState([]);
@@ -41,7 +42,7 @@ const CustomerHomePage = () => {
                 setLoading(true);
 
                 const token = localStorage.getItem("accessToken");
-                const data = await getAllDishes(token);
+                const data = await getAllDishesForCustomer(token);
 
                 // Перетворення у формат, з яким працює фронт
                 const mappedDishes = data.map(d => ({
@@ -49,7 +50,7 @@ const CustomerHomePage = () => {
                     name: d.name,
                     image: d.imageUrl,
                     rating: 4.5, // якщо поки немає рейтингу з бекенду
-                    restaurant: "Заклад", // бекенд не дає назву закладу
+                    restaurant: d.businessDetails.name, // бекенд не дає назву закладу
                     price: d.price,
                     category: d.category.toString().toLowerCase()
                 }));
@@ -234,17 +235,7 @@ const CustomerHomePage = () => {
                         <motion.div className="dishes-grid">
                             {filteredDishes.map((dish, index) => (
                                 <motion.div key={dish.id} initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} whileHover={{ y: -8 }}>
-                                    <Link to={`/dish/${dish.id}`} className="dish-card">
-                                        <div className="image-wrapper">
-                                            <img src={dish.image} alt={dish.name} />
-                                            <div className="rating-badge"><Star size={16} fill="gold" /> {dish.rating}</div>
-                                        </div>
-                                        <div className="dish-info">
-                                            <h3>{dish.name}</h3>
-                                            <p className="restaurant"><MapPin size={14} /> {dish.restaurant}</p>
-                                            <div className="price-tag">{dish.price} ₴</div>
-                                        </div>
-                                    </Link>
+                                    <DishCardComponent dish={dish} />
                                 </motion.div>
                             ))}
                         </motion.div>

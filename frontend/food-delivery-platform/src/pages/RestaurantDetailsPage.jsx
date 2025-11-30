@@ -1,9 +1,9 @@
-﻿// src/pages/RestaurantPage.jsx
-import React, { useState, useRef, useEffect } from 'react';
+﻿import React, { useState, useRef, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Search, X, Flame, MapPin } from 'lucide-react';
-import './styles/RestaurantPage.css';
+import './styles/RestaurantDetailsPage.css';
+import DishCardComponent from "../components/customer-components/DishCardComponent.jsx";
 
 const restaurants = {
     1: { id: 1, name: "Pizza Palace", banner: "https://images.unsplash.com/photo-1604382354936-07adb7bb5b25?w=1600" },
@@ -27,7 +27,7 @@ const menuData = {
     ],
 };
 
-const RestaurantPage = () => {
+const RestaurantDetailsPage = () => {
     const { id } = useParams();
     const restaurant = restaurants[id];
     const menu = menuData[id] || [];
@@ -218,4 +218,4 @@ const RestaurantPage = () => {
     );
 };
 
-export default RestaurantPage;
+export default RestaurantDetailsPage;

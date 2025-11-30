@@ -10,20 +10,20 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace DF.UserService.Application.Messaging;
 
-public class GetAccountConsumer : IConsumer
+public class GetBusinessAccountDetailsConsumer : IConsumer
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly IServiceScopeFactory _scopeFactory;
     
-    public GetAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    public GetBusinessAccountDetailsConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
     {
         _connection = connection;
         _scopeFactory = scopeFactory;
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
 
         _channel.QueueDeclareAsync(
-            queue: "user.getaccount",
+            queue: "user.getbussinessaccount",
             durable: false,
             exclusive: false,
             autoDelete: false,
@@ -43,17 +43,18 @@ public class GetAccountConsumer : IConsumer
             var message = Encoding.UTF8.GetString(body);
 
             // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetAccountRequest>(message);
+            var request = JsonSerializer.Deserialize<GetBusinessAccountDetailsRequest>(message);
 
             // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.UserId != null)
+            if (request.BusinessAccountId != null)
             {
-                var account = await FindAccountByUserIdAsync(request.UserId.Value, accountRepository);
+                var account = await accountRepository.Get(request.BusinessAccountId) as BusinessAccount;
 
-                var response = new GetAccountResponse(
-                    account.AccountId,
+                var response = new GetBusinessAccountDetailsResponse(
+                    account.Id,
                     account.UserId,
-                    account.AccountType
+                    account.Name,
+                    account.Description
                 );
 
                 var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
@@ -74,31 +75,10 @@ public class GetAccountConsumer : IConsumer
         };
 
         _channel.BasicConsumeAsync(
-            queue: "user.getaccount",
+            queue: "user.getbussinessaccount",
             autoAck: true,
             consumer: consumer
         ).GetAwaiter().GetResult();
-    }
-
-    private async Task<GetAccountResponse> FindAccountByUserIdAsync(Guid userId, IAccountRepository accountRepository)
-    {
-        var account = await accountRepository.GetCurrentAccountByUserId(userId);
-
-        if (account == null)
-        {
-            throw new InvalidOperationException($"Account for user {userId} not found.");
-        }
-
-        if (account.AccountType != AccountType.Business)
-        {
-            throw new InvalidOperationException($"Account {account.Id} is not of type Business.");
-        }
-
-        return new GetAccountResponse(
-            account.Id,
-            userId,
-            "Business"
-        );
     }
 
 }

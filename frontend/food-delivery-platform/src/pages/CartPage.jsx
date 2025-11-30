@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 
-import "./styles/cartPage.css";
-import CustomerSidebar from "../components/customer-home-page-components/CustomerSidebar.jsx";
+import "./styles/CartPage.css";
+import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
 
 const CartPage = () => {
     const [cartItems, setCartItems] = useState([

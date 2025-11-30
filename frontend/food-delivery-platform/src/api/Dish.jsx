@@ -2,6 +2,24 @@
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5110/api";
 
+// Отримати всі страви для customer
+export const getAllDishesForCustomer = async () => {
+    const res = await axios.get(`${API_BASE}/dish/customer`);
+    return res.data;
+};
+
+// Отримати страву для customer по Id
+export const getDishForCustomer = async (id) => {
+    const res = await axios.get(`${API_BASE}/dish/customer/${id}`);
+    return res.data;
+};
+
+// Отримати страви для customer по BusinessId
+export const getDishesForCustomerByBusinessId = async (businessId) => {
+    const res = await axios.get(`${API_BASE}/dish/customer/${businessId}/dish`);
+    return res.data;
+};
+
 // Отримати всі страви
 export const getAllDishes = async (token) => {
     const response = await axios.get(`${API_BASE}/dish`, {

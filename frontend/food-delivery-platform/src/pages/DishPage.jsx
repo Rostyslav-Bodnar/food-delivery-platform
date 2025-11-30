@@ -4,7 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Star, Clock, MapPin, ChevronLeft, Plus, Minus, Zap, MessageCircle } from 'lucide-react';
 import './styles/DishPage.css';
-import { getDishById } from "../api/Dish.jsx";
+import {getDishForCustomer} from "../api/Dish.jsx";
 
 // МОК ВІДГУКИ — ЗАЛИШАЮТЬСЯ
 const mockReviews = {
@@ -27,7 +27,7 @@ const DishPage = () => {
         const loadDish = async () => {
             try {
                 const token = localStorage.getItem("accessToken");
-                const data = await getDishById(id, token);
+                const data = await getDishForCustomer(id, token);
 
                 // Мапаємо дані з бекенду у формат сторінки
                 const mappedDish = {
@@ -41,8 +41,7 @@ const DishPage = () => {
                     weight: "300 г",
                     rating: 4.5,               // бекенд поки не дає рейтинг
                     reviewsCount: mockReviews[id]?.length ?? 0,
-                    restaurant: "Заклад",
-                    address: "Адреса недоступна",
+                    restaurant: data.businessDetails.name,
                     popular: true,
                     ingredients: data.ingredients?.map(i => i.name) ?? [],
                     nutrition: { calories: 400, protein: 20, fats: 10, carbs: 60 },
@@ -143,7 +142,6 @@ const DishPage = () => {
 
                         <div className="restaurant-info">
                             <MapPin size={16} /> <strong>{dish.restaurant}</strong><br />
-                            <span className="address">{dish.address}</span>
                         </div>
 
                         <div className="price-section">

@@ -2,8 +2,8 @@
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store, Search, X, Filter, ChevronRight, Star, Clock, MapPin } from 'lucide-react';
-import './styles/restaurantsPage.css';
-import CustomerSidebar from "../components/customer-home-page-components/CustomerSidebar.jsx";
+import './styles/RestaurantsPage.css';
+import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
 
 const RestaurantsPage = () => {
     const [searchQuery, setSearchQuery] = useState('');

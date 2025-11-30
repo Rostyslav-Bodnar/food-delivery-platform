@@ -5,17 +5,6 @@
     color: #e6eef6;
 }
 
-/* Ë²ÂÀ ÏÀÍÅËÜ */
-CustomerSidebar {
-    flex-shrink: 0;
-    width: 280px;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    z-index: 10;
-}
-
-/* ÏĞÀÂÈÉ ÊÎÍÒÅÍÒ */
 .main-content {
     flex: 1;
     min-width: 0;
@@ -227,7 +216,6 @@ CustomerSidebar {
     color: #94a3b8;
 }
 
-/* Àäàïòèâ */
 @media (max-width: 1024px) {
     .search-and-filters {
         flex-direction: column;

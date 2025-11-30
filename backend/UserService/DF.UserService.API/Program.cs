@@ -97,8 +97,10 @@ builder.Services.AddSingleton<IConnection>(sp =>
 });
 
 // Consumer
-builder.Services.AddSingleton<GetAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessAccountDetailsConsumer>();
 builder.Services.AddHostedService<ConsumerHostedService>();
+
 
 
 builder.Services.AddControllers();

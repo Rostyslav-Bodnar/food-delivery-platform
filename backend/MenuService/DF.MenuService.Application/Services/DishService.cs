@@ -178,4 +178,88 @@ public class DishService(
         );
     }
 
+    public async Task<DishForCustomerResponse> GetDishForCustomerAsync(Guid dishId)
+    {
+        var d = await repository.Get(dishId);
+        var ingredients = await ingredientService.GetAllIngredientsByDishId(dishId);
+
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(d.BusinessId));
+
+        var businessDetails = new BusinessResponse(businessResponse.BusinessAccountId,  businessResponse.Name, businessResponse.Description);
+        
+        return new DishForCustomerResponse(
+            d.Id,
+            d.MenuId,
+            d.Name,
+            d.Description,
+            d.Image,
+            d.Price,
+            d.Category,
+            d.CookingTime,
+            businessDetails,
+            ingredients
+        );
+    }
+
+    public async Task<List<DishForCustomerResponse>> GetAllDishForCustomerAsync()
+    {
+        var dishes = await repository.GetAll();
+
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(dishes.Where(d => d.BusinessId != Guid.Empty).First().BusinessId));
+        
+        var businessDetails = new  BusinessResponse(businessResponse.BusinessAccountId, businessResponse.Name, businessResponse.Description);
+        
+        // Потрібно підтягувати інгредієнти
+        var result = new List<DishForCustomerResponse>();
+        foreach (var d in dishes)
+        {
+            var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
+
+            result.Add(new DishForCustomerResponse(
+                d.Id,
+                d.MenuId,
+                d.Name,
+                d.Description,
+                d.Image,
+                d.Price,
+                d.Category,
+                d.CookingTime,
+                businessDetails,
+                ingredients
+            ));
+        }
+
+        return result;
+    }
+
+    public async Task<List<DishForCustomerResponse>> GetDishesForCustomerByBusinessIdAsync(Guid businessId)
+    {
+        var dishes = await repository.GetByBusinessIdAsync(businessId);
+        
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(dishes.First().BusinessId));
+        
+        var businessDetails = new  BusinessResponse(businessResponse.BusinessAccountId, businessResponse.Name, businessResponse.Description);
+
+        var result = new List<DishForCustomerResponse>();
+        foreach (var d in dishes)
+        {
+            var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
+
+            result.Add(new DishForCustomerResponse(
+                d.Id,
+                d.MenuId,
+                d.Name,
+                d.Description,
+                d.Image,
+                d.Price,
+                d.Category,
+                d.CookingTime,
+                businessDetails,
+                ingredients
+            ));
+        }
+
+        return result;
+    }
+
 }

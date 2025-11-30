@@ -26,6 +26,34 @@ public class DishController(IDishService dishService) : ControllerBase
         return Ok(dish);
     }
 
+    [HttpGet("customer/{id:guid}")]
+    public async Task<IActionResult> GetForCustomer(Guid id)
+    {
+        var result = await dishService.GetDishForCustomerAsync(id);
+        
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
+
+    [HttpGet("customer")]
+    public async Task<IActionResult> GetAllForCustomer()
+    {
+        var dishes = await dishService.GetAllDishForCustomerAsync();
+        return Ok(dishes);
+    }
+
+    [HttpGet("customer/{businessId:guid}/dish")]
+    public async Task<IActionResult> GetByBusinessIdForCustomer(Guid businessId)
+    {
+        var result =  await dishService.GetDishesForCustomerByBusinessIdAsync(businessId);
+        
+        if (result == null)
+            return NotFound();
+
+        return Ok(result);
+    }
 
     [HttpGet("{businessId:guid}/dish")]
     public async Task<IActionResult> GetByBusinessId(Guid businessId)

@@ -11,7 +11,7 @@ import DishPage from "./pages/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import CartPage from "./pages/CartPage.jsx"; 
 import RestaurantsPage from "./pages/RestaurantsPage.jsx";
-import RestaurantPage from './pages/RestaurantPage';
+import RestaurantDetailsPage from './pages/RestaurantDetailsPage';
 
 const AppRouter = () => {
     return (
@@ -26,7 +26,7 @@ const AppRouter = () => {
                         <Route path="/dish/:id" element={<DishPage />} /> {/* НОВИЙ МАРШРУТ */}
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/restaurants" element={<RestaurantsPage />} />
-                        <Route path="/restaurant/:id" element={<RestaurantPage />} />
+                        <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
 
                         <Route
                             path="/profile"
