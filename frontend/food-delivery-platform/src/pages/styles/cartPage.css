@@ -1,10 +1,16 @@
 /* src/pages/CartPage.css */
+.app-wrapper {
+	display: flex;
+}
+
 .cart-page-wrapper {
 	min-height: 100vh;
 	background: radial-gradient(1200px 600px at 10% 10%, rgba(124,92,255,0.08), transparent 6%), radial-gradient(1000px 400px at 90% 80%, rgba(0,212,255,0.04), transparent 8%), linear-gradient(180deg, #0b0f14, #071014 80%);
 	color: #e6eef6;
 	position: relative;
 	overflow: hidden;
+	display: flex;
+	margin-left: 30px;
 }
 
 .particles {
@@ -201,7 +207,7 @@
 	font-weight: 500;
 }
 
-/* Порожній кошик */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ */
 .cart-empty-wrapper {
 	min-height: 100vh;
 	display: flex;
@@ -237,7 +243,7 @@
 	font-weight: 600;
 }
 
-/* Адаптив */
+/* пїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
 @media (max-width: 968px) {
 	.cart-content {
 		grid-template-columns: 1fr;

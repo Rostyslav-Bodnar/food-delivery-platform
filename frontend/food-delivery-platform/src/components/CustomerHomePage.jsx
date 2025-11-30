@@ -6,6 +6,8 @@ import {
     ChevronLeft, ChevronRight, X, Zap, Home, Store, User, Package
 } from 'lucide-react';
 import './styles/CustomerHomePage.css';
+import { getAllDishes } from "../api/Dish.jsx";
+import CustomerSidebar from './customer-home-page-components/CustomerSidebar';
 
 const CustomerHomePage = () => {
     const [popularDishes, setPopularDishes] = useState([]);
@@ -19,19 +21,51 @@ const CustomerHomePage = () => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
     useEffect(() => {
-        const mockDishes = [
-            { id: 1, name: "Маргарита Піца", image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500", rating: 4.8, restaurant: "Pizza Palace", price: 249, category: "pizza", popular: true },
-            { id: 2, name: "Бургер з яловичиною", image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500", rating: 4.9, restaurant: "Burger Hub", price: 189, category: "burger", popular: true },
-            { id: 3, name: "Суші Сет Дракон", image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500", rating: 4.7, restaurant: "Sushi Master", price: 429, category: "sushi", popular: true },
-            { id: 4, name: "Паста Карбонара", image: "https://images.unsplash.com/photo-1621996346565-e3dbc92e08ee?w=500", rating: 4.6, restaurant: "La Pasta", price: 219, category: "pasta" },
-            { id: 5, name: "Шаурма Преміум", image: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=500", rating: 4.5, restaurant: "Shawarma King", price: 149, category: "street", popular: true },
-            { id: 6, name: "Салат Цезар з куркою", image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500", rating: 4.4, restaurant: "Green Bowl", price: 179, category: "salad" },
-        ];
-        const topDishes = mockDishes.filter(d => d.popular).sort((a, b) => b.rating - a.rating);
-        setPopularDishes(topDishes);
-        setAllDishes(mockDishes);
-        setFilteredDishes(mockDishes);
-        setLoading(false);
+        const fetchDishes = async () => {
+            try {
+                // 1. Залишаємось з мок-даними ДЛЯ ТОР-ХІТІВ
+                const mockDishes = [
+                    { id: 1, name: "Маргарита Піца", image: "...", rating: 4.8, restaurant: "Pizza Palace", price: 249, category: "pizza", popular: true },
+                    { id: 2, name: "Бургер з яловичиною", image: "...", rating: 4.9, restaurant: "Burger Hub", price: 189, category: "burger", popular: true },
+                    { id: 3, name: "Суші Сет Дракон", image: "...", rating: 4.7, restaurant: "Sushi Master", price: 429, category: "sushi", popular: true },
+                ];
+
+                // 2. Додаємо мок-дані як топ
+                const topDishes = mockDishes
+                    .filter(d => d.popular)
+                    .sort((a, b) => b.rating - a.rating);
+
+                setPopularDishes(topDishes);
+
+                // 3. Завантажуємо реальні страви з бекенду
+                setLoading(true);
+
+                const token = localStorage.getItem("accessToken");
+                const data = await getAllDishes(token);
+
+                // Перетворення у формат, з яким працює фронт
+                const mappedDishes = data.map(d => ({
+                    id: d.id,
+                    name: d.name,
+                    image: d.image,
+                    rating: 4.5, // якщо поки немає рейтингу з бекенду
+                    restaurant: "Заклад", // бекенд не дає назву закладу
+                    price: d.price,
+                    category: d.category.toString().toLowerCase()
+                }));
+
+                setAllDishes(mappedDishes);
+                setFilteredDishes(mappedDishes);
+            }
+            catch (err) {
+                console.error("Помилка при завантаженні страв:", err);
+            }
+            finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDishes();
     }, []);
 
     useEffect(() => {
@@ -57,26 +91,8 @@ const CustomerHomePage = () => {
     return (
         <div className="app-wrapper">
             {/* МЕНЮ ЗЛІВА — просто додано, нічого не зламано */}
-            <aside className="customer-sidebar">
-                <div className="sidebar-logo">FoodEx</div>
-                <nav className="sidebar-nav">
-                    <Link to="/" className="sidebar-item active">
-                        <Home size={22} /> <span>Головна</span>
-                    </Link>
-                    <Link to="/cart" className="sidebar-item">
-                        <ShoppingCart size={22} /> <span>Кошик</span>
-                    </Link>
-                    <Link to="/restaurants" className="sidebar-item">
-                        <Store size={22} /> <span>Заклади</span>
-                    </Link>
-                    <Link to="/orders" className="sidebar-item">
-                        <Package size={22} /> <span>Замовлення</span>
-                    </Link>
-                    <Link to="/profile" className="sidebar-item">
-                        <User size={22} /> <span>Профіль</span>
-                    </Link>
-                </nav>
-            </aside>
+            <CustomerSidebar />
+
 
             {/* ТВІЙ ОРИГІНАЛЬНИЙ КОНТЕНТ — 1 в 1 */}
             <div className="auth-homepage">

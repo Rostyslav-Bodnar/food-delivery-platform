@@ -254,7 +254,6 @@ button { font-family: inherit; }
 }
 
 .customer-sidebar {
-    position: fixed;
     left: 0;
     top: 0;
     bottom: 0;
@@ -310,8 +309,12 @@ button { font-family: inherit; }
 
 /* Контент зсувається вправо, щоб не перекривався меню */
 .auth-homepage {
-    margin-left: 280px !important;
     width: calc(100% - 280px) !important;
+}
+
+.customer-sidebar {
+    width: 240px;
+    flex-shrink: 0;
 }
 
 /* На мобілці меню просто видно (ти сам потім зробиш бургер, якщо захочеш) */

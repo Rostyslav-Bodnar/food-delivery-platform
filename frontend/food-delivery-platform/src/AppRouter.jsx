@@ -7,7 +7,7 @@ import LoginForm from "./pages/LoginForm.jsx";
 import RegisterForm from "./pages/RegisterForm.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CreateAccountPage from "./pages/CreateAccountPage.jsx";
-import DishPage from "./pages/DishPage.jsx"; // НОВИЙ ІМПОРТ
+import DishPage from "./pages/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import CartPage from "./pages/CartPage.jsx"; 
 
