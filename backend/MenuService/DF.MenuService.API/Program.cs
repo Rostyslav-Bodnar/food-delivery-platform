@@ -69,6 +69,12 @@ builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 // Build the app
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate(); 
+}
+
 // Configure middleware pipeline
 if (app.Environment.IsDevelopment())
 {
