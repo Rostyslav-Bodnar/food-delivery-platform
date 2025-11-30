@@ -159,21 +159,23 @@ public class DishService(
         existing.Price = request.Price;
         existing.Category = request.Category;
         existing.Image = imageUrl;
+        existing.CookingTime = request.CookingTime;
 
-        var result = await repository.Update(existing);
-
-        var ingredients = await ingredientService.GetAllIngredientsByDishId(existing.Id);
+        await repository.Update(existing);
+        
+        var updatedIngredients = await ingredientService.UpdateIngredients(existing.Id, request.Ingredients);
 
         return new DishResponse(
-            result.Id,
-            result.MenuId,
-            result.Name,
-            result.Description,
-            result.Image,
-            result.Price,
-            result.Category,
-            result.CookingTime,
-            ingredients
+            existing.Id,
+            existing.MenuId,
+            existing.Name,
+            existing.Description,
+            existing.Image,
+            existing.Price,
+            existing.Category,
+            existing.CookingTime,
+            updatedIngredients
         );
     }
+
 }

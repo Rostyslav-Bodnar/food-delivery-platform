@@ -22,4 +22,5 @@ public record UpdateDishRequest(
     decimal Price, 
     Category Category, 
     int CookingTime,
-    IFormFile? Image);
+    IFormFile? Image,
+    List<UpdateIngredientRequest> Ingredients);

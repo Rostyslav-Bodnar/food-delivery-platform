@@ -38,6 +38,8 @@ public class IngredientRepository(AppDbContext dbContext) : IIngredientRepositor
         if(ingredient == null)
             return false;
         dbContext.Ingredients.Remove(ingredient);
+        await dbContext.SaveChangesAsync();
+        
         return true;
     }
 

@@ -45,7 +45,7 @@ public class IngredientService(IIngredientRepository repository) : IIngredientSe
  
     public async Task<IngredientResponse> UpdateIngredient(UpdateIngredientRequest req)
     {
-        var entity = await repository.Get(req.Id);
+        var entity = await repository.Get(req.Id.Value);
         if(entity == null)
             throw new NullReferenceException($"Ingredient with id {req.Id} not found");
         
@@ -81,5 +81,44 @@ public class IngredientService(IIngredientRepository repository) : IIngredientSe
                 i.Weight
             ))
             .ToList();
+    }
+    
+    public async Task<List<IngredientResponse>> UpdateIngredients(Guid dishId, List<UpdateIngredientRequest> ingredients)
+    {
+        var existingIngredients = await GetAllIngredientsByDishId(dishId);
+
+        var incoming = ingredients;
+
+        foreach (var ing in incoming)
+        {
+            if (ing.Id.HasValue)
+            {
+                await UpdateIngredient(new UpdateIngredientRequest(
+                    ing.Id.Value,
+                    ing.Name,
+                    ing.Weight
+                ));
+            }
+            else
+            {
+                await CreateIngredient(
+                    new CreateIngredientRequest(ing.Name, ing.Weight),
+                    dishId
+                );
+            }
+        }
+
+        var incomingIds = incoming.Where(i => i.Id.HasValue).Select(i => i.Id!.Value).ToHashSet();
+
+        var toDelete = existingIngredients
+            .Where(i => !incomingIds.Contains(i.Id))
+            .ToList();
+
+        foreach (var del in toDelete)
+            await repository.Delete(del.Id);
+        
+        var updatedIngredients = await GetAllIngredientsByDishId(dishId);
+
+        return updatedIngredients;
     }
 }

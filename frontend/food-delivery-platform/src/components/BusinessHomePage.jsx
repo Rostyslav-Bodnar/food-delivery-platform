@@ -79,7 +79,7 @@ export default function BusinessHomePage({ userData }) {
     // ============================
     const handleUpdate = async (id, patch) => {
         try {
-            const updated = await updateDish(patch, token);
+            const updated = await updateDish(id, patch, token);
 
             setDishes(prev =>
                 prev.map(d => (d.id === id ? updated : d))

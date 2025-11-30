@@ -89,12 +89,26 @@ export const createDish = async (dish, token) => {
 
 
 // Оновити страву (multipart/form-data)
-export const updateDish = async (body, token) => {
+export const updateDish = async (id, body, token) => {
     const formData = new FormData();
-    for (const key in body) {
-        if (body[key] !== undefined && body[key] !== null) {
-            formData.append(key, body[key]);
-        }
+
+    formData.append("DishId", id);
+
+    formData.append("Name", body.name);
+    formData.append("Description", body.description ?? "");
+    formData.append("Price", body.price);
+    formData.append("CookingTime", body.cookingTime);
+    formData.append("Category", body.category);
+
+    if (body.menuId) formData.append("MenuId", body.menuId);
+    if (body.image) formData.append("Image", body.image);
+
+    if (body.ingredients && body.ingredients.length > 0) {
+        body.ingredients.forEach((ing, index) => {
+            if (ing.id) formData.append(`Ingredients[${index}].Id`, ing.id);
+            formData.append(`Ingredients[${index}].Name`, ing.name);
+            formData.append(`Ingredients[${index}].Weight`, ing.weight);
+        });
     }
 
     const response = await axios.post(`${API_BASE}/dish/update`, formData, {
@@ -103,5 +117,8 @@ export const updateDish = async (body, token) => {
             "Content-Type": "multipart/form-data",
         },
     });
+
     return response.data;
 };
+
+
