@@ -47,7 +47,7 @@ const CustomerHomePage = () => {
                 const mappedDishes = data.map(d => ({
                     id: d.id,
                     name: d.name,
-                    image: d.image,
+                    image: d.imageUrl,
                     rating: 4.5, // якщо поки немає рейтингу з бекенду
                     restaurant: "Заклад", // бекенд не дає назву закладу
                     price: d.price,
