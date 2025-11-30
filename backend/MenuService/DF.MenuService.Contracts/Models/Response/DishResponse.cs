@@ -9,4 +9,6 @@ public record DishResponse(
     string? Description, 
     string? ImageUrl, 
     decimal Price, 
-    Category Category);
+    Category Category,
+    int CookingTime,
+    List<IngredientResponse> Ingredients);

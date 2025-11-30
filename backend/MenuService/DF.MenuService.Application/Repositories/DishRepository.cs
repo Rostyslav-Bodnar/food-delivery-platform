@@ -25,9 +25,9 @@ public class DishRepository(AppDbContext dbContext) : IDishRepository
 
     public async Task<Dish> Create(Dish entity)
     {
-        await dbContext.Dishes.AddAsync(entity);
+        var result = await dbContext.Dishes.AddAsync(entity);
         await dbContext.SaveChangesAsync();
-        return entity;
+        return result.Entity;
     }
 
     public async Task<Dish> Update(Dish entity)

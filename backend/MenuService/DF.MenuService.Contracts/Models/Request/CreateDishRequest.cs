@@ -10,7 +10,9 @@ public record CreateDishRequest(
     string? Description, 
     decimal Price, 
     Category Category, 
-    IFormFile? Image);
+    IFormFile? Image,
+    int CookingTime,
+    List<CreateIngredientRequest> Ingredients);
     
 public record UpdateDishRequest(
     Guid DishId,
@@ -19,4 +21,5 @@ public record UpdateDishRequest(
     string? Description, 
     decimal Price, 
     Category Category, 
+    int CookingTime,
     IFormFile? Image);

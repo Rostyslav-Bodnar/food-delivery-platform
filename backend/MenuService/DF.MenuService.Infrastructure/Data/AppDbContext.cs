@@ -62,7 +62,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                     .IsRequired()
                     .HasMaxLength(100);
                 
-                entity.HasOne<Dish>()
+                entity.HasOne(i => i.Dish)
                     .WithMany()
                     .HasForeignKey(d => d.DishId)
                     .OnDelete(DeleteBehavior.Cascade);

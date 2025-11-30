@@ -1,14 +1,17 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
 
-export default function DishComponent({ open, onClose, onCreate, onUpdate, editing }) {
+export default function DishComponent({ open, onClose, onCreate, onUpdate, editing, userData }) {
     const [form, setForm] = useState({
         name: "",
         category: "pizza",
         price: "",
-        popular: false,
+        description: "",
+        cookingTime: 10,
+        ingredients: [],
         imageFile: null,
         imagePreview: ""
     });
+
     const dropRef = useRef(null);
     const prevObjectUrlRef = useRef(null);
 
@@ -18,15 +21,26 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
                 name: editing.name || "",
                 category: editing.category || "pizza",
                 price: editing.price ?? "",
-                popular: editing.popular ?? false,
+                description: editing.description || "",
+                cookingTime: editing.cookingTime || 10,
+                ingredients: editing.ingredients || [],
                 imageFile: null,
-                imagePreview: editing.image || ""
+                imagePreview: editing.imageUrl || editing.image || ""
             });
         } else {
-            setForm({ name: "", category: "pizza", price: "", popular: false, imageFile: null, imagePreview: "" });
+            setForm({
+                name: "",
+                category: "pizza",
+                price: "",
+                description: "",
+                cookingTime: 10,
+                ingredients: [],
+                imageFile: null,
+                imagePreview: ""
+            });
         }
+
         return () => {
-            // cleanup any created object URL when modal unmounts or editing changes
             if (prevObjectUrlRef.current) {
                 URL.revokeObjectURL(prevObjectUrlRef.current);
                 prevObjectUrlRef.current = null;
@@ -34,28 +48,34 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
         };
     }, [editing, open]);
 
-    useEffect(() => {
-        if (!open) return;
-        const onKey = (e) => {
-            if (e.key === "Escape") onClose();
-        };
-        window.addEventListener("keydown", onKey);
-        return () => window.removeEventListener("keydown", onKey);
-    }, [open, onClose]);
-
-    if (!open) return null;
-
     const change = (k, v) => setForm(prev => ({ ...prev, [k]: v }));
+
+    const updateIngredient = (index, key, value) => {
+        const updated = [...form.ingredients];
+        updated[index][key] = value;
+        change("ingredients", updated);
+    };
+
+    const addIngredient = () => {
+        change("ingredients", [...form.ingredients, { name: "", weight: 0 }]);
+    };
+
+    const removeIngredient = (index) => {
+        change("ingredients", form.ingredients.filter((_, i) => i !== index));
+    };
+
+    /* ============================
+       IMAGE FILE HANDLING (dropArea)
+       ============================ */
 
     const handleFiles = (file) => {
         if (!file) return;
-        // revoke previous object URL
-        if (prevObjectUrlRef.current) {
-            URL.revokeObjectURL(prevObjectUrlRef.current);
-            prevObjectUrlRef.current = null;
-        }
+
+        if (prevObjectUrlRef.current) URL.revokeObjectURL(prevObjectUrlRef.current);
+
         const url = URL.createObjectURL(file);
         prevObjectUrlRef.current = url;
+
         setForm(prev => ({ ...prev, imageFile: file, imagePreview: url }));
     };
 
@@ -65,8 +85,15 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
         if (f && f.type.startsWith("image/")) handleFiles(f);
         dropRef.current?.classList?.remove("dragover");
     };
-    const onDragOver = (e) => { e.preventDefault(); dropRef.current?.classList?.add("dragover"); };
-    const onDragLeave = () => { dropRef.current?.classList?.remove("dragover"); };
+
+    const onDragOver = (e) => {
+        e.preventDefault();
+        dropRef.current?.classList?.add("dragover");
+    };
+
+    const onDragLeave = () => {
+        dropRef.current?.classList?.remove("dragover");
+    };
 
     const onSelectFile = (e) => {
         const f = e.target.files?.[0];
@@ -74,15 +101,20 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
     };
 
     const submit = () => {
-        if (!form.name.trim()) return alert("Вкажіть назву страви");
+        if (!form.name.trim()) return alert("Вкажіть назву");
+
         const payload = {
-            name: form.name.trim(),
-            category: form.category,
+            userId: userData.id,
+            menuId: null,
+            name: form.name,
+            description: form.description,
             price: Number(form.price) || 0,
-            popular: !!form.popular
+            category: form.category,
+            cookingTime: Number(form.cookingTime),
+            ingredients: form.ingredients,
         };
-        if (form.imageFile) payload._file = form.imageFile;
-        else if (form.imagePreview) payload.image = form.imagePreview;
+
+        if (form.imageFile) payload.image = form.imageFile;
 
         if (editing) onUpdate(editing.id, payload);
         else onCreate(payload);
@@ -90,19 +122,12 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
         onClose();
     };
 
-    // Click on overlay should close; click inside card should stop propagation
-    const onOverlayClick = () => onClose();
-    const onCardClick = (e) => e.stopPropagation();
+    if (!open) return null;
 
     return (
-        <div
-            className="bh-modal"
-            role="dialog"
-            aria-modal="true"
-            onClick={onOverlayClick}
-        >
-            <div className="bh-modal-card" onClick={onCardClick}>
-                <h3>{editing ? "Редагувати страву" : "Нова страва"}</h3>
+        <div className="bh-modal" onClick={onClose}>
+            <div className="bh-modal-card" onClick={e => e.stopPropagation()}>
+                <h3>{editing ? "Редагувати" : "Нова страва"}</h3>
 
                 <div className="modal-row">
                     <label>Назва</label>
@@ -110,17 +135,10 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
                 </div>
 
                 <div className="modal-row">
-                    <label>Категорія</label>
-                    <select value={form.category} onChange={e => change("category", e.target.value)}>
-                        <option value="pizza">Піца</option>
-                        <option value="burger">Бургер</option>
-                        <option value="sushi">Суші</option>
-                        <option value="pasta">Паста</option>
-                        <option value="salad">Салат</option>
-                        <option value="street">Стрітфуд</option>
-                    </select>
+                    <label>Опис</label>
+                    <textarea value={form.description} onChange={e => change("description", e.target.value)} />
                 </div>
-
+                
                 <div className="modal-row two">
                     <div>
                         <label>Ціна, ₴</label>
@@ -135,7 +153,15 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
                         </div>
                     </div>
                 </div>
+                
+                <div className="modal-row">
+                    <label>Час приготування (хв)</label>
+                    <input type="number" value={form.cookingTime} onChange={e => change("cookingTime", e.target.value)} />
+                </div>
 
+                {/* ============================
+                    DROP AREA (RESTORED)
+                ============================ */}
                 <div
                     ref={dropRef}
                     className="bh-droparea"
@@ -155,12 +181,30 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
                     <input type="file" accept="image/*" style={{ display: "none" }} onChange={onSelectFile} />
                 </div>
 
-                <div className="modal-row row-actions">
-                    <div className="spacer" />
-                    <div className="modal-buttons">
-                        <button className="btn ghost" onClick={onClose}>Скасувати</button>
-                        <button className="btn primary" onClick={submit}>{editing ? "Зберегти" : "Додати"}</button>
+                <h4>Інгредієнти</h4>
+
+                {form.ingredients.map((ing, i) => (
+                    <div key={i} className="ingredient-row">
+                        <input
+                            placeholder="Назва"
+                            value={ing.name}
+                            onChange={e => updateIngredient(i, "name", e.target.value)}
+                        />
+                        <input
+                            type="number"
+                            placeholder="Вага, г"
+                            value={ing.weight}
+                            onChange={e => updateIngredient(i, "weight", Number(e.target.value))}
+                        />
+                        <button onClick={() => removeIngredient(i)} className="btn danger small">X</button>
                     </div>
+                ))}
+
+                <button onClick={addIngredient} className="btn ghost">+ Додати інгредієнт</button>
+
+                <div className="modal-row row-actions">
+                    <button className="btn ghost" onClick={onClose}>Скасувати</button>
+                    <button className="btn primary" onClick={submit}>{editing ? "Зберегти" : "Додати"}</button>
                 </div>
             </div>
         </div>

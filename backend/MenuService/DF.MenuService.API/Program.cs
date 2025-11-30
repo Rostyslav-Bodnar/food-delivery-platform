@@ -16,6 +16,18 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// CORS Policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+            .AllowAnyHeader()                     // дозволяємо всі заголовки
+            .AllowAnyMethod()                   // дозволяємо всі HTTP методи
+            .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
+    });
+});
+
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -47,11 +59,12 @@ builder.Services.AddSingleton<UserServiceRpcClient>();
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<IIngredientService, IngredientService>();
 
 //Repositories
 builder.Services.AddScoped<IDishRepository, DishRepository>();
 builder.Services.AddScoped<IMenuRepository, MenuRepository>();
-
+builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 
 // Build the app
 var app = builder.Build();
@@ -63,6 +76,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

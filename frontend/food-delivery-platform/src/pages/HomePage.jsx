@@ -12,6 +12,7 @@ import BusinessHomePage from "../components/BusinessHomePage.jsx";
 const HomePage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [accountType, setAccountType] = useState(null);
+    const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
 
@@ -25,9 +26,11 @@ const HomePage = () => {
             }
 
             try {
-                const userData = await getProfile(); // ✅ Отримуємо UserDto
+                const userProfile = await getProfile();
                 setIsAuthenticated(true);
-                setAccountType(userData.currentAccount?.accountType); // "customer", "business", "courier"
+                setUserData(userProfile);
+                setAccountType(userProfile.currentAccount?.accountType);
+                console.log(userProfile);
             } catch (error) {
                 console.log('Token invalid or expired, logging out...');
                 localStorage.removeItem('accessToken');
@@ -64,9 +67,9 @@ const HomePage = () => {
     // ✅ Відображення відповідної домашньої сторінки
     switch (accountType?.toLowerCase()) {
         case 'customer':
-            return <CustomerHomePage />;
+            return <CustomerHomePage /*currentAccountId={currentAccountId}*/ />;
         case 'business':
-            return <BusinessHomePage />;
+            return <BusinessHomePage userData={userData} />;
         // case 'courier':
         //     return <CourierHomePage />;
         default:

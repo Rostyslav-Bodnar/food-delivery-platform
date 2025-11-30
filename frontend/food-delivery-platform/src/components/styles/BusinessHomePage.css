@@ -193,7 +193,7 @@
 
 /* confirm */
 .bh-confirm { position: fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1500; background: rgba(2,6,23,0.45); }
-.bh-confirm-card { background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:18px; border-radius:12px; width:420px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 18px 50px rgba(2,6,23,0.65); }
+.bh-confirm-card { background: radial-gradient(900px 400px at 10% 10%, rgba(124, 92, 255, 0.06), transparent 6%), radial-gradient(700px 300px at 90% 80%, rgba(0, 212, 255, 0.03), transparent 8%), linear-gradient(180deg, var(--bg-900), var(--bg-800)); padding:18px; border-radius:12px; width:420px; border:1px solid rgba(255,255,255,0.03); box-shadow: 0 18px 50px rgba(2,6,23,0.65); }
 .bh-confirm-card h4 { margin:0 0 8px 0; color:var(--text); }
 .bh-confirm-card p { margin:0 0 12px 0; color:var(--muted-2); }
 
@@ -213,3 +213,96 @@
     .bh-top { flex-wrap:wrap; gap:12px; }
     .bh-top-cta { order: 3; width:100%; display:flex; justify-content:center; }
 }
+
+/* ============================
+   FORM FIELDS INSIDE MODAL
+   ============================ */
+
+/* textarea */
+.bh-modal-card textarea {
+    padding: 10px;
+    border-radius: 10px;
+    min-height: 90px;
+    resize: vertical;
+    border: 1px solid rgba(255,255,255,0.04);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    color: var(--text);
+    font-family: inherit;
+    outline: none;
+    transition: border var(--transition), box-shadow var(--transition);
+}
+.bh-modal-card textarea:focus {
+    border-color: rgba(124,92,255,0.25);
+    box-shadow: 0 0 0 3px rgba(124,92,255,0.1);
+}
+
+/* ingredients block */
+.bh-modal-card h4 {
+    margin-top: 16px;
+    margin-bottom: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--muted-2);
+}
+
+/* ingredient row */
+.ingredient-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    align-items: center;
+}
+
+/* ingredient inputs */
+.ingredient-row input {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    color: var(--text);
+    outline: none;
+    transition: border var(--transition), box-shadow var(--transition);
+}
+
+.ingredient-row input:focus {
+    border-color: rgba(124,92,255,0.2);
+    box-shadow: 0 0 0 3px rgba(124,92,255,0.1);
+}
+
+/* delete ingredient button */
+.ingredient-row .btn.small.danger {
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,107,107,0.2);
+    background: linear-gradient(180deg, rgba(255,107,107,0.2), rgba(255,107,107,0.15));
+    color: #ffdede;
+    font-size: 12px;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.ingredient-row .btn.small.danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255,107,107,0.25);
+}
+
+/* Add ingredient button */
+.bh-modal-card .btn.ghost {
+    margin-top: 6px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.03);
+    color: var(--muted-2);
+    font-weight: 600;
+    transition: all var(--transition);
+}
+
+.bh-modal-card .btn.ghost:hover {
+    background: linear-gradient(90deg, rgba(124,92,255,0.08), rgba(0,212,255,0.04));
+    border-color: rgba(124,92,255,0.18);
+    color: var(--text);
+    transform: translateY(-2px);
+}
+
