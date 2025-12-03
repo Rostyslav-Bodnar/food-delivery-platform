@@ -20,6 +20,11 @@ export const getAccount = async (userId) => {
     return response.data;
 };
 
+export const getAllBusinessAccounts = async () => {
+    const response = await accountApi.get(`/all/business`);
+    return response.data;
+};
+
 export const getAccounts = async (userId) => {
     const response = await accountApi.get(`/all/${userId}`);
     return response.data;

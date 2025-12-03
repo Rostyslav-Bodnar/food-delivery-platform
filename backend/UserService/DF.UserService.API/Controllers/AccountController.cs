@@ -38,6 +38,17 @@ public class AccountController(IAccountService accountService) : ControllerBase
         return Ok(accounts);
     }
 
+    [HttpGet("all/business")]
+    public async Task<IActionResult> GetAllBusinessAccounts()
+    {
+        var result = await accountService.GetBusinessAccountsAsync();
+        
+        if(result == null)
+            return NotFound($"Business accounts for user {User.Identity.Name} not found.");
+        
+        return Ok(result);
+    }
+
     [HttpPost("courier")]
     public async Task<ActionResult<AccountResponse>> CreateCourierAccount([FromForm] CreateCourierAccountRequest request)
     {

@@ -11,4 +11,5 @@ public interface IAccountService
     Task<bool> DeleteAccountAsync(Guid id);
     Task<AccountResponse?> GetAccountByUserAsync(Guid userId);
     Task<IEnumerable<AccountResponse>?> GetAccountsByUserAsync(Guid userId);
+    Task<IEnumerable<AccountResponse>?> GetBusinessAccountsAsync();
 }

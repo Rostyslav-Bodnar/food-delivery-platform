@@ -113,6 +113,19 @@ public class AccountService(
             throw new ApplicationException($"Error retrieving accounts for user {userId}", ex);
         }
     }
+
+    public async Task<IEnumerable<AccountResponse>?> GetBusinessAccountsAsync()
+    {
+        var accounts = await accountRepository.GetAll();
+
+        var businessAccounts = accounts
+            .OfType<BusinessAccount>()
+            .Select(b => AccountMapper.ToDTO(b));
+
+        return businessAccounts.ToList();
+    }
+
+
     
     private string? ExtractPublicIdFromUrl(string imageUrl)
     {
