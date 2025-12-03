@@ -26,8 +26,7 @@ const DishPage = () => {
     useEffect(() => {
         const loadDish = async () => {
             try {
-                const token = localStorage.getItem("accessToken");
-                const data = await getDishForCustomer(id, token);
+                const data = await getDishForCustomer(id);
 
                 // Мапаємо дані з бекенду у формат сторінки
                 const mappedDish = {
