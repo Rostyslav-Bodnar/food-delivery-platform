@@ -24,7 +24,6 @@ export default function BusinessHomePage({ userData }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    const token = localStorage.getItem("accessToken");
     const businessId = userData.currentAccount?.id;
 
     const [q, setQ] = useState("");
@@ -46,7 +45,7 @@ export default function BusinessHomePage({ userData }) {
             try {
                 setLoading(true);
 
-                const res = await getDishesByBusinessId(businessId, token);
+                const res = await getDishesByBusinessId(businessId);
 
                 setDishes(res);
             } catch (err) {
@@ -58,14 +57,14 @@ export default function BusinessHomePage({ userData }) {
         };
 
         loadDishes();
-    }, [businessId, token]);
+    }, [businessId]);
 
     // ============================
     // 🔥 CREATE DISH — API
     // ============================
     const handleCreate = async (newDish) => {
         try {
-            const created = await createDish(newDish, token);
+            const created = await createDish(newDish);
             setDishes(prev => [created, ...prev]);
         } catch (err) {
             console.log(newDish);
@@ -79,7 +78,7 @@ export default function BusinessHomePage({ userData }) {
     // ============================
     const handleUpdate = async (id, patch) => {
         try {
-            const updated = await updateDish(id, patch, token);
+            const updated = await updateDish(id, patch);
 
             setDishes(prev =>
                 prev.map(d => (d.id === id ? updated : d))
@@ -95,7 +94,7 @@ export default function BusinessHomePage({ userData }) {
     // ============================
     const handleDelete = async (id) => {
         try {
-            await deleteDish(id, token);
+            await deleteDish(id);
             setDishes(prev => prev.filter(d => d.id !== id));
         } catch (err) {
             console.error(err);

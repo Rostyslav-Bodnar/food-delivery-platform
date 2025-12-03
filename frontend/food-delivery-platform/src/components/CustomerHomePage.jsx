@@ -41,8 +41,7 @@ const CustomerHomePage = () => {
                 // 3. Завантажуємо реальні страви з бекенду
                 setLoading(true);
 
-                const token = localStorage.getItem("accessToken");
-                const data = await getAllDishesForCustomer(token);
+                const data = await getAllDishesForCustomer();
 
                 // Перетворення у формат, з яким працює фронт
                 const mappedDishes = data.map(d => ({

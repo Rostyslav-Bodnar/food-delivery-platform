@@ -1,9 +1,11 @@
 using DF.MenuService.Application.Services.Interfaces;
 using DF.MenuService.Contracts.Models.Request;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.MenuService.API.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class DishController(IDishService dishService) : ControllerBase
