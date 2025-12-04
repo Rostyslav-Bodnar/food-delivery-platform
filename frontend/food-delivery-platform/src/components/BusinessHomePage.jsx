@@ -25,7 +25,9 @@ export default function BusinessHomePage({ userData }) {
     const [error, setError] = useState(null);
 
     const businessId = userData.currentAccount?.id;
-
+    const businessName = userData.currentAccount?.name;
+    const businessLogo = userData.currentAccount?.imageUrl;
+    
     const [q, setQ] = useState("");
     const [category, setCategory] = useState("all");
     const [onlyPopular, setOnlyPopular] = useState(false);
@@ -141,8 +143,10 @@ export default function BusinessHomePage({ userData }) {
             {/* SIDEBAR */}
             <aside className="bh-sidebar">
                 <div className="bh-brand">
-                    <div className="bh-logo">FE</div>
-                    <div className="bh-title">FoodExpress</div>
+                    <div className="bh-logo">
+                        <img src={businessLogo} />
+                    </div>
+                    <div className="bh-title">{businessName}</div>
                 </div>
 
                 <nav className="bh-nav">

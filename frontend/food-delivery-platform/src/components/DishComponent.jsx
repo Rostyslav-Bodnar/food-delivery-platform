@@ -1,6 +1,8 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
 
 export default function DishComponent({ open, onClose, onCreate, onUpdate, editing, userData }) {
+    const [page, setPage] = useState(1); // 🔥 СТОРІНКА 1/2
+
     const [form, setForm] = useState({
         name: "",
         category: "pizza",
@@ -40,6 +42,8 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
             });
         }
 
+        setPage(1); // reset page on open
+
         return () => {
             if (prevObjectUrlRef.current) {
                 URL.revokeObjectURL(prevObjectUrlRef.current);
@@ -65,12 +69,10 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
     };
 
     /* ============================
-       IMAGE FILE HANDLING (dropArea)
+       IMAGE FILE HANDLING
        ============================ */
-
     const handleFiles = (file) => {
         if (!file) return;
-
         if (prevObjectUrlRef.current) URL.revokeObjectURL(prevObjectUrlRef.current);
 
         const url = URL.createObjectURL(file);
@@ -100,9 +102,10 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
         if (f && f.type.startsWith("image/")) handleFiles(f);
     };
 
+    /* ============================
+            SUBMIT
+       ============================ */
     const submit = () => {
-        if (!form.name.trim()) return alert("Вкажіть назву");
-
         const payload = {
             userId: userData.id,
             menuId: null,
@@ -129,83 +132,107 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
             <div className="bh-modal-card" onClick={e => e.stopPropagation()}>
                 <h3>{editing ? "Редагувати" : "Нова страва"}</h3>
 
-                <div className="modal-row">
-                    <label>Назва</label>
-                    <input value={form.name} onChange={e => change("name", e.target.value)} />
-                </div>
-
-                <div className="modal-row">
-                    <label>Опис</label>
-                    <textarea value={form.description} onChange={e => change("description", e.target.value)} />
-                </div>
-                
-                <div className="modal-row two">
-                    <div>
-                        <label>Ціна, ₴</label>
-                        <input type="number" value={form.price} onChange={e => change("price", e.target.value)} />
-                    </div>
-
-                    <div>
-                        <label>Хіт</label>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                            <input type="checkbox" checked={form.popular} onChange={e => change("popular", e.target.checked)} />
-                            <span className="hint">Показувати як хіт</span>
+                {/* -------------------------
+                    PAGE 1 — Info + Image
+                ------------------------- */}
+                {page === 1 && (
+                    <>
+                        <div className="modal-row">
+                            <label>Назва</label>
+                            <input value={form.name} onChange={e => change("name", e.target.value)} />
                         </div>
-                    </div>
-                </div>
-                
-                <div className="modal-row">
-                    <label>Час приготування (хв)</label>
-                    <input type="number" value={form.cookingTime} onChange={e => change("cookingTime", e.target.value)} />
-                </div>
 
-                {/* ============================
-                    DROP AREA (RESTORED)
-                ============================ */}
-                <div
-                    ref={dropRef}
-                    className="bh-droparea"
-                    onDrop={onDrop}
-                    onDragOver={onDragOver}
-                    onDragLeave={onDragLeave}
-                    onClick={() => dropRef.current?.querySelector('input[type="file"]')?.click()}
-                >
-                    {form.imagePreview ? (
-                        <img src={form.imagePreview} alt="preview" />
-                    ) : (
-                        <div style={{ textAlign: "center" }}>
-                            <div style={{ fontWeight: 700, color: "var(--muted-2)" }}>Перетягніть або оберіть зображення</div>
-                            <div style={{ fontSize: 13, color: "var(--muted-2)" }}>PNG / JPG, до 5MB</div>
+                        <div className="modal-row">
+                            <label>Опис</label>
+                            <textarea value={form.description} onChange={e => change("description", e.target.value)} />
                         </div>
-                    )}
-                    <input type="file" accept="image/*" style={{ display: "none" }} onChange={onSelectFile} />
-                </div>
 
-                <h4>Інгредієнти</h4>
+                        <div
+                            ref={dropRef}
+                            className="bh-droparea"
+                            onDrop={onDrop}
+                            onDragOver={onDragOver}
+                            onDragLeave={onDragLeave}
+                            onClick={() => dropRef.current?.querySelector('input[type="file"]')?.click()}
+                        >
+                            {form.imagePreview ? (
+                                <img src={form.imagePreview} alt="preview" />
+                            ) : (
+                                <div style={{ textAlign: "center" }}>
+                                    <div style={{ fontWeight: 700, color: "var(--muted-2)" }}>Перетягніть або оберіть зображення</div>
+                                    <div style={{ fontSize: 13, color: "var(--muted-2)" }}>PNG / JPG, до 5MB</div>
+                                </div>
+                            )}
+                            <input type="file" accept="image/*" style={{ display: "none" }} onChange={onSelectFile} />
+                        </div>
 
-                {form.ingredients.map((ing, i) => (
-                    <div key={i} className="ingredient-row">
-                        <input
-                            placeholder="Назва"
-                            value={ing.name}
-                            onChange={e => updateIngredient(i, "name", e.target.value)}
-                        />
-                        <input
-                            type="number"
-                            placeholder="Вага, г"
-                            value={ing.weight}
-                            onChange={e => updateIngredient(i, "weight", Number(e.target.value))}
-                        />
-                        <button onClick={() => removeIngredient(i)} className="btn danger small">X</button>
-                    </div>
-                ))}
+                        <div className="modal-row row-actions">
+                            <button className="btn ghost" onClick={onClose}>Скасувати</button>
+                            <button
+                                className="btn primary"
+                                onClick={() => setPage(2)}
+                                disabled={!form.name.trim()}
+                            >
+                                Далі →
+                            </button>
+                        </div>
+                    </>
+                )}
 
-                <button onClick={addIngredient} className="btn ghost">+ Додати інгредієнт</button>
+                {/* -------------------------
+                    PAGE 2 — Price + Ingredients
+                ------------------------- */}
+                {page === 2 && (
+                    <>
+                        <div className="modal-row two">
+                            <div>
+                                <label>Ціна, ₴</label>
+                                <input
+                                    type="number"
+                                    value={form.price}
+                                    onChange={e => change("price", e.target.value)}
+                                />
+                            </div>
 
-                <div className="modal-row row-actions">
-                    <button className="btn ghost" onClick={onClose}>Скасувати</button>
-                    <button className="btn primary" onClick={submit}>{editing ? "Зберегти" : "Додати"}</button>
-                </div>
+                            <div>
+                                <label>Час приготування (хв)</label>
+                                <input
+                                    type="number"
+                                    value={form.cookingTime}
+                                    onChange={e => change("cookingTime", e.target.value)}
+                                />
+                            </div>
+                        </div>
+
+                        <h4>Інгредієнти</h4>
+
+                        {form.ingredients.map((ing, i) => (
+                            <div key={i} className="ingredient-row">
+                                <input
+                                    placeholder="Назва"
+                                    value={ing.name}
+                                    onChange={e => updateIngredient(i, "name", e.target.value)}
+                                />
+                                <input
+                                    type="number"
+                                    placeholder="Вага, г"
+                                    value={ing.weight}
+                                    onChange={e => updateIngredient(i, "weight", Number(e.target.value))}
+                                />
+                                <button onClick={() => removeIngredient(i)} className="btn danger small">X</button>
+                            </div>
+                        ))}
+
+                        <button onClick={addIngredient} className="btn ghost">+ Додати інгредієнт</button>
+
+                        <div className="modal-row row-actions">
+                            <button className="btn ghost" onClick={() => setPage(1)}>← Назад</button>
+                            <button className="btn primary" onClick={submit}>
+                                {editing ? "Зберегти" : "Додати"}
+                            </button>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

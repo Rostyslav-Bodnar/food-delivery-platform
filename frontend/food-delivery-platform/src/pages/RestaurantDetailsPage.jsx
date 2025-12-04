@@ -138,7 +138,7 @@ const RestaurantDetailsPage = () => {
             {/* ХЕДЕР */}
             <div className="sticky-header">
                 <div className="search-input-wrapper">
-                    <Search size={22} className="search-icon" />
+                    <Search size={22} className="restaurant-search-icon" />
                     <input
                         type="text"
                         placeholder={`Пошук в ${restaurant.name}...`}

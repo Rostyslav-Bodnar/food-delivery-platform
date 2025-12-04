@@ -84,7 +84,7 @@
     max-width: 100% !important;
 }
 .filter-sidebar{
-    position: fixed; left:20px; top:12vh; width:340px; max-width: calc(100% - 40px);
+    position: fixed; width:340px; max-width: calc(100% - 40px);
     background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
     border:1px solid var(--glass-border); border-radius:14px; padding:18px; z-index:45;
     box-shadow: 0 30px 70px rgba(2,6,23,0.75); backdrop-filter: blur(12px) saturate(120%);

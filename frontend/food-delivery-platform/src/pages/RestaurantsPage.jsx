@@ -95,7 +95,7 @@ const RestaurantsPage = () => {
 
                         <div className="search-and-filters">
                             <div className="search-bar">
-                                <Search size={20} className="search-icon" />
+                                <Search size={20} className="restaurants-search-icon" />
                                 <input
                                     type="text"
                                     placeholder="Пошук закладу..."
