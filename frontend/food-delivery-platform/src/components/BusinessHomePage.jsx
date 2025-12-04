@@ -10,6 +10,7 @@ import {
     updateDish,
     deleteDish
 } from "../api/Dish.jsx";
+import {CategoryList, CategoryMap} from "../constants/category.jsx";
 
 const SIDEBAR_ITEMS = [
     { id: "dashboard", label: "Статистика", icon: BarChart2 },
@@ -119,7 +120,9 @@ export default function BusinessHomePage({ userData }) {
         let out = dishes.slice();
 
         if (q.trim()) out = out.filter(d => d.name.toLowerCase().includes(q.toLowerCase()));
-        if (category !== "all") out = out.filter(d => d.category === category);
+        if (category !== "all")
+            out = out.filter(d => d.category === category);
+
         if (onlyPopular) out = out.filter(d => d.popular);
         if (sortBy === "name") out.sort((a, b) => a.name.localeCompare(b.name));
         if (sortBy === "price") out.sort((a, b) => a.price - b.price);
@@ -178,10 +181,11 @@ export default function BusinessHomePage({ userData }) {
                         </div>
 
                         <div className="filters">
-                            <select value={category} onChange={e => setCategory(e.target.value)}>
-                                {categories.map(c => (
-                                    <option key={c} value={c}>
-                                        {c === "all" ? "Усі категорії" : c}
+                            <select value={category} onChange={e => setCategory(Number(e.target.value))}>
+                                <option value="all">Усі категорії</option>
+                                {CategoryList.map(cat => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.name}
                                     </option>
                                 ))}
                             </select>
@@ -226,7 +230,7 @@ export default function BusinessHomePage({ userData }) {
                                         </div>
 
                                         <div className="row sub">
-                                            <div className="cat">{d.category}</div>
+                                            <div className="cat">{CategoryMap[d.category]}</div>
                                             <div className="rating">⭐ {d.rating}</div>
                                             {d.popular && <div className="badge">ХІТ</div>}
                                         </div>

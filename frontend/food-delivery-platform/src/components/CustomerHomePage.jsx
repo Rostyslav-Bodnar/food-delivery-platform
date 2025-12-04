@@ -9,6 +9,7 @@ import './styles/CustomerHomePage.css';
 import { getAllDishesForCustomer} from "../api/Dish.jsx";
 import CustomerSidebar from './customer-components/CustomerSidebar';
 import DishCardComponent from './customer-components/DishCardComponent';
+import {CategoryList, CategoryMap} from "../constants/category.jsx";
 
 const CustomerHomePage = () => {
     const [popularDishes, setPopularDishes] = useState([]);
@@ -51,7 +52,7 @@ const CustomerHomePage = () => {
                     rating: 4.5, // якщо поки немає рейтингу з бекенду
                     restaurant: d.businessDetails.name, // бекенд не дає назву закладу
                     price: d.price,
-                    category: d.category.toString().toLowerCase()
+                    category: CategoryMap[d.category]
                 }));
 
                 setAllDishes(mappedDishes);
@@ -148,13 +149,13 @@ const CustomerHomePage = () => {
                                     <label>Категорія</label>
                                     <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
                                         <option value="all">Всі страви</option>
-                                        <option value="pizza">Піца</option>
-                                        <option value="burger">Бургери</option>
-                                        <option value="sushi">Суші</option>
-                                        <option value="pasta">Паста</option>
-                                        <option value="street">Стрітфуд</option>
-                                        <option value="salad">Салати</option>
+                                        {CategoryList.map(cat => (
+                                            <option key={cat.id} value={cat.name}>
+                                                {cat.name}
+                                            </option>
+                                        ))}
                                     </select>
+
                                 </motion.div>
                                 <motion.div className="filter-group" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}>
                                     <label>Мінімальний рейтинг</label>

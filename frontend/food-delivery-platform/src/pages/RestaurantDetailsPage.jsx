@@ -5,6 +5,7 @@ import { ArrowLeft, Search, X, Flame, MapPin } from 'lucide-react';
 import './styles/RestaurantDetailsPage.css';
 import DishCardComponent from "../components/customer-components/DishCardComponent.jsx";
 import {getDishesForCustomerByBusinessId} from "../api/Dish.jsx";
+import {CategoryMap} from "../constants/category.jsx";
 
 const RestaurantDetailsPage = () => {
     const { state } = useLocation();
@@ -31,7 +32,8 @@ const RestaurantDetailsPage = () => {
                         rating: d.rating ?? 5,       // або з бекенду
                         reviews: d.reviews ?? 0,     // або з бекенду
                         popular: d.popular ?? false, // або з бекенду
-                        restaurant: restaurant.name
+                        restaurant: restaurant.name,
+                        category: CategoryMap[d.category]
                     }))
                 );
             } catch (e) {
@@ -148,6 +150,14 @@ const RestaurantDetailsPage = () => {
                     {searchQuery && (
                         <X size={22} className="clear-search" onClick={() => setSearchQuery('')} />
                     )}
+                    <div className="sort-bar">
+                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                            <option value="popular">Популярні</option>
+                            <option value="price-asc">Спочатку дешевші</option>
+                            <option value="price-desc">Спочатку дорожчі</option>
+                            <option value="rating">За рейтингом</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div className="categories-scroll">
@@ -160,15 +170,6 @@ const RestaurantDetailsPage = () => {
                             {cat === 'all' ? 'Усе меню' : cat}
                         </button>
                     ))}
-                </div>
-
-                <div className="sort-bar">
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="popular">Популярні</option>
-                        <option value="price-asc">Спочатку дешевші</option>
-                        <option value="price-desc">Спочатку дорожчі</option>
-                        <option value="rating">За рейтингом</option>
-                    </select>
                 </div>
             </div>
 
@@ -204,7 +205,7 @@ const RestaurantDetailsPage = () => {
                                             whileInView={{ opacity: 1, y: 0 }}
                                             viewport={{ once: true }}
                                             transition={{ delay: i * 0.05 }}
-                                            whileHover={{ y: -12, scale: 1.02 }}
+                                            whileHover={{ y: -5, scale: 1.0 }}
                                         >
                                             <Link to={`/dish/${dish.id}`} className="dish-card big">
                                                 {dish.popular && <div className="hit-badge"><Flame size={18} /> ХІТ</div>}

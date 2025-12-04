@@ -131,7 +131,7 @@
     box-shadow: 0 10px 30px rgba(2,6,23,0.45);
     transition: transform var(--transition), box-shadow var(--transition);
 }
-.admin-dish-card:hover { transform: translateY(-6px); box-shadow: 0 18px 46px rgba(2,6,23,0.5); }
+.admin-dish-card:hover { box-shadow: 0 18px 46px rgba(2,6,23,0.5); }
 
 /* fixed thumb */
 .admin-dish-card .thumb {
@@ -317,6 +317,41 @@
     background: linear-gradient(90deg, rgba(124,92,255,0.08), rgba(0,212,255,0.04));
     border-color: rgba(124,92,255,0.18);
     color: var(--text);
+    transform: translateY(-2px);
+}
+
+
+.bh-select {
+    width: 100%;
+    padding: 10px 12px;
+    margin: 6px 0 14px 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 15px;
+    outline: none;
+    cursor: pointer;
+    transition: border var(--transition), box-shadow var(--transition), transform var(--transition);
+    box-shadow: 0 6px 18px rgba(2,6,23,0.3);
+}
+
+/* Колір варіантів */
+.bh-select option {
+    background: var(--bg-800);
+    color: var(--text);
+}
+
+/* Hover */
+.bh-select:hover {
+    border-color: rgba(124,92,255,0.25);
+    box-shadow: 0 10px 28px rgba(124,92,255,0.12);
+}
+
+/* Фокус */
+.bh-select:focus {
+    border-color: var(--accent-2);
+    box-shadow: 0 12px 34px rgba(124,92,255,0.18);
     transform: translateY(-2px);
 }
 

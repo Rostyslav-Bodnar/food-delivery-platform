@@ -1,4 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
+import {CategoryList} from "../constants/category.jsx";
 
 export default function DishComponent({ open, onClose, onCreate, onUpdate, editing, userData }) {
     const [page, setPage] = useState(1); // 🔥 СТОРІНКА 1/2
@@ -106,6 +107,7 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
             SUBMIT
        ============================ */
     const submit = () => {
+        debugger;
         const payload = {
             userId: userData.id,
             menuId: null,
@@ -146,7 +148,15 @@ export default function DishComponent({ open, onClose, onCreate, onUpdate, editi
                             <label>Опис</label>
                             <textarea value={form.description} onChange={e => change("description", e.target.value)} />
                         </div>
-
+                        <select
+                            className="bh-select"
+                            value={form.category}
+                            onChange={(e) => setForm({ ...form, category: Number(e.target.value) })}
+                        >
+                            {CategoryList.map(cat => (
+                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            ))}
+                        </select>
                         <div
                             ref={dropRef}
                             className="bh-droparea"

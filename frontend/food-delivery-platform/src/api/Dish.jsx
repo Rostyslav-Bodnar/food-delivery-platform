@@ -1,4 +1,5 @@
 ﻿import axios from "axios";
+import {CategoryMap} from "../constants/category.jsx";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5110/api";
 
@@ -57,14 +58,6 @@ export const deleteDish = async (id) => {
     return response.data;
 };
 
-// Мапа категорій → enum
-const categoryMap = {
-    pizza: 1,
-    drinks: 2,
-    salad: 3,
-    dessert: 4,
-};
-
 // Створити страву
 export const createDish = async (dish) => {
     const formData = new FormData();
@@ -78,8 +71,8 @@ export const createDish = async (dish) => {
     formData.append("Price", dish.price);
     formData.append("CookingTime", dish.cookingTime);
 
-    if (dish.category && categoryMap[dish.category]) {
-        formData.append("Category", categoryMap[dish.category]);
+    if (dish.category && CategoryMap[dish.category]) {
+        formData.append("Category", CategoryMap[dish.category]);
     }
 
     if (dish.image) {
