@@ -1,46 +1,51 @@
 ﻿using DF.UserService.Application.Factories.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Request;
+using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Factories;
 
-public class AccountFactory : IAccountFactory
+public class AccountFactory(ICloudinaryService cloudinaryService) : IAccountFactory
 {
-    public Account CreateAccount(AccountDTO dto)
+    public async Task<Account> CreateAccount(CreateAccountRequest request, Guid userId)
     {
-        return dto switch
+        UploadImageResult? image = null;
+        if (request.ImageFile != null && request.ImageFile.Length > 0)
         {
-            CustomerAccountDTO c => new CustomerAccount
+            image = await cloudinaryService.UploadAsync(request.ImageFile,  "users");
+        }
+        return request switch
+        {
+            CreateCustomerAccountRequest c => new CustomerAccount
             {
-                Id = string.IsNullOrEmpty(c.Id) ? Guid.NewGuid() : Guid.Parse(c.Id),
-                UserId = Guid.Parse(c.UserId),
-                AccountType = Enum.Parse<AccountType>(c.AccountType),
+                UserId = userId,
+                AccountType = (AccountType)c.AccountType,
                 Name = c.Name,
                 Surname = c.Surname,
                 Address = c.Address,
                 PhoneNumber = c.PhoneNumber,
-                ImageUrl = c.ImageUrl
+                ImageUrl = image?.Url ?? ""
             },
-            BusinessAccountDTO b => new BusinessAccount
+            CreateBusinessAccountRequest b => new BusinessAccount
             {
-                Id = string.IsNullOrEmpty(b.Id) ? Guid.NewGuid() : Guid.Parse(b.Id),
-                UserId = Guid.Parse(b.UserId),
-                AccountType = Enum.Parse<AccountType>(b.AccountType),
+                UserId = userId,
+                AccountType = (AccountType)b.AccountType,
                 Name = b.Name,
                 Description = b.Description,
-                ImageUrl = b.ImageUrl
+                ImageUrl = image?.Url ?? ""
             },
-            CourierAccountDTO co => new CourierAccount
+            CreateCourierAccountRequest co => new CourierAccount
             {
-                Id = string.IsNullOrEmpty(co.Id) ? Guid.NewGuid() : Guid.Parse(co.Id),
-                UserId = Guid.Parse(co.UserId),
-                AccountType = Enum.Parse<AccountType>(co.AccountType),
+                UserId = userId,
+                AccountType = (AccountType)co.AccountType,
                 Name = co.Name,
                 Surname = co.Surname,
                 Address = co.Address,
                 PhoneNumber = co.PhoneNumber,
                 Description = co.Description,
-                ImageUrl = co.ImageUrl
+                ImageUrl = image?.Url ?? ""
             },
             _ => throw new ArgumentException("Unsupported AccountDTO type")
         };

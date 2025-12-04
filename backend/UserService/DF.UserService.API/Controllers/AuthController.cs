@@ -1,4 +1,4 @@
-﻿using DF.UserService.Application.Interfaces;
+﻿using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using Microsoft.AspNetCore.Mvc;

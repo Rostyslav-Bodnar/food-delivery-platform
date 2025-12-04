@@ -4,12 +4,13 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background: linear-gradient(145deg, #fff3e0, #ffe0cc);
+    background: linear-gradient(145deg, #1a1a1a, #2d2d2d);
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
     padding: 3rem 1rem;
     animation: fadeIn 0.8s ease-in-out;
+    color: #e0e0e0;
 }
 
 /* Hero section */
@@ -18,11 +19,11 @@
     width: 100%;
     text-align: center;
     padding: 2.5rem;
-    background: rgba(255, 255, 255, 0.9);
+    background: rgba(30, 30, 30, 0.95);
     border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(255, 99, 71, 0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 99, 71, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 /* Welcome title */
@@ -30,10 +31,12 @@
     font-family: 'Poppins', sans-serif;
     font-size: 2.5rem;
     font-weight: 700;
-    color: #ff5733;
+    color: #ffffff;
     margin-bottom: 1.5rem;
-    background: linear-gradient(135deg, #ff5733, #ff8c66);
+    background: linear-gradient(135deg, #ffffff, #cccccc);
     -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     animation: slideIn 0.6s ease-in-out;
 }
 
@@ -41,7 +44,7 @@
 .hero-text {
     font-family: 'Poppins', sans-serif;
     font-size: 1.2rem;
-    color: #333;
+    color: #b0b0b0;
     margin-bottom: 2rem;
     line-height: 1.6;
     max-width: 600px;
@@ -63,25 +66,27 @@
     font-size: 1.1rem;
     padding: 0.8rem 2rem;
     border-radius: 12px;
-    background: linear-gradient(135deg, #ff7f50, #ff6347);
+    background: linear-gradient(135deg, #333333, #444444);
     color: white;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(255, 99, 71, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.cta-button:hover {
-    background: linear-gradient(135deg, #ff6347, #ff4500);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(255, 99, 71, 0.4);
-}
+    .cta-button:hover {
+        background: linear-gradient(135deg, #444444, #555555);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.6);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
 
 .cta-button--register {
-    background: linear-gradient(135deg, #ff4500, #ff7043);
+    background: linear-gradient(135deg, #2a2a2a, #3a3a3a);
 }
 
-.cta-button--register:hover {
-    background: linear-gradient(135deg, #ff5733, #ff8c66);
-}
+    .cta-button--register:hover {
+        background: linear-gradient(135deg, #3a3a3a, #4a4a4a);
+    }
 
 /* Animations */
 @keyframes fadeIn {
@@ -89,6 +94,7 @@
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -100,6 +106,7 @@
         opacity: 0;
         transform: translateY(-15px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -152,4 +159,11 @@
         font-size: 0.95rem;
         padding: 0.6rem 1.2rem;
     }
+}
+
+/* Loading spinner */
+.loading-spinner {
+    font-size: 1.2rem;
+    color: #888;
+    font-family: 'Poppins', sans-serif;
 }

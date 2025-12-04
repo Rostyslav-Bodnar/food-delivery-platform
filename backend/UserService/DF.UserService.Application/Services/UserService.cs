@@ -1,5 +1,5 @@
-﻿using DF.UserService.Application.Interfaces;
-using DF.UserService.Application.Mappers;
+﻿using DF.UserService.Application.Mappers;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;

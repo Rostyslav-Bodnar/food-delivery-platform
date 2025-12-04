@@ -1,4 +1,5 @@
-﻿import React, { useState, useRef, useEffect } from "react";
+﻿// src/components/HeaderComponent.jsx
+import React, { useState, useRef, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useUser } from "../context/UserContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,57 +12,65 @@ const Header = () => {
     const dropdownRef = useRef(null);
     const navigate = useNavigate();
 
-    // Handle outside click to close dropdown
+    // Закриття дропдауна при кліку поза ним
     useEffect(() => {
         const handleOutsideClick = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setIsDropdownOpen(false);
-                setIsAccountsOpen(true); // Reset accounts list to open when dropdown closes
+                setIsAccountsOpen(true);
             }
         };
-
         if (isDropdownOpen) {
             document.addEventListener("mousedown", handleOutsideClick);
         }
-
         return () => {
             document.removeEventListener("mousedown", handleOutsideClick);
         };
     }, [isDropdownOpen]);
 
+    // Переключення акаунта
     const handleSelectAccount = async (account) => {
+        if (account.id === currentAccountId) {
+            setIsDropdownOpen(false);
+            return;
+        }
+
         await switchAccount(account.id);
+        // reload() вже в UserContext → не потрібно тут
         setIsDropdownOpen(false);
     };
 
     const toggleAccounts = () => setIsAccountsOpen(prev => !prev);
 
-    if (loading)
+    if (loading) {
         return (
             <header className="header">
-                <h1>Foodie Delivery 🍔</h1>
+                <h1>Foodie Delivery</h1>
                 <p>Loading...</p>
             </header>
         );
+    }
 
     const activeAccount = accounts.find(acc => acc.id === currentAccountId) || {};
     const otherAccounts = accounts.filter(acc => acc.id !== currentAccountId);
     const totalAccounts = accounts.length;
 
-    // Determine positions for non-active accounts (left or right, same height, partially overlapped)
+    // Позиціонування інших акаунтів
     const getPosition = (index) => {
         if (totalAccounts === 1) return { x: 0, y: 0, zIndex: 3 };
         if (totalAccounts === 2) return { x: index === 0 ? -20 : 0, y: 0, zIndex: index === 0 ? 1 : 3 };
-        if (index === 0) return { x: -20, y: 0, zIndex: 1 }; // Left
-        if (index === 1) return { x: 20, y: 0, zIndex: 1 }; // Right
-        return { x: 0, y: 0, zIndex: 3 }; // Active (center)
+        if (index === 0) return { x: -20, y: 0, zIndex: 1 }; // Ліворуч
+        if (index === 1) return { x: 20, y: 0, zIndex: 1 }; // Праворуч
+        return { x: 0, y: 0, zIndex: 3 }; // Активний (центр)
     };
 
     return (
         <header className="header">
-            <NavLink className="page-header" to="/">Foodie Delivery 🍔</NavLink>
+            <NavLink className="page-header" to="/">Foodie Delivery</NavLink>
+
             <nav>
                 <NavLink className="nav-link" to="/">Home</NavLink>
+
                 {!user && (
                     <>
                         <NavLink className="nav-link" to="/login">Login</NavLink>
@@ -72,7 +81,7 @@ const Header = () => {
                 {user && (
                     <div className="account-bubbles-container" ref={dropdownRef}>
                         <div className="account-bubbles">
-                            {/* Active account bubble */}
+                            {/* Активний акаунт */}
                             <motion.div
                                 className="account-bubble active"
                                 title={activeAccount.accountType}
@@ -92,7 +101,7 @@ const Header = () => {
                                 )}
                             </motion.div>
 
-                            {/* Non-active account bubbles */}
+                            {/* Інші акаунти */}
                             {otherAccounts.map((acc, index) => {
                                 const position = getPosition(index);
                                 return (
@@ -125,6 +134,7 @@ const Header = () => {
                             })}
                         </div>
 
+                        {/* Дропдаун */}
                         <AnimatePresence>
                             {isDropdownOpen && (
                                 <motion.div
@@ -134,7 +144,7 @@ const Header = () => {
                                     exit={{ opacity: 0, y: -10 }}
                                     transition={{ duration: 0.3, ease: "easeOut" }}
                                 >
-                                    <h4>{user.name + " " + user.surname}</h4>
+                                    <h4>{user.name} {user.surname}</h4>
 
                                     <motion.button
                                         className="action-btn-header"

@@ -1,4 +1,5 @@
 ﻿using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Mappers;
@@ -6,11 +7,11 @@ namespace DF.UserService.Application.Mappers;
 public static class AccountMapper
 {
     // === ENTITY → DTO ===
-    public static AccountDTO ToDTO(Account account)
+    public static AccountResponse ToDTO(Account account)
     {
         return account switch
         {
-            CourierAccount courier => new CourierAccountDTO(
+            CourierAccount courier => new CourierAccountResponse(
                 courier.Id.ToString(),
                 courier.UserId.ToString(),
                 courier.AccountType.ToString(),
@@ -21,7 +22,7 @@ public static class AccountMapper
                 courier.Address,
                 courier.Description
             ),
-            CustomerAccount customer => new CustomerAccountDTO(
+            CustomerAccount customer => new CustomerAccountResponse(
                 customer.Id.ToString(),
                 customer.UserId.ToString(),
                 customer.AccountType.ToString(),
@@ -31,7 +32,7 @@ public static class AccountMapper
                 customer.Surname,
                 customer.Address
             ),
-            BusinessAccount business => new BusinessAccountDTO(
+            BusinessAccount business => new BusinessAccountResponse(
                 business.Id.ToString(),
                 business.UserId.ToString(),
                 business.AccountType.ToString(),
@@ -44,43 +45,40 @@ public static class AccountMapper
     }
 
     // === DTO → ENTITY ===
-    public static Account ToEntity(AccountDTO dto)
+    public static Account ToEntity(CreateAccountRequest request, Guid userId, string? imageUrl = null)
     {
-        return dto switch
+        return request switch
         {
-            CourierAccountDTO courier => new CourierAccount
+            CreateCourierAccountRequest courier => new CourierAccount
             {
-                Id = string.IsNullOrEmpty(courier.Id) ? Guid.NewGuid() : Guid.Parse(courier.Id),
-                UserId = Guid.Parse(courier.UserId),
-                AccountType = Enum.Parse<AccountType>(courier.AccountType),
-                ImageUrl = courier.ImageUrl,
+                UserId = userId,
+                AccountType = (AccountType)courier.AccountType,
+                ImageUrl = imageUrl,
                 PhoneNumber = courier.PhoneNumber,
                 Name = courier.Name,
                 Surname = courier.Surname,
                 Address = courier.Address,
                 Description = courier.Description
             },
-            CustomerAccountDTO customer => new CustomerAccount
+            CreateCustomerAccountRequest customer => new CustomerAccount
             {
-                Id = string.IsNullOrEmpty(customer.Id) ? Guid.NewGuid() : Guid.Parse(customer.Id),
-                UserId = Guid.Parse(customer.UserId),
-                AccountType = Enum.Parse<AccountType>(customer.AccountType),
-                ImageUrl = customer.ImageUrl,
+                UserId = userId,
+                AccountType = (AccountType)customer.AccountType,
+                ImageUrl = imageUrl,
                 PhoneNumber = customer.PhoneNumber,
                 Name = customer.Name,
                 Surname = customer.Surname,
                 Address = customer.Address
             },
-            BusinessAccountDTO business => new BusinessAccount
+            CreateBusinessAccountRequest business => new BusinessAccount
             {
-                Id = string.IsNullOrEmpty(business.Id) ? Guid.NewGuid() : Guid.Parse(business.Id),
-                UserId = Guid.Parse(business.UserId),
-                AccountType = Enum.Parse<AccountType>(business.AccountType),
-                ImageUrl = business.ImageUrl,
+                UserId = userId,
+                AccountType = (AccountType)business.AccountType,
+                ImageUrl = imageUrl,
                 Name = business.Name,
                 Description = business.Description
             },
-            _ => throw new ArgumentException($"Unknown DTO type: {dto.GetType().Name}")
+            _ => throw new ArgumentException($"Unknown DTO type: {request.GetType().Name}")
         };
     }
 }

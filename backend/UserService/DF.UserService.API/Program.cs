@@ -2,17 +2,18 @@
 using System.Text.Json.Serialization;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
-using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Messaging;
 using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
-using DF.UserService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,11 +76,32 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
 
 //Builders
 builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 
-builder.Services.AddSingleton<IMessageBroker, RabbitMqMessageBroker>();
+// RabbitMQ connection
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = builder.Configuration.GetSection("RabbitMQ");
+    var factory = new ConnectionFactory
+    {
+        HostName = config["HostName"],
+        UserName = config["UserName"],
+        Password = config["Password"],
+        Port = int.Parse(config["Port"])
+    };
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+// Consumer
+builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessAccountDetailsConsumer>();
+builder.Services.AddHostedService<ConsumerHostedService>();
+
+
 
 builder.Services.AddControllers();
 builder.Services.AddControllers()

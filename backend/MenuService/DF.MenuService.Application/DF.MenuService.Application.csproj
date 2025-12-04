@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Mappers\" />
+      <Folder Include="Messaging\Consumers\" />
+      <Folder Include="Messaging\RPC\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DF.MenuService.Contracts\DF.MenuService.Contracts.csproj" />
+      <ProjectReference Include="..\DF.MenuService.Domain\DF.MenuService.Domain.csproj" />
+        <ProjectReference Include="..\DF.MenuService.Infrastructure\DF.MenuService.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
+      <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+      <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+      <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
+    </ItemGroup>
+
+</Project>

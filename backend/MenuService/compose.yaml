@@ -1,7 +1,46 @@
-﻿services:
+﻿version: '3.9'
+
+services:
   df.menuservice.api:
     image: df.menuservice.api
     build:
       context: .
       dockerfile: DF.MenuService.API/Dockerfile
+    container_name: df.menuservice.api
+    ports:
+      - "5004:8080"  # 5004 — порт на твоїй машині, 8080 — у контейнері
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=df.menuservice.db;Port=5432;Database=MenuServiceDb;Username=MenuService;Password=MenuService2025!
+      - Redis__Host=df.redis
+      - Redis__Port=6379
+    depends_on:
+      - df.menuservice.db
+      - df.redis
 
+  df.menuservice.db:
+    image: postgres:16
+    container_name: df.menuservice.db
+    restart: always
+    environment:
+      POSTGRES_USER: MenuService
+      POSTGRES_PASSWORD: MenuService2025!
+      POSTGRES_DB: MenuServiceDb
+    ports:
+      - "5433:5432"
+    volumes:
+      - menu_service_data:/var/lib/postgresql/data
+
+  df.redis:
+    image: redis:7
+    container_name: df.redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--save", "60", "1", "--loglevel", "warning"]
+
+volumes:
+  menu_service_data:
+  redis_data:
