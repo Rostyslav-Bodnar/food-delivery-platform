@@ -2,6 +2,7 @@
 import { Plus, Search, Trash2, Edit3, Filter, Grid, BarChart2, Users } from "lucide-react";
 import "./styles/BusinessHomePage.css";
 import DishComponent from "./DishComponent";
+import BusinessSidebar from "./business/BusinessSidebar.jsx";    
 
 // 🟢 Імпорт API
 import {
@@ -143,31 +144,7 @@ export default function BusinessHomePage({ userData }) {
 
     return (
         <div className="bh-page">
-            {/* SIDEBAR */}
-            <aside className="bh-sidebar">
-                <div className="bh-brand">
-                    <div className="bh-logo">
-                        <img src={businessLogo} />
-                    </div>
-                    <div className="bh-title">{businessName}</div>
-                </div>
-
-                <nav className="bh-nav">
-                    {SIDEBAR_ITEMS.map(it => {
-                        const Icon = it.icon;
-                        return (
-                            <button
-                                key={it.id}
-                                className={`bh-nav-item ${active === it.id ? "active" : ""}`}
-                                onClick={() => setActive(it.id)}
-                            >
-                                <Icon size={18} />
-                                <span>{it.label}</span>
-                            </button>
-                        );
-                    })}
-                </nav>
-            </aside>
+            <BusinessSidebar userData={userData} />
 
             {/* MAIN */}
             <main className="bh-main">

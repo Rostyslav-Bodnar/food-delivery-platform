@@ -1,0 +1,136 @@
+.orders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 18px;
+}
+
+.order-card {
+    background: linear-gradient(180deg, rgba(255,255,255,0.015), rgba(255,255,255,0.01));
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--soft-shadow);
+    transition: var(--transition);
+}
+
+    .order-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(2,6,23,0.65);
+    }
+
+.order-header {
+    padding: 14px 18px;
+    background: linear-gradient(90deg, rgba(124,92,255,0.08), rgba(0,212,255,0.04));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--glass-border);
+    font-size: 14px;
+}
+
+.order-id {
+    font-weight: 700;
+}
+
+.order-time {
+    color: var(--muted-2);
+}
+
+.order-body {
+    padding: 18px;
+}
+
+.customer-info {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 15px;
+}
+
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: var(--muted);
+    padding: 4px 0;
+}
+
+.order-total {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--glass-border);
+    font-size: 16px;
+}
+
+.order-footer {
+    padding: 14px 18px;
+    background: rgba(255,255,255,0.01);
+    border-top: 1px solid var(--glass-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.status-actions {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    justify-content: center;
+}
+
+    .status-actions button {
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        border: none;
+        cursor: pointer;
+        background: rgba(124,92,255,0.15);
+        color: var(--text);
+    }
+
+        .status-actions button.danger {
+            background: rgba(255,107,107,0.15);
+            color: #ff6b6b;
+        }
+
+.details-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-3);
+    font-weight: 600;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .order-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .status-actions {
+        order: -1;
+        justify-content: stretch;
+    }
+
+        .status-actions button {
+            flex: 1;
+        }
+}
