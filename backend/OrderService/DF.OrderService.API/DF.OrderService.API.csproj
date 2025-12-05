@@ -21,6 +21,7 @@
         </PackageReference>
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\DF.OrderService.Application\DF.OrderService.Application.csproj" />
         <ProjectReference Include="..\DF.OrderService.Infrastructure\DF.OrderService.Infrastructure.csproj" />
     </ItemGroup>
     <ItemGroup>
