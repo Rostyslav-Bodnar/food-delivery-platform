@@ -1,3 +1,5 @@
+using DF.OrderService.Application.Repositories;
+using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite;
@@ -28,6 +30,11 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         o => o.UseNetTopologySuite()
     ));
+
+//Repositories
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
+builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 var app = builder.Build();
 
