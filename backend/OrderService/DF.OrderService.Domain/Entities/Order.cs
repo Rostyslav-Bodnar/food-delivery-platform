@@ -3,6 +3,7 @@
 public class Order
 {
     public Guid Id { get; set; }
+    public Guid BusinessId { get; set; }
     public Guid OrderedBy { get; set; }
     public DateTime OrderDate { get; set; }
     public decimal TotalPrice { get; set; }
