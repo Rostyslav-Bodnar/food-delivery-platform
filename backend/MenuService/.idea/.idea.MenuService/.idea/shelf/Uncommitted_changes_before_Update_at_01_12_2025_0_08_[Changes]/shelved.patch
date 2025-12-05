@@ -1,0 +1,818 @@
+Index: DF.MenuService.Application/Messaging/UserServiceRpcClient.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using System.Collections.Concurrent;\r\nusing System.Text;\r\nusing System.Text.Json;\r\nusing DF.Contracts.RPC.Requests;\r\nusing DF.Contracts.RPC.Responses;\r\nusing RabbitMQ.Client;\r\nusing RabbitMQ.Client.Events;\r\n\r\nnamespace DF.MenuService.Application.Messaging;\r\n\r\npublic class UserServiceRpcClient : IDisposable\r\n{\r\n    private readonly IConnection connection;\r\n    private readonly IChannel channel;\r\n    private readonly string replyQueueName;\r\n    private readonly AsyncEventingBasicConsumer consumer;\r\n    private readonly ConcurrentDictionary<string, TaskCompletionSource<GetAccountResponse>> callbackMapper = new();\r\n\r\n    public UserServiceRpcClient(IConnection connection)\r\n    {\r\n        this.connection = connection;\r\n        channel = this.connection.CreateChannelAsync().GetAwaiter().GetResult();\r\n\r\n        var queueOk = channel.QueueDeclareAsync(queue: \"\",\r\n            durable: false,\r\n            exclusive: true,\r\n            autoDelete: true).GetAwaiter().GetResult();\r\n        replyQueueName = queueOk.QueueName;\r\n\r\n        consumer = new AsyncEventingBasicConsumer(channel);\r\n        consumer.ReceivedAsync += async (model, ea) =>\r\n        {\r\n            var correlationId = ea.BasicProperties.CorrelationId;\r\n            if (correlationId != null && callbackMapper.TryRemove(correlationId, out var tcs))\r\n            {\r\n                var body = ea.Body.ToArray();\r\n                var json = Encoding.UTF8.GetString(body);\r\n                var response = JsonSerializer.Deserialize<GetAccountResponse>(json);\r\n                if (response != null) tcs.SetResult(response);\r\n            }\r\n\r\n            await Task.Yield();\r\n        };\r\n\r\n        channel.BasicConsumeAsync(replyQueueName, autoAck: true, consumer: consumer).GetAwaiter().GetResult();\r\n    }\r\n\r\n    public Task<GetAccountResponse> GetAccountAsync(GetAccountRequest request)\r\n    {\r\n        var correlationId = Guid.NewGuid().ToString();\r\n        var props = new BasicProperties\r\n        {\r\n            CorrelationId = correlationId,\r\n            ReplyTo = replyQueueName\r\n        };\r\n        props.CorrelationId = correlationId;\r\n        props.ReplyTo = replyQueueName;\r\n\r\n        var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));\r\n        var tcs = new TaskCompletionSource<GetAccountResponse>(TaskCreationOptions.RunContinuationsAsynchronously);\r\n        callbackMapper[correlationId] = tcs;\r\n\r\n        channel.BasicPublishAsync(\r\n            exchange: \"\",\r\n            routingKey: \"user.getaccount\",\r\n            mandatory: false,\r\n            basicProperties: props,\r\n            body: messageBytes);\r\n\r\n        return tcs.Task;\r\n    }\r\n\r\n    public void Dispose()\r\n    {\r\n        channel?.Dispose();\r\n        connection?.Dispose();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs b/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs
+--- a/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs	(date 1764536995179)
+@@ -70,6 +70,31 @@
+         return tcs.Task;
+     }
+ 
++    public Task<GetAccountResponse> GetBusinessAccountAsync(GetBusinessAccountDetailsRequest request)
++    {
++        var correlationId = Guid.NewGuid().ToString();
++        var props = new BasicProperties
++        {
++            CorrelationId = correlationId,
++            ReplyTo = replyQueueName
++        };
++        props.CorrelationId = correlationId;
++        props.ReplyTo = replyQueueName;
++
++        var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
++        var tcs = new TaskCompletionSource<GetAccountResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
++        callbackMapper[correlationId] = tcs;
++
++        channel.BasicPublishAsync(
++            exchange: "",
++            routingKey: "user.getbussinessaccount",
++            mandatory: false,
++            basicProperties: props,
++            body: messageBytes);
++
++        return tcs.Task;
++    }
++    
+     public void Dispose()
+     {
+         channel?.Dispose();
+Index: DF.MenuService.Application/DF.MenuService.Application.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk\">\r\n\r\n    <PropertyGroup>\r\n        <TargetFramework>net9.0</TargetFramework>\r\n        <ImplicitUsings>enable</ImplicitUsings>\r\n        <Nullable>enable</Nullable>\r\n    </PropertyGroup>\r\n\r\n    <ItemGroup>\r\n      <Folder Include=\"Mappers\\\" />\r\n      <Folder Include=\"Messaging\\Consumers\\\" />\r\n      <Folder Include=\"Messaging\\RPC\\\" />\r\n    </ItemGroup>\r\n\r\n    <ItemGroup>\r\n      <ProjectReference Include=\"..\\DF.MenuService.Contracts\\DF.MenuService.Contracts.csproj\" />\r\n      <ProjectReference Include=\"..\\DF.MenuService.Domain\\DF.MenuService.Domain.csproj\" />\r\n        <ProjectReference Include=\"..\\DF.MenuService.Infrastructure\\DF.MenuService.Infrastructure.csproj\" />\r\n    </ItemGroup>\r\n\r\n    <ItemGroup>\r\n      <PackageReference Include=\"CloudinaryDotNet\" Version=\"1.27.8\" />\r\n      <PackageReference Include=\"DF.Contracts\" Version=\"1.0.0-preview2\" />\r\n      <PackageReference Include=\"Microsoft.AspNetCore.Http\" Version=\"2.3.0\" />\r\n      <PackageReference Include=\"RabbitMQ.Client\" Version=\"7.2.0\" />\r\n      <PackageReference Include=\"StackExchange.Redis\" Version=\"2.7.27\" />\r\n    </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DF.MenuService.Application/DF.MenuService.Application.csproj b/DF.MenuService.Application/DF.MenuService.Application.csproj
+--- a/DF.MenuService.Application/DF.MenuService.Application.csproj	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/DF.MenuService.Application/DF.MenuService.Application.csproj	(date 1764537930119)
+@@ -20,7 +20,7 @@
+ 
+     <ItemGroup>
+       <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
+-      <PackageReference Include="DF.Contracts" Version="1.0.0-preview2" />
++      <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
+       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+       <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+       <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
+Index: ../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using Microsoft.Extensions.Hosting;\r\n\r\nnamespace DF.UserService.Application.Messaging;\r\n\r\npublic class ConsumerHostedService(GetAccountConsumer consumer) : IHostedService\r\n{\r\n\r\n    public Task StartAsync(CancellationToken cancellationToken)\r\n    {\r\n        consumer.Start();\r\n        Console.WriteLine(\"UserService RabbitMQ consumer started\");\r\n        return Task.CompletedTask;\r\n    }\r\n\r\n    public Task StopAsync(CancellationToken cancellationToken)\r\n    {\r\n        Console.WriteLine(\"UserService RabbitMQ consumer stopped\");\r\n        return Task.CompletedTask;\r\n    }\r\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs b/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs
+--- a/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs	(date 1764538529327)
+@@ -2,19 +2,28 @@
+ 
+ namespace DF.UserService.Application.Messaging;
+ 
+-public class ConsumerHostedService(GetAccountConsumer consumer) : IHostedService
++public class ConsumerHostedService : IHostedService
+ {
++    private readonly IEnumerable<IConsumer> _consumers;
++
++    public ConsumerHostedService(IEnumerable<IConsumer> consumers)
++    {
++        _consumers = consumers;
++    }
+ 
+     public Task StartAsync(CancellationToken cancellationToken)
+     {
+-        consumer.Start();
+-        Console.WriteLine("UserService RabbitMQ consumer started");
++        foreach (var consumer in _consumers)
++        {
++            consumer.Start();
++        }
++        Console.WriteLine("All consumers started");
+         return Task.CompletedTask;
+     }
+ 
+     public Task StopAsync(CancellationToken cancellationToken)
+     {
+-        Console.WriteLine("UserService RabbitMQ consumer stopped");
++        Console.WriteLine("All consumers stopped");
+         return Task.CompletedTask;
+     }
+-}
+\ No newline at end of file
++}
+Index: DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk\">\r\n\r\n    <PropertyGroup>\r\n        <TargetFramework>net9.0</TargetFramework>\r\n        <ImplicitUsings>enable</ImplicitUsings>\r\n        <Nullable>enable</Nullable>\r\n    </PropertyGroup>\r\n\r\n    <ItemGroup>\r\n      <ProjectReference Include=\"..\\DF.MenuService.Domain\\DF.MenuService.Domain.csproj\" />\r\n    </ItemGroup>\r\n\r\n    <ItemGroup>\r\n      <PackageReference Include=\"Microsoft.EntityFrameworkCore\" Version=\"9.0.10\" />\r\n      <PackageReference Include=\"Microsoft.EntityFrameworkCore.Design\" Version=\"9.0.10\">\r\n        <PrivateAssets>all</PrivateAssets>\r\n        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>\r\n      </PackageReference>\r\n      <PackageReference Include=\"Newtonsoft.Json\" Version=\"13.0.3\" />\r\n      <PackageReference Include=\"Npgsql.EntityFrameworkCore.PostgreSQL\" Version=\"9.0.4\" />\r\n      <PackageReference Include=\"RabbitMQ.Client\" Version=\"7.2.0\" />\r\n    </ItemGroup>\r\n\r\n    <ItemGroup>\r\n      <Folder Include=\"Messaging\\\" />\r\n    </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj b/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj
+--- a/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj	(date 1764536694798)
+@@ -21,8 +21,4 @@
+       <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+     </ItemGroup>
+ 
+-    <ItemGroup>
+-      <Folder Include="Messaging\" />
+-    </ItemGroup>
+-
+ </Project>
+Index: ../UserService/DF.UserService.Application/DF.UserService.Application.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk\">\r\n\r\n  <PropertyGroup>\r\n    <TargetFramework>net9.0</TargetFramework>\r\n    <ImplicitUsings>enable</ImplicitUsings>\r\n    <Nullable>enable</Nullable>\r\n  </PropertyGroup>\r\n\r\n  <ItemGroup>\r\n    <PackageReference Include=\"CloudinaryDotNet\" Version=\"1.27.8\" />\r\n    <PackageReference Include=\"DF.Contracts\" Version=\"1.0.0-preview2\" />\r\n    <PackageReference Include=\"Microsoft.AspNet.Identity.Core\" Version=\"2.2.4\" />\r\n    <PackageReference Include=\"Microsoft.Extensions.Configuration.Binder\" Version=\"9.0.9\" />\r\n  </ItemGroup>\r\n\r\n  <ItemGroup>\r\n    <ProjectReference Include=\"..\\DF.UserService.Contracts\\DF.UserService.Contracts.csproj\" />\r\n    <ProjectReference Include=\"..\\DF.UserService.Domain\\DF.UserService.Domain.csproj\" />\r\n    <ProjectReference Include=\"..\\DF.UserService.Infrastructure\\DF.UserService.Infrastructure.csproj\" />\r\n  </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Application/DF.UserService.Application.csproj b/../UserService/DF.UserService.Application/DF.UserService.Application.csproj
+--- a/../UserService/DF.UserService.Application/DF.UserService.Application.csproj	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.Application/DF.UserService.Application.csproj	(date 1764538020675)
+@@ -8,7 +8,7 @@
+ 
+   <ItemGroup>
+     <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
+-    <PackageReference Include="DF.Contracts" Version="1.0.0-preview2" />
++    <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
+     <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
+     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.9" />
+   </ItemGroup>
+Index: .idea/.idea.MenuService/.idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"AutoGeneratedRunConfigurationManager\">\r\n    <projectFile kind=\"Docker\">DF.MenuService.API/DF.MenuService.API.csproj</projectFile>\r\n    <projectFile profileName=\"http\">DF.MenuService.API/DF.MenuService.API.csproj</projectFile>\r\n    <projectFile profileName=\"https\">DF.MenuService.API/DF.MenuService.API.csproj</projectFile>\r\n  </component>\r\n  <component name=\"AutoImportSettings\">\r\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\r\n  </component>\r\n  <component name=\"ChangeListManager\">\r\n    <list default=\"true\" id=\"1b51eaab-029b-487e-8820-5caaf6ba4b13\" name=\"Changes\" comment=\"\">\r\n      <change beforePath=\"$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.API/appsettings.json\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.API/appsettings.json\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs\" afterDir=\"false\" />\r\n      <change beforePath=\"$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs\" afterDir=\"false\" />\r\n    </list>\r\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\r\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\r\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\r\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\r\n  </component>\r\n  <component name=\"DpaMonitoringSettings\">\r\n    <option name=\"firstShow\" value=\"false\" />\r\n  </component>\r\n  <component name=\"Git.Settings\">\r\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\r\n      <map>\r\n        <entry key=\"$PROJECT_DIR$/../..\" value=\"promo-service\" />\r\n      </map>\r\n    </option>\r\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$/../..\" />\r\n  </component>\r\n  <component name=\"GitHubPullRequestSearchHistory\">{\r\n  &quot;lastFilter&quot;: {\r\n    &quot;state&quot;: &quot;OPEN&quot;,\r\n    &quot;assignee&quot;: &quot;Rostyslav-Bodnar&quot;\r\n  }\r\n}</component>\r\n  <component name=\"GithubPullRequestsUISettings\">{\r\n  &quot;selectedUrlAndAccountId&quot;: {\r\n    &quot;url&quot;: &quot;https://github.com/Rostyslav-Bodnar/food-delivery-platform.git&quot;,\r\n    &quot;accountId&quot;: &quot;c018a3a1-a562-432f-a364-2c405becccbe&quot;\r\n  }\r\n}</component>\r\n  <component name=\"HighlightingSettingsPerFile\">\r\n    <setting file=\"file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ce37be1a06b16c6faa02038d2cc477dd3bca5b217ceeb41c5f2ad45c1bf9/ServiceProvider.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/fc2027f7e776fc105cddb56b1a25eeb3895b3ae6f3aac854d786e63bd01f75e2/CallSiteFactory.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IMenuRepository.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IRepository.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/MenuRepository.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/CloudinaryService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IMenuService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Application/Services/MenuService.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateMenuRequest.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/DishResponse.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/MenuResponse.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/UploadImageResult.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Category.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Menu.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n    <setting file=\"file://$PROJECT_DIR$/DF.MenuService.Infrastructure/Data/AppDbContext.cs\" root0=\"FORCE_HIGHLIGHTING\" />\r\n  </component>\r\n  <component name=\"KubernetesApiPersistence\">{}</component>\r\n  <component name=\"KubernetesApiProvider\">{\r\n  &quot;isMigrated&quot;: true\r\n}</component>\r\n  <component name=\"MetaFilesCheckinStateConfiguration\" checkMetaFiles=\"false\" />\r\n  <component name=\"ProjectColorInfo\">{\r\n  &quot;customColor&quot;: &quot;&quot;,\r\n  &quot;associatedIndex&quot;: 2\r\n}</component>\r\n  <component name=\"ProjectId\" id=\"349hqwhe10tA3jPuT4L5OeZzuCC\" />\r\n  <component name=\"ProjectViewState\">\r\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\r\n    <option name=\"showLibraryContents\" value=\"true\" />\r\n  </component>\r\n  <component name=\"PropertiesComponent\">{\r\n  &quot;keyToString&quot;: {\r\n    &quot;.NET Launch Settings Profile.DF.MenuService.API: http.executor&quot;: &quot;Debug&quot;,\r\n    &quot;.NET Project.API.executor&quot;: &quot;Debug&quot;,\r\n    &quot;Docker.compose.yaml.df.menuservice.api: Compose Deployment.executor&quot;: &quot;Run&quot;,\r\n    &quot;Docker.compose.yaml: Compose Deployment.executor&quot;: &quot;Run&quot;,\r\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,\r\n    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,\r\n    &quot;git-widget-placeholder&quot;: &quot;menu-service&quot;,\r\n    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,\r\n    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,\r\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\r\n    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,\r\n    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;\r\n  }\r\n}</component>\r\n  <component name=\"RunManager\" selected=\".NET Launch Settings Profile.DF.MenuService.API: http\">\r\n    <configuration name=\"API\" type=\"DotNetProject\" factoryName=\".NET Project\">\r\n      <option name=\"EXE_PATH\" value=\"$PROJECT_DIR$/DF.MenuService.API/bin/Debug/net9.0/DF.MenuService.API.exe\" />\r\n      <option name=\"PROGRAM_PARAMETERS\" value=\"\" />\r\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$/DF.MenuService.API\" />\r\n      <option name=\"PASS_PARENT_ENVS\" value=\"1\" />\r\n      <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      <option name=\"ENV_FILE_PATHS\" value=\"\" />\r\n      <option name=\"REDIRECT_INPUT_PATH\" value=\"\" />\r\n      <option name=\"PTY_MODE\" value=\"Auto\" />\r\n      <option name=\"MIXED_MODE_DEBUG\" value=\"0\" />\r\n      <option name=\"USE_MONO\" value=\"0\" />\r\n      <option name=\"RUNTIME_ARGUMENTS\" value=\"\" />\r\n      <option name=\"AUTO_ATTACH_CHILDREN\" value=\"0\" />\r\n      <option name=\"PROJECT_PATH\" value=\"$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj\" />\r\n      <option name=\"PROJECT_EXE_PATH_TRACKING\" value=\"1\" />\r\n      <option name=\"PROJECT_ARGUMENTS_TRACKING\" value=\"1\" />\r\n      <option name=\"PROJECT_WORKING_DIRECTORY_TRACKING\" value=\"1\" />\r\n      <option name=\"PROJECT_KIND\" value=\"DotNetCore\" />\r\n      <option name=\"PROJECT_TFM\" value=\"net9.0\" />\r\n      <browser name=\"98ca6316-2f89-46d9-a9e5-fa9e2b0625b3\" />\r\n      <method v=\"2\">\r\n        <option name=\"Build\" />\r\n      </method>\r\n    </configuration>\r\n    <configuration name=\"DF.MenuService.API: http\" type=\"LaunchSettings\" factoryName=\".NET Launch Settings Profile\" temporary=\"true\">\r\n      <option name=\"LAUNCH_PROFILE_PROJECT_FILE_PATH\" value=\"$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj\" />\r\n      <option name=\"LAUNCH_PROFILE_TFM\" value=\"net9.0\" />\r\n      <option name=\"LAUNCH_PROFILE_NAME\" value=\"http\" />\r\n      <option name=\"USE_EXTERNAL_CONSOLE\" value=\"0\" />\r\n      <option name=\"USE_MONO\" value=\"0\" />\r\n      <option name=\"RUNTIME_ARGUMENTS\" value=\"\" />\r\n      <browser name=\"98ca6316-2f89-46d9-a9e5-fa9e2b0625b3\" />\r\n      <option name=\"GENERATE_APPLICATIONHOST_CONFIG\" value=\"1\" />\r\n      <option name=\"SHOW_IIS_EXPRESS_OUTPUT\" value=\"0\" />\r\n      <option name=\"SEND_DEBUG_REQUEST\" value=\"1\" />\r\n      <option name=\"ADDITIONAL_IIS_EXPRESS_ARGUMENTS\" value=\"\" />\r\n      <option name=\"AUTO_ATTACH_CHILDREN\" value=\"0\" />\r\n      <method v=\"2\">\r\n        <option name=\"Build\" />\r\n      </method>\r\n    </configuration>\r\n    <configuration name=\"DF.MenuService.API/Dockerfile\" type=\"docker-deploy\" factoryName=\"dockerfile\" server-name=\"Docker\">\r\n      <deployment type=\"dockerfile\">\r\n        <settings>\r\n          <option name=\"containerName\" value=\"df.menuservice.api\" />\r\n          <option name=\"contextFolderPath\" value=\"C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService\" />\r\n          <option name=\"sourceFilePath\" value=\"DF.MenuService.API/Dockerfile\" />\r\n        </settings>\r\n      </deployment>\r\n      <EXTENSION ID=\"com.jetbrains.rider.docker.debug\" isFastModeEnabled=\"true\" isSslEnabled=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"docker-deploy\" factoryName=\"docker-compose.yml\" temporary=\"true\">\r\n      <deployment type=\"docker-compose.yml\">\r\n        <settings />\r\n      </deployment>\r\n      <EXTENSION ID=\"com.jetbrains.rider.docker.debug\" isFastModeEnabled=\"true\" isSslEnabled=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration default=\"true\" type=\"docker-deploy\" factoryName=\"dockerfile\" temporary=\"true\">\r\n      <deployment type=\"dockerfile\">\r\n        <settings />\r\n      </deployment>\r\n      <EXTENSION ID=\"com.jetbrains.rider.docker.debug\" isFastModeEnabled=\"true\" isSslEnabled=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"compose.yaml: Compose Deployment\" type=\"docker-deploy\" factoryName=\"docker-compose.yml\" temporary=\"true\" server-name=\"Docker\">\r\n      <deployment type=\"docker-compose.yml\">\r\n        <settings>\r\n          <option name=\"sourceFilePath\" value=\"compose.yaml\" />\r\n        </settings>\r\n      </deployment>\r\n      <EXTENSION ID=\"com.jetbrains.rider.docker.debug\" isFastModeEnabled=\"true\" isSslEnabled=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <configuration name=\"compose.yaml.df.menuservice.api: Compose Deployment\" type=\"docker-deploy\" factoryName=\"docker-compose.yml\" temporary=\"true\" server-name=\"Docker\">\r\n      <deployment type=\"docker-compose.yml\">\r\n        <settings>\r\n          <option name=\"services\">\r\n            <list>\r\n              <option value=\"df.menuservice.api\" />\r\n            </list>\r\n          </option>\r\n          <option name=\"sourceFilePath\" value=\"compose.yaml\" />\r\n        </settings>\r\n      </deployment>\r\n      <EXTENSION ID=\"com.jetbrains.rider.docker.debug\" isFastModeEnabled=\"true\" isSslEnabled=\"false\" />\r\n      <method v=\"2\" />\r\n    </configuration>\r\n    <list>\r\n      <item itemvalue=\".NET Launch Settings Profile.DF.MenuService.API: http\" />\r\n      <item itemvalue=\".NET Project.API\" />\r\n      <item itemvalue=\"Docker.DF.MenuService.API/Dockerfile\" />\r\n      <item itemvalue=\"Docker.compose.yaml.df.menuservice.api: Compose Deployment\" />\r\n      <item itemvalue=\"Docker.compose.yaml: Compose Deployment\" />\r\n    </list>\r\n    <recent_temporary>\r\n      <list>\r\n        <item itemvalue=\".NET Launch Settings Profile.DF.MenuService.API: http\" />\r\n        <item itemvalue=\"Docker.compose.yaml.df.menuservice.api: Compose Deployment\" />\r\n        <item itemvalue=\"Docker.compose.yaml: Compose Deployment\" />\r\n      </list>\r\n    </recent_temporary>\r\n  </component>\r\n  <component name=\"TaskManager\">\r\n    <task id=\"LOCAL-00001\" summary=\"promo-service/ create derictory\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760555118082</created>\r\n      <option name=\"number\" value=\"00001\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00001\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760555118082</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00002\" summary=\"promo-service/ create derictory\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760555123770</created>\r\n      <option name=\"number\" value=\"00002\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00002\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760555123770</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00003\" summary=\"promo-service/ create derictory\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760555226453</created>\r\n      <option name=\"number\" value=\"00003\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00003\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760555226453</updated>\r\n    </task>\r\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\r\n      <changelist id=\"1b51eaab-029b-487e-8820-5caaf6ba4b13\" name=\"Changes\" comment=\"promo-service/ create project\" />\r\n      <created>1760631892434</created>\r\n      <option name=\"number\" value=\"Default\" />\r\n      <option name=\"presentableId\" value=\"Default\" />\r\n      <updated>1760631892434</updated>\r\n      <workItem from=\"1760631900217\" duration=\"98000\" />\r\n      <workItem from=\"1760882296490\" duration=\"12551000\" />\r\n      <workItem from=\"1760982159258\" duration=\"4546000\" />\r\n    </task>\r\n    <task id=\"LOCAL-00004\" summary=\"menu-service/init database\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760885714168</created>\r\n      <option name=\"number\" value=\"00004\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00004\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760885714168</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00005\" summary=\"menu-service/init database\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760885747539</created>\r\n      <option name=\"number\" value=\"00005\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00005\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760885747539</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00006\" summary=\"menu-service/add projects\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760887215882</created>\r\n      <option name=\"number\" value=\"00006\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00006\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760887215882</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00007\" summary=\"menu-service/nteadd projects\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760895008899</created>\r\n      <option name=\"number\" value=\"00007\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00007\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760895008899</updated>\r\n    </task>\r\n    <task id=\"LOCAL-00008\" summary=\"menu-service/integrate cloud image storage\">\r\n      <option name=\"closed\" value=\"true\" />\r\n      <created>1760895063153</created>\r\n      <option name=\"number\" value=\"00008\" />\r\n      <option name=\"presentableId\" value=\"LOCAL-00008\" />\r\n      <option name=\"project\" value=\"LOCAL\" />\r\n      <updated>1760895063153</updated>\r\n    </task>\r\n    <option name=\"localTasksCounter\" value=\"9\" />\r\n    <servers />\r\n  </component>\r\n  <component name=\"TypeScriptGeneratedFilesManager\">\r\n    <option name=\"version\" value=\"3\" />\r\n  </component>\r\n  <component name=\"UnityCheckinConfiguration\" checkUnsavedScenes=\"false\" />\r\n  <component name=\"UnityProjectConfiguration\" hasMinimizedUI=\"false\" />\r\n  <component name=\"VcsManagerConfiguration\">\r\n    <option name=\"CLEAR_INITIAL_COMMIT_MESSAGE\" value=\"true\" />\r\n    <MESSAGE value=\"promo-service/ create derictory\" />\r\n    <MESSAGE value=\"promo-service/ create project\" />\r\n    <MESSAGE value=\"menu-service/init database\" />\r\n    <MESSAGE value=\"menu-service/add projects\" />\r\n    <MESSAGE value=\"menu-service/integrate cloud image storage\" />\r\n    <option name=\"LAST_COMMIT_MESSAGE\" value=\"menu-service/integrate cloud image storage\" />\r\n  </component>\r\n  <component name=\"XDebuggerManager\">\r\n    <breakpoint-manager>\r\n      <breakpoints>\r\n        <breakpoint enabled=\"true\" type=\"DotNet_Exception_Breakpoints\">\r\n          <properties exception=\"System.OperationCanceledException\" breakIfHandledByOtherCode=\"false\" displayValue=\"System.OperationCanceledException\" />\r\n          <option name=\"timeStamp\" value=\"1\" />\r\n        </breakpoint>\r\n        <breakpoint enabled=\"true\" type=\"DotNet_Exception_Breakpoints\">\r\n          <properties exception=\"System.Threading.Tasks.TaskCanceledException\" breakIfHandledByOtherCode=\"false\" displayValue=\"System.Threading.Tasks.TaskCanceledException\" />\r\n          <option name=\"timeStamp\" value=\"2\" />\r\n        </breakpoint>\r\n        <breakpoint enabled=\"true\" type=\"DotNet_Exception_Breakpoints\">\r\n          <properties exception=\"System.Threading.ThreadAbortException\" breakIfHandledByOtherCode=\"false\" displayValue=\"System.Threading.ThreadAbortException\" />\r\n          <option name=\"timeStamp\" value=\"3\" />\r\n        </breakpoint>\r\n        <line-breakpoint enabled=\"true\" type=\"DotNet Breakpoints\">\r\n          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>\r\n          <line>12</line>\r\n          <properties documentPath=\"C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService\\DF.MenuService.API\\Controllers\\DishController.cs\" containingFunctionPresentation=\"Method 'GetAll'\">\r\n            <startOffsets>\r\n              <option value=\"358\" />\r\n            </startOffsets>\r\n            <endOffsets>\r\n              <option value=\"359\" />\r\n            </endOffsets>\r\n          </properties>\r\n          <option name=\"timeStamp\" value=\"7\" />\r\n        </line-breakpoint>\r\n        <line-breakpoint enabled=\"true\" type=\"DotNet Breakpoints\">\r\n          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>\r\n          <line>50</line>\r\n          <properties documentPath=\"C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService\\DF.MenuService.API\\Controllers\\DishController.cs\" containingFunctionPresentation=\"Method 'CreateDish'\">\r\n            <startOffsets>\r\n              <option value=\"1296\" />\r\n            </startOffsets>\r\n            <endOffsets>\r\n              <option value=\"1297\" />\r\n            </endOffsets>\r\n          </properties>\r\n          <option name=\"timeStamp\" value=\"9\" />\r\n        </line-breakpoint>\r\n        <line-breakpoint enabled=\"true\" type=\"DotNet Breakpoints\">\r\n          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs</url>\r\n          <line>28</line>\r\n          <properties documentPath=\"C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\MenuService\\DF.MenuService.API\\Controllers\\MenuController.cs\" containingFunctionPresentation=\"Method 'Create'\">\r\n            <startOffsets>\r\n              <option value=\"791\" />\r\n            </startOffsets>\r\n            <endOffsets>\r\n              <option value=\"792\" />\r\n            </endOffsets>\r\n          </properties>\r\n          <option name=\"timeStamp\" value=\"11\" />\r\n        </line-breakpoint>\r\n      </breakpoints>\r\n    </breakpoint-manager>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/workspace.xml b/.idea/.idea.MenuService/.idea/workspace.xml
+--- a/.idea/.idea.MenuService/.idea/workspace.xml	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/.idea/.idea.MenuService/.idea/workspace.xml	(date 1764540480147)
+@@ -10,15 +10,24 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="1b51eaab-029b-487e-8820-5caaf6ba4b13" name="Changes" comment="">
++      <change afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/RPC/Requests/GetBusinessAccountDetailsRequest.cs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/RPC/Responses/GetBusinessAccountDetailsResponse.cs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10__Changes_.xml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/BusinessResponse.cs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/GetBusinessAccountDetailsConsumer.cs" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/IConsumer.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/DF.MenuService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/DF.MenuService.Application.csproj" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/DF.UserService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/DF.UserService.Application.csproj" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/DishPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/DishPage.jsx" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -49,28 +58,44 @@
+   }
+ }</component>
+   <component name="HighlightingSettingsPerFile">
+-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ce37be1a06b16c6faa02038d2cc477dd3bca5b217ceeb41c5f2ad45c1bf9/ServiceProvider.cs" root0="FORCE_HIGHLIGHTING" />
+-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/fc2027f7e776fc105cddb56b1a25eeb3895b3ae6f3aac854d786e63bd01f75e2/CallSiteFactory.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/../../../../../../../../Program Files (x86)/NuGet/Config/Microsoft.VisualStudio.FallbackLocation.config" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/../../../../../../../../Program Files (x86)/NuGet/Config/Microsoft.VisualStudio.Offline.config" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/a9ce663431c24c9aba988159f5e36465291420/37/98cc1d6c/ModelBuilder.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d25e28b634b9489ca3cff09e5cad78cd2600/84/f9ff57fd/GetAccountRequest.cs" root0="SKIP_HIGHLIGHTING" />
++    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5acc345db3c207bc9d886a36ff14867ef8d65557432172c2a42f19aeac04d1b/Nullable.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bd1d5c50194fea68ff3559c160230b0ab50f5acf4ce3061bffd6d62958e2182/ExceptionDispatchInfo.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$USER_HOME$/AppData/Roaming/NuGet/NuGet.Config" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/CategoryController.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/MenuService/DF.MenuService.API/Program.cs" root0="SKIP_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/IngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IIngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IMenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IRepository.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/MenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/CloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/IngredientService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IIngredientService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IMenuService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/MenuService.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateMenuRequest.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/IngredientRequest.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/BusinessResponse.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/DishResponse.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/IngredientResponse.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/MenuResponse.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/UploadImageResult.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Category.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" root0="FORCE_HIGHLIGHTING" />
++    <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Ingredient.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Menu.cs" root0="FORCE_HIGHLIGHTING" />
+     <setting file="file://$PROJECT_DIR$/DF.MenuService.Infrastructure/Data/AppDbContext.cs" root0="FORCE_HIGHLIGHTING" />
+   </component>
+@@ -79,6 +104,9 @@
+   &quot;isMigrated&quot;: true
+ }</component>
+   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="false" />
++  <component name="ProblemsViewState">
++    <option name="selectedTabId" value="CurrentFile" />
++  </component>
+   <component name="ProjectColorInfo">{
+   &quot;customColor&quot;: &quot;&quot;,
+   &quot;associatedIndex&quot;: 2
+@@ -93,10 +121,14 @@
+     &quot;.NET Launch Settings Profile.DF.MenuService.API: http.executor&quot;: &quot;Debug&quot;,
+     &quot;.NET Project.API.executor&quot;: &quot;Debug&quot;,
+     &quot;Docker.compose.yaml.df.menuservice.api: Compose Deployment.executor&quot;: &quot;Run&quot;,
++    &quot;Docker.compose.yaml.df.redis: Compose Deployment.executor&quot;: &quot;Run&quot;,
+     &quot;Docker.compose.yaml: Compose Deployment.executor&quot;: &quot;Run&quot;,
+     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
++    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
++    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
++    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+     &quot;git-widget-placeholder&quot;: &quot;menu-service&quot;,
+     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+@@ -108,16 +140,17 @@
+     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+   }
+ }</component>
++  <component name="RiderProblemsViewState">
++    <option name="sortByName" value="true" />
++  </component>
+   <component name="RunManager" selected=".NET Launch Settings Profile.DF.MenuService.API: http">
+     <configuration name="API" type="DotNetProject" factoryName=".NET Project">
+       <option name="EXE_PATH" value="$PROJECT_DIR$/DF.MenuService.API/bin/Debug/net9.0/DF.MenuService.API.exe" />
+       <option name="PROGRAM_PARAMETERS" value="" />
+       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/DF.MenuService.API" />
+       <option name="PASS_PARENT_ENVS" value="1" />
+-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+       <option name="ENV_FILE_PATHS" value="" />
+       <option name="REDIRECT_INPUT_PATH" value="" />
+-      <option name="PTY_MODE" value="Auto" />
+       <option name="MIXED_MODE_DEBUG" value="0" />
+       <option name="USE_MONO" value="0" />
+       <option name="RUNTIME_ARGUMENTS" value="" />
+@@ -137,7 +170,6 @@
+       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj" />
+       <option name="LAUNCH_PROFILE_TFM" value="net9.0" />
+       <option name="LAUNCH_PROFILE_NAME" value="http" />
+-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
+       <option name="USE_MONO" value="0" />
+       <option name="RUNTIME_ARGUMENTS" value="" />
+       <browser name="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
+@@ -146,6 +178,7 @@
+       <option name="SEND_DEBUG_REQUEST" value="1" />
+       <option name="ADDITIONAL_IIS_EXPRESS_ARGUMENTS" value="" />
+       <option name="AUTO_ATTACH_CHILDREN" value="0" />
++      <option name="MIXED_MODE_DEBUG" value="0" />
+       <method v="2">
+         <option name="Build" />
+       </method>
+@@ -198,16 +231,32 @@
+       <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+       <method v="2" />
+     </configuration>
++    <configuration name="compose.yaml.df.redis: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
++      <deployment type="docker-compose.yml">
++        <settings>
++          <option name="services">
++            <list>
++              <option value="df.redis" />
++            </list>
++          </option>
++          <option name="sourceFilePath" value="compose.yaml" />
++        </settings>
++      </deployment>
++      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
++      <method v="2" />
++    </configuration>
+     <list>
+       <item itemvalue=".NET Launch Settings Profile.DF.MenuService.API: http" />
+       <item itemvalue=".NET Project.API" />
+       <item itemvalue="Docker.DF.MenuService.API/Dockerfile" />
++      <item itemvalue="Docker.compose.yaml.df.redis: Compose Deployment" />
+       <item itemvalue="Docker.compose.yaml.df.menuservice.api: Compose Deployment" />
+       <item itemvalue="Docker.compose.yaml: Compose Deployment" />
+     </list>
+     <recent_temporary>
+       <list>
+         <item itemvalue=".NET Launch Settings Profile.DF.MenuService.API: http" />
++        <item itemvalue="Docker.compose.yaml.df.redis: Compose Deployment" />
+         <item itemvalue="Docker.compose.yaml.df.menuservice.api: Compose Deployment" />
+         <item itemvalue="Docker.compose.yaml: Compose Deployment" />
+       </list>
+@@ -247,6 +296,11 @@
+       <workItem from="1760631900217" duration="98000" />
+       <workItem from="1760882296490" duration="12551000" />
+       <workItem from="1760982159258" duration="4546000" />
++      <workItem from="1762456764314" duration="10000" />
++      <workItem from="1762457204197" duration="6613000" />
++      <workItem from="1763494945525" duration="6487000" />
++      <workItem from="1763909626325" duration="12603000" />
++      <workItem from="1764512111707" duration="14619000" />
+     </task>
+     <task id="LOCAL-00004" summary="menu-service/init database">
+       <option name="closed" value="true" />
+@@ -288,7 +342,15 @@
+       <option name="project" value="LOCAL" />
+       <updated>1760895063153</updated>
+     </task>
+-    <option name="localTasksCounter" value="9" />
++    <task id="LOCAL-00009" summary="menu-service - add default migrate">
++      <option name="closed" value="true" />
++      <created>1764528035436</created>
++      <option name="number" value="00009" />
++      <option name="presentableId" value="LOCAL-00009" />
++      <option name="project" value="LOCAL" />
++      <updated>1764528035436</updated>
++    </task>
++    <option name="localTasksCounter" value="10" />
+     <servers />
+   </component>
+   <component name="TypeScriptGeneratedFilesManager">
+@@ -303,7 +365,8 @@
+     <MESSAGE value="menu-service/init database" />
+     <MESSAGE value="menu-service/add projects" />
+     <MESSAGE value="menu-service/integrate cloud image storage" />
+-    <option name="LAST_COMMIT_MESSAGE" value="menu-service/integrate cloud image storage" />
++    <MESSAGE value="menu-service - add default migrate" />
++    <option name="LAST_COMMIT_MESSAGE" value="menu-service - add default migrate" />
+   </component>
+   <component name="XDebuggerManager">
+     <breakpoint-manager>
+@@ -321,43 +384,121 @@
+           <option name="timeStamp" value="3" />
+         </breakpoint>
+         <line-breakpoint enabled="true" type="DotNet Breakpoints">
+-          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
+-          <line>12</line>
+-          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'GetAll'">
++          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs</url>
++          <line>28</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\MenuController.cs" containingFunctionPresentation="Method 'Create'">
+             <startOffsets>
+-              <option value="358" />
++              <option value="791" />
+             </startOffsets>
+             <endOffsets>
+-              <option value="359" />
++              <option value="792" />
+             </endOffsets>
+           </properties>
+-          <option name="timeStamp" value="7" />
++          <option name="timeStamp" value="11" />
+         </line-breakpoint>
+         <line-breakpoint enabled="true" type="DotNet Breakpoints">
+           <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
+           <line>50</line>
+           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'CreateDish'">
+             <startOffsets>
+-              <option value="1296" />
++              <option value="1306" />
+             </startOffsets>
+             <endOffsets>
+-              <option value="1297" />
++              <option value="1307" />
+             </endOffsets>
+           </properties>
+-          <option name="timeStamp" value="9" />
++          <option name="timeStamp" value="16" />
+         </line-breakpoint>
+         <line-breakpoint enabled="true" type="DotNet Breakpoints">
+-          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs</url>
+-          <line>28</line>
+-          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\MenuController.cs" containingFunctionPresentation="Method 'Create'">
++          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
++          <line>54</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'CreateDishAsync'">
+             <startOffsets>
+-              <option value="791" />
++              <option value="1800" />
+             </startOffsets>
+             <endOffsets>
+-              <option value="792" />
++              <option value="1894" />
+             </endOffsets>
+           </properties>
+-          <option name="timeStamp" value="11" />
++          <option name="timeStamp" value="18" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
++          <line>58</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'UpdateDish'">
++            <startOffsets>
++              <option value="1560" />
++            </startOffsets>
++            <endOffsets>
++              <option value="1561" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="19" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
++          <line>143</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'UpdateDishAsync'">
++            <startOffsets>
++              <option value="4176" />
++            </startOffsets>
++            <endOffsets>
++              <option value="4177" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="20" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/IngredientService.cs</url>
++          <line>86</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\IngredientService.cs" containingFunctionPresentation="Method 'UpdateIngredients'">
++            <startOffsets>
++              <option value="2755" />
++            </startOffsets>
++            <endOffsets>
++              <option value="2756" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="21" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
++          <line>93</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'GetAllAsync'">
++            <startOffsets>
++              <option value="2860" />
++            </startOffsets>
++            <endOffsets>
++              <option value="2874" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="23" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
++          <line>12</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'GetAll'">
++            <startOffsets>
++              <option value="358" />
++            </startOffsets>
++            <endOffsets>
++              <option value="359" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="24" />
++        </line-breakpoint>
++        <line-breakpoint enabled="true" type="DotNet Breakpoints">
++          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
++          <line>19</line>
++          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'Get'">
++            <startOffsets>
++              <option value="529" />
++            </startOffsets>
++            <endOffsets>
++              <option value="530" />
++            </endOffsets>
++          </properties>
++          <option name="timeStamp" value="25" />
+         </line-breakpoint>
+       </breakpoints>
+     </breakpoint-manager>
+Index: ../UserService/DF.UserService.API/Program.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using System.Text;\r\nusing System.Text.Json.Serialization;\r\nusing DF.UserService.Application.Factories;\r\nusing DF.UserService.Application.Factories.Interfaces;\r\nusing DF.UserService.Application.Messaging;\r\nusing DF.UserService.Application.Repositories;\r\nusing DF.UserService.Application.Repositories.Interfaces;\r\nusing DF.UserService.Application.Services;\r\nusing DF.UserService.Application.Services.Interfaces;\r\nusing DF.UserService.Domain.Entities;\r\nusing DF.UserService.Infrastructure.Data;\r\nusing Microsoft.AspNetCore.Authentication.JwtBearer;\r\nusing Microsoft.AspNetCore.Identity;\r\nusing Microsoft.EntityFrameworkCore;\r\nusing Microsoft.IdentityModel.Tokens;\r\nusing RabbitMQ.Client;\r\n\r\nvar builder = WebApplication.CreateBuilder(args);\r\n\r\n// CORS Policy\r\nbuilder.Services.AddCors(options =>\r\n{\r\n    options.AddPolicy(\"AllowFrontend\", policy =>\r\n    {\r\n        policy.WithOrigins(\"http://localhost:5173\") // адреса фронтенду\r\n            .AllowAnyHeader()                     // дозволяємо всі заголовки\r\n            .AllowAnyMethod()                   // дозволяємо всі HTTP методи\r\n            .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація\r\n    });\r\n});\r\n// MSSQL\r\nbuilder.Services.AddDbContext<AppDbContext>(options =>\r\n    options.UseSqlServer(builder.Configuration.GetConnectionString(\"UserServiceMSSQLDatabase\")));\r\n\r\n// Identity\r\nbuilder.Services.AddIdentity<User, IdentityRole<Guid>>()\r\n    .AddEntityFrameworkStores<AppDbContext>()\r\n    .AddDefaultTokenProviders();\r\n\r\n// JWT \r\nvar jwtSection = builder.Configuration.GetSection(\"Jwt\");\r\nvar jwtKey = jwtSection.GetValue<string>(\"Key\")!;\r\nvar issuer = jwtSection.GetValue<string>(\"Issuer\");\r\nvar audience = jwtSection.GetValue<string>(\"Audience\");\r\n\r\nvar keyBytes = Encoding.UTF8.GetBytes(jwtKey);\r\n\r\nbuilder.Services.AddAuthentication(options =>\r\n    {\r\n        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;\r\n        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;\r\n    })\r\n    .AddJwtBearer(options =>\r\n    {\r\n        // Для refresh token endpoints не потрібна додаткова логіка тут\r\n        options.TokenValidationParameters = new TokenValidationParameters\r\n        {\r\n            ValidateIssuer = true,\r\n            ValidIssuer = issuer,\r\n            ValidateAudience = true,\r\n            ValidAudience = audience,\r\n            ValidateIssuerSigningKey = true,\r\n            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),\r\n            ValidateLifetime = true,\r\n            ClockSkew = TimeSpan.FromSeconds(30)\r\n        };\r\n    });\r\n\r\nbuilder.Services.AddAuthorization();\r\n\r\n//Repositories\r\nbuilder.Services.AddScoped<IAccountRepository, AccountRepository>();\r\n\r\n// Services\r\nbuilder.Services.AddScoped<IUserService, UserService>();\r\nbuilder.Services.AddScoped<IAccountService, AccountService>();\r\nbuilder.Services.AddScoped<ITokenService, TokenService>();\r\nbuilder.Services.AddScoped<IAuthService, AuthService>();\r\nbuilder.Services.AddScoped<ICloudinaryService, CloudinaryService>();\r\n\r\n\r\n//Builders\r\nbuilder.Services.AddScoped<IAccountFactory, AccountFactory>();\r\n\r\n// RabbitMQ connection\r\nbuilder.Services.AddSingleton<IConnection>(sp =>\r\n{\r\n    var config = builder.Configuration.GetSection(\"RabbitMQ\");\r\n    var factory = new ConnectionFactory\r\n    {\r\n        HostName = config[\"HostName\"],\r\n        UserName = config[\"UserName\"],\r\n        Password = config[\"Password\"],\r\n        Port = int.Parse(config[\"Port\"])\r\n    };\r\n    return factory.CreateConnectionAsync().GetAwaiter().GetResult();\r\n});\r\n\r\n// Consumer\r\nbuilder.Services.AddSingleton<GetAccountConsumer>();\r\nbuilder.Services.AddHostedService<ConsumerHostedService>();\r\n\r\n\r\nbuilder.Services.AddControllers();\r\nbuilder.Services.AddControllers()\r\n    .AddJsonOptions(o =>\r\n    {\r\n        o.JsonSerializerOptions.IncludeFields = true;\r\n        o.JsonSerializerOptions.UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement;\r\n    });\r\n\r\n\r\nbuilder.Services.AddEndpointsApiExplorer();\r\nbuilder.Services.AddSwaggerGen();\r\n\r\nbuilder.Services.AddEndpointsApiExplorer();\r\nbuilder.Services.AddSwaggerGen(options =>\r\n{\r\n    options.AddSecurityDefinition(\"Bearer\", new Microsoft.OpenApi.Models.OpenApiSecurityScheme\r\n    {\r\n        Name = \"Authorization\",\r\n        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,\r\n        Scheme = \"Bearer\",\r\n        BearerFormat = \"JWT\",\r\n        In = Microsoft.OpenApi.Models.ParameterLocation.Header,\r\n        Description = \"Enter 'Bearer {your token}'\"\r\n    });\r\n\r\n    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement\r\n    {\r\n        {\r\n            new Microsoft.OpenApi.Models.OpenApiSecurityScheme\r\n            {\r\n                Reference = new Microsoft.OpenApi.Models.OpenApiReference\r\n                {\r\n                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,\r\n                    Id = \"Bearer\"\r\n                }\r\n            },\r\n            new string[] {}\r\n        }\r\n    });\r\n});\r\n\r\n\r\nvar app = builder.Build();\r\n\r\nusing (var scope = app.Services.CreateScope())\r\n{\r\n    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();\r\n    db.Database.Migrate(); \r\n}\r\n\r\napp.UseSwagger();\r\napp.UseSwaggerUI();\r\n\r\napp.UseCors(\"AllowFrontend\");\r\n\r\napp.UseAuthentication();\r\napp.UseAuthorization();\r\n\r\napp.MapControllers();\r\napp.Run();\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.API/Program.cs b/../UserService/DF.UserService.API/Program.cs
+--- a/../UserService/DF.UserService.API/Program.cs	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.API/Program.cs	(date 1764538578486)
+@@ -97,10 +97,12 @@
+ });
+ 
+ // Consumer
+-builder.Services.AddSingleton<GetAccountConsumer>();
++builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
++builder.Services.AddSingleton<IConsumer, GetBusinessAccountDetailsConsumer>();
+ builder.Services.AddHostedService<ConsumerHostedService>();
+ 
+ 
++
+ builder.Services.AddControllers();
+ builder.Services.AddControllers()
+     .AddJsonOptions(o =>
+Index: ../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk\">\r\n\r\n    <PropertyGroup>\r\n        <TargetFramework>net9.0</TargetFramework>\r\n        <ImplicitUsings>enable</ImplicitUsings>\r\n        <Nullable>enable</Nullable>\r\n    </PropertyGroup>\r\n\r\n    <ItemGroup>\r\n        <PackageReference Include=\"DF.Contracts\" Version=\"1.0.0-preview2\" />\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore\" Version=\"9.0.9\" />\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore.SqlServer\" Version=\"9.0.9\" />\r\n        <PackageReference Include=\"Microsoft.EntityFrameworkCore.Design\" Version=\"9.0.9\">\r\n            <PrivateAssets>all</PrivateAssets>\r\n        </PackageReference>\r\n        <PackageReference Include=\"Microsoft.AspNetCore.Identity.EntityFrameworkCore\" Version=\"9.0.9\" />\r\n        <PackageReference Include=\"Newtonsoft.Json\" Version=\"13.0.4\" />\r\n        <PackageReference Include=\"RabbitMQ.Client\" Version=\"7.2.0\" />\r\n    </ItemGroup>\r\n\r\n    <ItemGroup>\r\n        <ProjectReference Include=\"..\\DF.UserService.Domain\\DF.UserService.Domain.csproj\" />\r\n    </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj b/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj
+--- a/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj	(date 1764538032578)
+@@ -7,7 +7,7 @@
+     </PropertyGroup>
+ 
+     <ItemGroup>
+-        <PackageReference Include="DF.Contracts" Version="1.0.0-preview2" />
++        <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
+         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
+         <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
+         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+Index: ../Contracts/DF.Contracts/RPC/Responses/GetBusinessAccountDetailsResponse.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../Contracts/DF.Contracts/RPC/Responses/GetBusinessAccountDetailsResponse.cs b/../Contracts/DF.Contracts/RPC/Responses/GetBusinessAccountDetailsResponse.cs
+new file mode 100644
+--- /dev/null	(date 1764537018274)
++++ b/../Contracts/DF.Contracts/RPC/Responses/GetBusinessAccountDetailsResponse.cs	(date 1764537018274)
+@@ -0,0 +1,3 @@
++namespace DF.Contracts.RPC.Responses;
++
++public record GetBusinessAccountDetailsResponse(Guid BusinessAccountId, Guid UserId, string Name, string Description); //TODO: need to add location
+\ No newline at end of file
+Index: ../Contracts/DF.Contracts/DF.Contracts.csproj
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><Project Sdk=\"Microsoft.NET.Sdk\">\r\n\r\n    <PropertyGroup>\r\n        <TargetFramework>net9.0</TargetFramework>\r\n        <ImplicitUsings>enable</ImplicitUsings>\r\n        <Nullable>enable</Nullable>\r\n\r\n        <!-- NuGet Package Metadata -->\r\n        <PackageId>DF.Contracts</PackageId>\r\n        <Version>1.0.0-preview2</Version>\r\n        <Authors>Rostyslav</Authors>\r\n        <PackageDescription>Shared contracts for DF microservices</PackageDescription>\r\n        <RepositoryUrl>https://github.com/rostyslav/food-delivery-platform</RepositoryUrl>\r\n        <PackageLicenseExpression>MIT</PackageLicenseExpression>\r\n\r\n        <!-- Auto-generate package on build -->\r\n        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>\r\n\r\n        <!-- Symbols (optional) -->\r\n        <IncludeSymbols>true</IncludeSymbols>\r\n        <SymbolPackageFormat>snupkg</SymbolPackageFormat>\r\n        <PackageOutputPath>C:\\Users\\User\\AppData\\Roaming\\LocalNuget</PackageOutputPath>\r\n\r\n    </PropertyGroup>\r\n\r\n    <ItemGroup>\r\n      <Folder Include=\"RPC\\\" />\r\n    </ItemGroup>\r\n\r\n</Project>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../Contracts/DF.Contracts/DF.Contracts.csproj b/../Contracts/DF.Contracts/DF.Contracts.csproj
+--- a/../Contracts/DF.Contracts/DF.Contracts.csproj	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../Contracts/DF.Contracts/DF.Contracts.csproj	(date 1764537896401)
+@@ -7,7 +7,7 @@
+ 
+         <!-- NuGet Package Metadata -->
+         <PackageId>DF.Contracts</PackageId>
+-        <Version>1.0.0-preview2</Version>
++        <Version>1.0.0-preview3</Version>
+         <Authors>Rostyslav</Authors>
+         <PackageDescription>Shared contracts for DF microservices</PackageDescription>
+         <RepositoryUrl>https://github.com/rostyslav/food-delivery-platform</RepositoryUrl>
+@@ -26,5 +26,5 @@
+     <ItemGroup>
+       <Folder Include="RPC\" />
+     </ItemGroup>
+-
++    
+ </Project>
+Index: ../Contracts/DF.Contracts/RPC/Requests/GetBusinessAccountDetailsRequest.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../Contracts/DF.Contracts/RPC/Requests/GetBusinessAccountDetailsRequest.cs b/../Contracts/DF.Contracts/RPC/Requests/GetBusinessAccountDetailsRequest.cs
+new file mode 100644
+--- /dev/null	(date 1764536932649)
++++ b/../Contracts/DF.Contracts/RPC/Requests/GetBusinessAccountDetailsRequest.cs	(date 1764536932649)
+@@ -0,0 +1,3 @@
++namespace DF.Contracts.RPC.Requests;
++
++public record GetBusinessAccountDetailsRequest(Guid BusinessAccountId);
+Index: ../UserService/DF.UserService.Application/Messaging/GetBusinessAccountDetailsConsumer.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Application/Messaging/GetBusinessAccountDetailsConsumer.cs b/../UserService/DF.UserService.Application/Messaging/GetBusinessAccountDetailsConsumer.cs
+new file mode 100644
+--- /dev/null	(date 1764538578494)
++++ b/../UserService/DF.UserService.Application/Messaging/GetBusinessAccountDetailsConsumer.cs	(date 1764538578494)
+@@ -0,0 +1,84 @@
++using System.Text;
++using System.Text.Json;
++using RabbitMQ.Client;
++using RabbitMQ.Client.Events;
++using DF.Contracts.RPC.Requests;
++using DF.Contracts.RPC.Responses;
++using DF.UserService.Application.Repositories.Interfaces;
++using DF.UserService.Domain.Entities;
++using Microsoft.Extensions.DependencyInjection;
++
++namespace DF.UserService.Application.Messaging;
++
++public class GetBusinessAccountDetailsConsumer : IConsumer
++{
++    private readonly IConnection _connection;
++    private readonly IChannel _channel;
++    private readonly IServiceScopeFactory _scopeFactory;
++    
++    public GetBusinessAccountDetailsConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
++    {
++        _connection = connection;
++        _scopeFactory = scopeFactory;
++        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
++
++        _channel.QueueDeclareAsync(
++            queue: "user.getbussinessaccount",
++            durable: false,
++            exclusive: false,
++            autoDelete: false,
++            arguments: null
++        ).GetAwaiter().GetResult();
++    }
++
++    public void Start()
++    {
++        var consumer = new AsyncEventingBasicConsumer(_channel);
++        consumer.ReceivedAsync += async (model, ea) =>
++        {
++            using var scope = _scopeFactory.CreateScope();
++            var accountRepository = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
++            
++            var body = ea.Body.ToArray();
++            var message = Encoding.UTF8.GetString(body);
++
++            // Десеріалізація запиту
++            var request = JsonSerializer.Deserialize<GetBusinessAccountDetailsRequest>(message);
++
++            // Тут твоя бізнес‑логіка: знайти accountId по UserId
++            if (request.BusinessAccountId != null)
++            {
++                var account = await accountRepository.Get(request.BusinessAccountId) as BusinessAccount;
++
++                var response = new GetBusinessAccountDetailsResponse(
++                    account.Id,
++                    account.UserId,
++                    account.Name,
++                    account.Description
++                );
++
++                var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
++
++                var props = new BasicProperties
++                {
++                    CorrelationId = ea.BasicProperties.CorrelationId
++                };
++
++                await _channel.BasicPublishAsync(
++                    exchange: "",
++                    routingKey: ea.BasicProperties.ReplyTo,
++                    mandatory: false,
++                    basicProperties: props,
++                    body: responseBytes
++                );
++            }
++        };
++
++        _channel.BasicConsumeAsync(
++            queue: "user.getbussinessaccount",
++            autoAck: true,
++            consumer: consumer
++        ).GetAwaiter().GetResult();
++    }
++
++}
+Index: ../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>using System.Text;\r\nusing System.Text.Json;\r\nusing RabbitMQ.Client;\r\nusing RabbitMQ.Client.Events;\r\nusing DF.Contracts.RPC.Requests;\r\nusing DF.Contracts.RPC.Responses;\r\nusing DF.UserService.Application.Repositories.Interfaces;\r\nusing DF.UserService.Domain.Entities;\r\nusing Microsoft.Extensions.DependencyInjection;\r\n\r\nnamespace DF.UserService.Application.Messaging;\r\n\r\npublic class GetAccountConsumer\r\n{\r\n    private readonly IConnection _connection;\r\n    private readonly IChannel _channel;\r\n    private readonly IServiceScopeFactory _scopeFactory;\r\n    \r\n    public GetAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)\r\n    {\r\n        _connection = connection;\r\n        _scopeFactory = scopeFactory;\r\n        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();\r\n\r\n        _channel.QueueDeclareAsync(\r\n            queue: \"user.getaccount\",\r\n            durable: false,\r\n            exclusive: false,\r\n            autoDelete: false,\r\n            arguments: null\r\n        ).GetAwaiter().GetResult();\r\n    }\r\n\r\n    public void Start()\r\n    {\r\n        var consumer = new AsyncEventingBasicConsumer(_channel);\r\n        consumer.ReceivedAsync += async (model, ea) =>\r\n        {\r\n            using var scope = _scopeFactory.CreateScope();\r\n            var accountRepository = scope.ServiceProvider.GetRequiredService<IAccountRepository>();\r\n            \r\n            var body = ea.Body.ToArray();\r\n            var message = Encoding.UTF8.GetString(body);\r\n\r\n            // Десеріалізація запиту\r\n            var request = JsonSerializer.Deserialize<GetAccountRequest>(message);\r\n\r\n            // Тут твоя бізнес‑логіка: знайти accountId по UserId\r\n            if (request.UserId != null)\r\n            {\r\n                var account = await FindAccountByUserIdAsync(request.UserId.Value, accountRepository);\r\n\r\n                var response = new GetAccountResponse(\r\n                    account.AccountId,\r\n                    account.UserId,\r\n                    account.AccountType\r\n                );\r\n\r\n                var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));\r\n\r\n                var props = new BasicProperties\r\n                {\r\n                    CorrelationId = ea.BasicProperties.CorrelationId\r\n                };\r\n\r\n                await _channel.BasicPublishAsync(\r\n                    exchange: \"\",\r\n                    routingKey: ea.BasicProperties.ReplyTo,\r\n                    mandatory: false,\r\n                    basicProperties: props,\r\n                    body: responseBytes\r\n                );\r\n            }\r\n        };\r\n\r\n        _channel.BasicConsumeAsync(\r\n            queue: \"user.getaccount\",\r\n            autoAck: true,\r\n            consumer: consumer\r\n        ).GetAwaiter().GetResult();\r\n    }\r\n\r\n    private async Task<GetAccountResponse> FindAccountByUserIdAsync(Guid userId, IAccountRepository accountRepository)\r\n    {\r\n        var account = await accountRepository.GetCurrentAccountByUserId(userId);\r\n\r\n        if (account == null)\r\n        {\r\n            throw new InvalidOperationException($\"Account for user {userId} not found.\");\r\n        }\r\n\r\n        if (account.AccountType != AccountType.Business)\r\n        {\r\n            throw new InvalidOperationException($\"Account {account.Id} is not of type Business.\");\r\n        }\r\n\r\n        return new GetAccountResponse(\r\n            account.Id,\r\n            userId,\r\n            \"Business\"\r\n        );\r\n    }\r\n\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs b/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs
+--- a/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.Application/Messaging/GetAccountConsumer.cs	(date 1764538578475)
+@@ -10,7 +10,7 @@
+ 
+ namespace DF.UserService.Application.Messaging;
+ 
+-public class GetAccountConsumer
++public class GetAccountConsumer : IConsumer
+ {
+     private readonly IConnection _connection;
+     private readonly IChannel _channel;
+Index: ../UserService/DF.UserService.Application/Messaging/IConsumer.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.Application/Messaging/IConsumer.cs b/../UserService/DF.UserService.Application/Messaging/IConsumer.cs
+new file mode 100644
+--- /dev/null	(date 1764538541328)
++++ b/../UserService/DF.UserService.Application/Messaging/IConsumer.cs	(date 1764538541328)
+@@ -0,0 +1,6 @@
++namespace DF.UserService.Application.Messaging;
++
++public interface IConsumer
++{
++    void Start();
++}
+Index: ../../frontend/food-delivery-platform/src/pages/DishPage.jsx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>// src/pages/DishPage.jsx\r\nimport React, { useState, useEffect } from 'react';\r\nimport { useParams, Link } from 'react-router-dom';\r\nimport { motion } from 'framer-motion';\r\nimport { Star, Clock, MapPin, ChevronLeft, Plus, Minus, Zap, MessageCircle } from 'lucide-react';\r\nimport './styles/DishPage.css';\r\nimport { getDishById } from \"../api/Dish.jsx\";\r\n\r\n// МОК ВІДГУКИ — ЗАЛИШАЮТЬСЯ\r\nconst mockReviews = {\r\n    1: [\r\n        { id: 1, author: \"Олена\", rating: 5, text: \"Найкраща Маргарита!\", date: \"2 дні тому\" },\r\n        { id: 2, author: \"Макс\", rating: 4, text: \"Хотілося б більше базиліку.\", date: \"1 тиждень тому\" },\r\n    ],\r\n    2: [\r\n        { id: 1, author: \"Ігор\", rating: 5, text: \"Соковитий і великий бургер.\", date: \"3 дні тому\" }\r\n    ]\r\n};\r\n\r\nconst DishPage = () => {\r\n    const { id } = useParams();\r\n    const [dish, setDish] = useState(null);\r\n    const [loading, setLoading] = useState(true);\r\n    const [quantity, setQuantity] = useState(1);\r\n\r\n    useEffect(() => {\r\n        const loadDish = async () => {\r\n            try {\r\n                const token = localStorage.getItem(\"accessToken\");\r\n                const data = await getDishById(id, token);\r\n\r\n                // Мапаємо дані з бекенду у формат сторінки\r\n                const mappedDish = {\r\n                    id: data.id,\r\n                    name: data.name,\r\n                    image: data.imageUrl,\r\n                    price: data.price,\r\n                    cookingTime: data.cookingTime ? `${data.cookingTime} хв` : \"\",\r\n                    description: data.description ?? \"Опис відсутній\",\r\n                    category: data.categoryName ?? \"Страва\",\r\n                    weight: \"300 г\",\r\n                    rating: 4.5,               // бекенд поки не дає рейтинг\r\n                    reviewsCount: mockReviews[id]?.length ?? 0,\r\n                    restaurant: \"Заклад\",\r\n                    address: \"Адреса недоступна\",\r\n                    popular: true,\r\n                    ingredients: data.ingredients?.map(i => i.name) ?? [],\r\n                    nutrition: { calories: 400, protein: 20, fats: 10, carbs: 60 },\r\n                    allergens: [\"Глютен\"]\r\n                };\r\n\r\n                setDish(mappedDish);\r\n            } catch (err) {\r\n                console.error(\"Помилка завантаження страви:\", err);\r\n            } finally {\r\n                setLoading(false);\r\n            }\r\n        };\r\n\r\n        loadDish();\r\n    }, [id]);\r\n\r\n    if (loading) {\r\n        return (\r\n            <div className=\"dish-loading\">\r\n                <div className=\"spinner\"></div>\r\n                Завантаження...\r\n            </div>\r\n        );\r\n    }\r\n\r\n    if (!dish) {\r\n        return (\r\n            <div className=\"dish-not-found\">\r\n                <h2>Страву не знайдено</h2>\r\n                <Link to=\"/\">На головну</Link>\r\n            </div>\r\n        );\r\n    }\r\n\r\n    const reviewsList = mockReviews[id] ?? [];\r\n\r\n    return (\r\n        <div className=\"dish-page\">\r\n            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className=\"dish-container\">\r\n\r\n                {/* Хлібні крихти */}\r\n                <div className=\"breadcrumbs\">\r\n                    <Link to=\"/\">Головна</Link> → <span>{dish.category}</span> → {dish.name}\r\n                </div>\r\n\r\n                <div className=\"dish-grid\">\r\n                    {/* ЛІВА КОЛОНКА — Фото + Відгуки */}\r\n                    <div className=\"dish-left\">\r\n                        <div className=\"dish-image-wrapper\">\r\n                            <img src={dish.image} alt={dish.name} className=\"dish-image\" />\r\n                            {dish.popular && <div className=\"popular-badge\"><Zap size={16} /> ХІТ</div>}\r\n                        </div>\r\n\r\n                        {/* Відгуки (МОК) */}\r\n                        <div className=\"reviews-section\">\r\n                            <h3><MessageCircle size={20} /> Відгуки ({reviewsList.length})</h3>\r\n\r\n                            <div className=\"reviews-list\">\r\n                                {reviewsList.map(r => (\r\n                                    <motion.div\r\n                                        key={r.id}\r\n                                        className=\"review-card\"\r\n                                        initial={{ opacity: 0, x: -20 }}\r\n                                        animate={{ opacity: 1, x: 0 }}\r\n                                    >\r\n                                        <div className=\"review-header\">\r\n                                            <strong>{r.author}</strong>\r\n                                            <div className=\"review-rating\">\r\n                                                {[...Array(5)].map((_, i) => (\r\n                                                    <Star\r\n                                                        key={i}\r\n                                                        size={14}\r\n                                                        fill={i < r.rating ? \"gold\" : \"none\"}\r\n                                                        stroke={i < r.rating ? \"gold\" : \"#555\"}\r\n                                                    />\r\n                                                ))}\r\n                                            </div>\r\n                                        </div>\r\n                                        <p>{r.text}</p>\r\n                                        <small>{r.date}</small>\r\n                                    </motion.div>\r\n                                ))}\r\n                            </div>\r\n\r\n                            <button className=\"show-more-reviews\">Показати всі відгуки →</button>\r\n                        </div>\r\n                    </div>\r\n\r\n                    {/* ПРАВА КОЛОНКА — Інформація */}\r\n                    <div className=\"dish-info\">\r\n                        <h1 className=\"dish-title\">{dish.name}</h1>\r\n\r\n                        <div className=\"dish-meta\">\r\n                            <div className=\"rating\"><Star size={20} fill=\"gold\" /> {dish.rating}</div>\r\n                            <div className=\"cooking-time\"><Clock size={18} /> {dish.cookingTime}</div>\r\n                        </div>\r\n\r\n                        <div className=\"restaurant-info\">\r\n                            <MapPin size={16} /> <strong>{dish.restaurant}</strong><br />\r\n                            <span className=\"address\">{dish.address}</span>\r\n                        </div>\r\n\r\n                        <div className=\"price-section\">\r\n                            <div className=\"price-current\">{dish.price} ₴</div>\r\n                        </div>\r\n\r\n                        <p className=\"description\">{dish.description}</p>\r\n\r\n                        {/* Кількість */}\r\n                        <div className=\"quantity-controls\">\r\n                            <motion.button onClick={() => setQuantity(q => Math.max(1, q - 1))} className=\"qty-btn minus\">\r\n                                <Minus size={28} />\r\n                            </motion.button>\r\n\r\n                            <motion.span className=\"quantity\">{quantity}</motion.span>\r\n\r\n                            <motion.button onClick={() => setQuantity(q => q + 1)} className=\"qty-btn plus\">\r\n                                <Plus size={28} />\r\n                            </motion.button>\r\n                        </div>\r\n\r\n                        <motion.button className=\"add-to-cart-btn\">\r\n                            Додати в кошик · {dish.price * quantity} ₴\r\n                        </motion.button>\r\n\r\n                        {/* Додаткова інформація */}\r\n                        <div className=\"extra-info\">\r\n                            <div className=\"info-block\">\r\n                                <h4>Склад</h4>\r\n                                <ul>\r\n                                    {dish.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}\r\n                                </ul>\r\n                            </div>\r\n\r\n                            <div className=\"info-block\">\r\n                                <h4>Харчова цінність</h4>\r\n                                <div className=\"nutrition-grid\">\r\n                                    <div>Калорії: <strong>{dish.nutrition.calories}</strong></div>\r\n                                    <div>Білки: <strong>{dish.nutrition.protein} г</strong></div>\r\n                                    <div>Жири: <strong>{dish.nutrition.fats} г</strong></div>\r\n                                    <div>Вуглеводи: <strong>{dish.nutrition.carbs} г</strong></div>\r\n                                </div>\r\n                            </div>\r\n\r\n                            {dish.allergens.length > 0 && (\r\n                                <div className=\"info-block warning\">\r\n                                    <h4>Алергени</h4>\r\n                                    <p>{dish.allergens.join(', ')}</p>\r\n                                </div>\r\n                            )}\r\n                        </div>\r\n                    </div>\r\n                </div>\r\n\r\n                <Link to=\"/\" className=\"back-to-menu\">\r\n                    <ChevronLeft size={18} /> На головну\r\n                </Link>\r\n            </motion.div>\r\n        </div>\r\n    );\r\n};\r\n\r\nexport default DishPage;\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../../frontend/food-delivery-platform/src/pages/DishPage.jsx b/../../frontend/food-delivery-platform/src/pages/DishPage.jsx
+--- a/../../frontend/food-delivery-platform/src/pages/DishPage.jsx	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../../frontend/food-delivery-platform/src/pages/DishPage.jsx	(date 1764535200354)
+@@ -42,7 +42,6 @@
+                     rating: 4.5,               // бекенд поки не дає рейтинг
+                     reviewsCount: mockReviews[id]?.length ?? 0,
+                     restaurant: "Заклад",
+-                    address: "Адреса недоступна",
+                     popular: true,
+                     ingredients: data.ingredients?.map(i => i.name) ?? [],
+                     nutrition: { calories: 400, protein: 20, fats: 10, carbs: 60 },
+@@ -143,7 +142,6 @@
+ 
+                         <div className="restaurant-info">
+                             <MapPin size={16} /> <strong>{dish.restaurant}</strong><br />
+-                            <span className="address">{dish.address}</span>
+                         </div>
+ 
+                         <div className="price-section">
+Index: ../UserService/DF.UserService.API/appsettings.json
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>{\r\n  \"ConnectionStrings\": {\r\n    // LOCAL\r\n    //\"UserServiceMSSQLDatabase\": \"Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\"\r\n    \r\n    //DOCKER\r\n    \"UserServiceMSSQLDatabase\": \"Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True\"\r\n\r\n  },\r\n  \"Cloudinary\": {\r\n    \"CloudName\": \"dazciy2y8\",\r\n    \"ApiKey\": \"839995961997592\",\r\n    \"ApiSecret\": \"FpOQ13j9BfMYLeQM6QilD3z26P4\",\r\n    \"Url\": \"CLOUDINARY_URL=cloudinary://839995961997592:FpOQ13j9BfMYLeQM6QilD3z26P4@dazciy2y8\"\r\n  },\r\n  \"RabbitMQ\": {\r\n    \"HostName\": \"rabbitmq\",\r\n    //\"HostName\": \"localhost\",\r\n    \"UserName\": \"guest\",\r\n    \"Password\": \"guest\",\r\n    \"Port\": 5672\r\n  },\r\n  \"Jwt\": {\r\n    \"Key\": \"food-delivery-platform-jwt-key-1234567890!\",\r\n    \"Issuer\": \"df.userservice\",\r\n    \"Audience\": \"df.userservice.client\",\r\n    \"AccessTokenExpirationMinutes\": 60,\r\n    \"RefreshTokenExpirationDays\": 30\r\n  },\r\n  \"Kestrel\": {\r\n    \"Endpoints\": {\r\n      \"Http\": {\r\n        \"Url\": \"http://0.0.0.0:5000\"\r\n      }\r\n    }\r\n  },\r\n  \"Logging\": {\r\n    \"LogLevel\": {\r\n      \"Default\": \"Information\",\r\n      \"Microsoft.AspNetCore\": \"Warning\"\r\n    }\r\n  },\r\n\r\n\"AllowedHosts\": \"*\"\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/../UserService/DF.UserService.API/appsettings.json b/../UserService/DF.UserService.API/appsettings.json
+--- a/../UserService/DF.UserService.API/appsettings.json	(revision e2fc87101c93ca6d46ba15cf6f7d01dd00f335e9)
++++ b/../UserService/DF.UserService.API/appsettings.json	(date 1764534973813)
+@@ -1,10 +1,10 @@
+ {
+   "ConnectionStrings": {
+     // LOCAL
+-    //"UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
++    "UserServiceMSSQLDatabase": "Server=localhost,11433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
+     
+     //DOCKER
+-    "UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
++    //"UserServiceMSSQLDatabase": "Server=mssql,1433;Database=UserServiceDb;User Id=DFUserService;Password=UserService2025!;TrustServerCertificate=True"
+ 
+   },
+   "Cloudinary": {
+@@ -14,8 +14,8 @@
+     "Url": "CLOUDINARY_URL=cloudinary://839995961997592:FpOQ13j9BfMYLeQM6QilD3z26P4@dazciy2y8"
+   },
+   "RabbitMQ": {
+-    "HostName": "rabbitmq",
+-    //"HostName": "localhost",
++    //"HostName": "rabbitmq",
++    "HostName": "localhost",
+     "UserName": "guest",
+     "Password": "guest",
+     "Port": 5672
+Index: .idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10__Changes_.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10__Changes_.xml b/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10__Changes_.xml
+new file mode 100644
+--- /dev/null	(date 1764534973827)
++++ b/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10__Changes_.xml	(date 1764534973827)
+@@ -0,0 +1,4 @@
++<changelist name="Uncommitted_changes_before_Update_at_23_11_2025_17_10_[Changes]" date="1763910640409" recycled="true" deleted="true">
++  <option name="PATH" value="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_23_11_2025_17_10_[Changes]/shelved.patch" />
++  <option name="DESCRIPTION" value="Uncommitted changes before Update at 23.11.2025 17:10 [Changes]" />
++</changelist>
+\ No newline at end of file
+Index: DF.MenuService.Contracts/Models/Response/BusinessResponse.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/DF.MenuService.Contracts/Models/Response/BusinessResponse.cs b/DF.MenuService.Contracts/Models/Response/BusinessResponse.cs
+new file mode 100644
+--- /dev/null	(date 1764537007903)
++++ b/DF.MenuService.Contracts/Models/Response/BusinessResponse.cs	(date 1764537007903)
+@@ -0,0 +1,3 @@
++namespace DF.MenuService.Contracts.Models.Response;
++
++public record BusinessResponse(Guid Id, string Name, string Description); //TODO: need to add location
+\ No newline at end of file

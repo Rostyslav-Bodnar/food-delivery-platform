@@ -10,15 +10,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1b51eaab-029b-487e-8820-5caaf6ba4b13" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_01_12_2025_0_08__Changes_.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/.dockerignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/.idea/aws.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/.idea/indexLayout.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Dockerfile" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/Location.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/Order.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/OrderStatus.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/OrderedDish.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/Data/AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_15_10_2025_21_36_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/shelf/Uncommitted_changes_before_Update_at_15_10_2025_21_36__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -49,28 +55,44 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/ce37be1a06b16c6faa02038d2cc477dd3bca5b217ceeb41c5f2ad45c1bf9/ServiceProvider.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/fc2027f7e776fc105cddb56b1a25eeb3895b3ae6f3aac854d786e63bd01f75e2/CallSiteFactory.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../../../../../../Program Files (x86)/NuGet/Config/Microsoft.VisualStudio.FallbackLocation.config" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../../../../../../../../Program Files (x86)/NuGet/Config/Microsoft.VisualStudio.Offline.config" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/a9ce663431c24c9aba988159f5e36465291420/37/98cc1d6c/ModelBuilder.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/d25e28b634b9489ca3cff09e5cad78cd2600/84/f9ff57fd/GetAccountRequest.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/5acc345db3c207bc9d886a36ff14867ef8d65557432172c2a42f19aeac04d1b/Nullable.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/bd1d5c50194fea68ff3559c160230b0ab50f5acf4ce3061bffd6d62958e2182/ExceptionDispatchInfo.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Roaming/NuGet/NuGet.Config" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/CategoryController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/MenuService/DF.MenuService.API/Program.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="mock://C:/Users/User/Desktop/Я/Projects/food-delivery-platform/backend/MenuService/DF.MenuService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/IngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IIngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IMenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/MenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/CloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/IngredientService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IIngredientService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IMenuService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/MenuService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateMenuRequest.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/IngredientRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/DishResponse.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/IngredientResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/MenuResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/UploadImageResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Category.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Ingredient.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Menu.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Infrastructure/Data/AppDbContext.cs" root0="FORCE_HIGHLIGHTING" />
   </component>
@@ -79,6 +101,9 @@
   &quot;isMigrated&quot;: true
 }</component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="false" />
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 2
@@ -93,11 +118,15 @@
     &quot;.NET Launch Settings Profile.DF.MenuService.API: http.executor&quot;: &quot;Debug&quot;,
     &quot;.NET Project.API.executor&quot;: &quot;Debug&quot;,
     &quot;Docker.compose.yaml.df.menuservice.api: Compose Deployment.executor&quot;: &quot;Run&quot;,
+    &quot;Docker.compose.yaml.df.redis: Compose Deployment.executor&quot;: &quot;Run&quot;,
     &quot;Docker.compose.yaml: Compose Deployment.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;menu-service&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;order-service&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -108,16 +137,17 @@
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
 }</component>
+  <component name="RiderProblemsViewState">
+    <option name="sortByName" value="true" />
+  </component>
   <component name="RunManager" selected=".NET Launch Settings Profile.DF.MenuService.API: http">
     <configuration name="API" type="DotNetProject" factoryName=".NET Project">
       <option name="EXE_PATH" value="$PROJECT_DIR$/DF.MenuService.API/bin/Debug/net9.0/DF.MenuService.API.exe" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/DF.MenuService.API" />
       <option name="PASS_PARENT_ENVS" value="1" />
-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="ENV_FILE_PATHS" value="" />
       <option name="REDIRECT_INPUT_PATH" value="" />
-      <option name="PTY_MODE" value="Auto" />
       <option name="MIXED_MODE_DEBUG" value="0" />
       <option name="USE_MONO" value="0" />
       <option name="RUNTIME_ARGUMENTS" value="" />
@@ -137,7 +167,6 @@
       <option name="LAUNCH_PROFILE_PROJECT_FILE_PATH" value="$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj" />
       <option name="LAUNCH_PROFILE_TFM" value="net9.0" />
       <option name="LAUNCH_PROFILE_NAME" value="http" />
-      <option name="USE_EXTERNAL_CONSOLE" value="0" />
       <option name="USE_MONO" value="0" />
       <option name="RUNTIME_ARGUMENTS" value="" />
       <browser name="98ca6316-2f89-46d9-a9e5-fa9e2b0625b3" />
@@ -146,6 +175,7 @@
       <option name="SEND_DEBUG_REQUEST" value="1" />
       <option name="ADDITIONAL_IIS_EXPRESS_ARGUMENTS" value="" />
       <option name="AUTO_ATTACH_CHILDREN" value="0" />
+      <option name="MIXED_MODE_DEBUG" value="0" />
       <method v="2">
         <option name="Build" />
       </method>
@@ -198,16 +228,32 @@
       <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
       <method v="2" />
     </configuration>
+    <configuration name="compose.yaml.df.redis: Compose Deployment" type="docker-deploy" factoryName="docker-compose.yml" temporary="true" server-name="Docker">
+      <deployment type="docker-compose.yml">
+        <settings>
+          <option name="services">
+            <list>
+              <option value="df.redis" />
+            </list>
+          </option>
+          <option name="sourceFilePath" value="compose.yaml" />
+        </settings>
+      </deployment>
+      <EXTENSION ID="com.jetbrains.rider.docker.debug" isFastModeEnabled="true" isSslEnabled="false" />
+      <method v="2" />
+    </configuration>
     <list>
       <item itemvalue=".NET Launch Settings Profile.DF.MenuService.API: http" />
       <item itemvalue=".NET Project.API" />
       <item itemvalue="Docker.DF.MenuService.API/Dockerfile" />
+      <item itemvalue="Docker.compose.yaml.df.redis: Compose Deployment" />
       <item itemvalue="Docker.compose.yaml.df.menuservice.api: Compose Deployment" />
       <item itemvalue="Docker.compose.yaml: Compose Deployment" />
     </list>
     <recent_temporary>
       <list>
         <item itemvalue=".NET Launch Settings Profile.DF.MenuService.API: http" />
+        <item itemvalue="Docker.compose.yaml.df.redis: Compose Deployment" />
         <item itemvalue="Docker.compose.yaml.df.menuservice.api: Compose Deployment" />
         <item itemvalue="Docker.compose.yaml: Compose Deployment" />
       </list>
@@ -247,6 +293,13 @@
       <workItem from="1760631900217" duration="98000" />
       <workItem from="1760882296490" duration="12551000" />
       <workItem from="1760982159258" duration="4546000" />
+      <workItem from="1762456764314" duration="10000" />
+      <workItem from="1762457204197" duration="6613000" />
+      <workItem from="1763494945525" duration="6487000" />
+      <workItem from="1763909626325" duration="12603000" />
+      <workItem from="1764512111707" duration="19367000" />
+      <workItem from="1764702317506" duration="12544000" />
+      <workItem from="1764882665758" duration="5378000" />
     </task>
     <task id="LOCAL-00004" summary="menu-service/init database">
       <option name="closed" value="true" />
@@ -288,7 +341,31 @@
       <option name="project" value="LOCAL" />
       <updated>1760895063153</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="menu-service - add default migrate">
+      <option name="closed" value="true" />
+      <created>1764528035436</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1764528035436</updated>
+    </task>
+    <task id="LOCAL-00010" summary="menu-service - add authorization to menu service">
+      <option name="closed" value="true" />
+      <created>1764796658160</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1764796658160</updated>
+    </task>
+    <task id="LOCAL-00011" summary="menu-service - fix uncorrect call with token">
+      <option name="closed" value="true" />
+      <created>1764796683905</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1764796683905</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -296,6 +373,17 @@
   </component>
   <component name="UnityCheckinConfiguration" checkUnsavedScenes="false" />
   <component name="UnityProjectConfiguration" hasMinimizedUI="false" />
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="promo-service/ create derictory" />
@@ -303,7 +391,10 @@
     <MESSAGE value="menu-service/init database" />
     <MESSAGE value="menu-service/add projects" />
     <MESSAGE value="menu-service/integrate cloud image storage" />
-    <option name="LAST_COMMIT_MESSAGE" value="menu-service/integrate cloud image storage" />
+    <MESSAGE value="menu-service - add default migrate" />
+    <MESSAGE value="menu-service - add authorization to menu service" />
+    <MESSAGE value="menu-service - fix uncorrect call with token" />
+    <option name="LAST_COMMIT_MESSAGE" value="menu-service - fix uncorrect call with token" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -321,32 +412,6 @@
           <option name="timeStamp" value="3" />
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
-          <line>12</line>
-          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'GetAll'">
-            <startOffsets>
-              <option value="358" />
-            </startOffsets>
-            <endOffsets>
-              <option value="359" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="7" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
-          <line>50</line>
-          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'CreateDish'">
-            <startOffsets>
-              <option value="1296" />
-            </startOffsets>
-            <endOffsets>
-              <option value="1297" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="9" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs</url>
           <line>28</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\MenuController.cs" containingFunctionPresentation="Method 'Create'">
@@ -358,6 +423,84 @@
             </endOffsets>
           </properties>
           <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
+          <line>80</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'CreateDish'">
+            <startOffsets>
+              <option value="2155" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2156" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
+          <line>54</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'CreateDishAsync'">
+            <startOffsets>
+              <option value="1800" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1894" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
+          <line>143</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'UpdateDishAsync'">
+            <startOffsets>
+              <option value="4176" />
+            </startOffsets>
+            <endOffsets>
+              <option value="4177" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="20" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/IngredientService.cs</url>
+          <line>86</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\IngredientService.cs" containingFunctionPresentation="Method 'UpdateIngredients'">
+            <startOffsets>
+              <option value="2755" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2756" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.API/Program.cs</url>
+          <line>58</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Program.cs" containingFunctionPresentation="">
+            <startOffsets>
+              <option value="1978" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2035" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
+          <line>88</line>
+          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'UpdateDish'">
+            <startOffsets>
+              <option value="2409" />
+            </startOffsets>
+            <endOffsets>
+              <option value="2410" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="32" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
