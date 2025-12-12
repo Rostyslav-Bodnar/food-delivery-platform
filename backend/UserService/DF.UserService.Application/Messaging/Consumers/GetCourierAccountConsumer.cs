@@ -1,29 +1,28 @@
 ﻿using System.Text;
 using System.Text.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using DF.Contracts.RPC.Requests;
-using DF.Contracts.RPC.Responses;
+using DF.Contracts.RPC.Responses.UserService;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
-namespace DF.UserService.Application.Messaging;
+namespace DF.UserService.Application.Messaging.Consumers;
 
-public class GetAccountConsumer : IConsumer
+public class GetCourierAccountConsumer : IConsumer
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly IServiceScopeFactory _scopeFactory;
     
-    public GetAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    public GetCourierAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
     {
         _connection = connection;
         _scopeFactory = scopeFactory;
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
 
         _channel.QueueDeclareAsync(
-            queue: "user.getaccount",
+            queue: "user.getcourieraccount",
             durable: false,
             exclusive: false,
             autoDelete: false,
@@ -38,22 +37,29 @@ public class GetAccountConsumer : IConsumer
         {
             using var scope = _scopeFactory.CreateScope();
             var accountRepository = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
-            
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
             // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetAccountRequest>(message);
+            var request = JsonSerializer.Deserialize<GetCourierAccountResponse>(message);
 
-            // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.UserId != null)
+            if (request.AccountId != null)
             {
-                var account = await FindAccountByUserIdAsync(request.UserId.Value, accountRepository);
-
-                var response = new GetAccountResponse(
-                    account.AccountId,
+                var account = await accountRepository.Get(request.AccountId) as CourierAccount;
+                var user = await userRepository.Get(request.UserId);
+                
+                var response = new GetCourierAccountResponse(
+                    account.Id,
                     account.UserId,
-                    account.AccountType
+                    account.AccountType.ToString(),
+                    account.ImageUrl,
+                    account.Name,
+                    account.Surname,
+                    account.PhoneNumber,
+                    user.Email,
+                    account.Address
                 );
 
                 var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
@@ -74,31 +80,10 @@ public class GetAccountConsumer : IConsumer
         };
 
         _channel.BasicConsumeAsync(
-            queue: "user.getaccount",
+            queue: "user.getcourieraccount",
             autoAck: true,
             consumer: consumer
         ).GetAwaiter().GetResult();
-    }
-
-    private async Task<GetAccountResponse> FindAccountByUserIdAsync(Guid userId, IAccountRepository accountRepository)
-    {
-        var account = await accountRepository.GetCurrentAccountByUserId(userId);
-
-        if (account == null)
-        {
-            throw new InvalidOperationException($"Account for user {userId} not found.");
-        }
-
-        if (account.AccountType != AccountType.Business)
-        {
-            throw new InvalidOperationException($"Account {account.Id} is not of type Business.");
-        }
-
-        return new GetAccountResponse(
-            account.Id,
-            userId,
-            "Business"
-        );
     }
 
 }

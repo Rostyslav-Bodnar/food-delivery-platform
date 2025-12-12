@@ -1,29 +1,28 @@
 ﻿using System.Text;
 using System.Text.Json;
-using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
-using DF.Contracts.RPC.Requests;
-using DF.Contracts.RPC.Responses;
+using DF.Contracts.RPC.Responses.UserService;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
-namespace DF.UserService.Application.Messaging;
+namespace DF.UserService.Application.Messaging.Consumers;
 
-public class GetBusinessAccountDetailsConsumer : IConsumer
+public class GetCustomerAccountConsumer : IConsumer
 {
     private readonly IConnection _connection;
     private readonly IChannel _channel;
     private readonly IServiceScopeFactory _scopeFactory;
     
-    public GetBusinessAccountDetailsConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    public GetCustomerAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
     {
         _connection = connection;
         _scopeFactory = scopeFactory;
         _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
 
         _channel.QueueDeclareAsync(
-            queue: "user.getbussinessaccount",
+            queue: "user.getcustomeraccount",
             durable: false,
             exclusive: false,
             autoDelete: false,
@@ -38,23 +37,29 @@ public class GetBusinessAccountDetailsConsumer : IConsumer
         {
             using var scope = _scopeFactory.CreateScope();
             var accountRepository = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
-            
+            var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
+
             var body = ea.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
 
             // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetBusinessAccountDetailsRequest>(message);
+            var request = JsonSerializer.Deserialize<GetCustomerAccountResponse>(message);
 
-            // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.BusinessAccountId != null)
+            if (request.AccountId != null)
             {
-                var account = await accountRepository.Get(request.BusinessAccountId) as BusinessAccount;
-
-                var response = new GetBusinessAccountDetailsResponse(
+                var account = await accountRepository.Get(request.AccountId) as CustomerAccount;
+                var user = await userRepository.Get(request.UserId);
+                
+                var response = new GetCustomerAccountResponse(
                     account.Id,
                     account.UserId,
+                    account.AccountType.ToString(),
+                    account.ImageUrl,
                     account.Name,
-                    account.Description
+                    account.Surname,
+                    account.PhoneNumber,
+                    user.Email,
+                    account.Address
                 );
 
                 var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
@@ -75,7 +80,7 @@ public class GetBusinessAccountDetailsConsumer : IConsumer
         };
 
         _channel.BasicConsumeAsync(
-            queue: "user.getbussinessaccount",
+            queue: "user.getcustomeraccount",
             autoAck: true,
             consumer: consumer
         ).GetAwaiter().GetResult();
