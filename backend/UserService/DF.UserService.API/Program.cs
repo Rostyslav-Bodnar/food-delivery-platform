@@ -71,6 +71,7 @@ builder.Services.AddAuthorization();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
