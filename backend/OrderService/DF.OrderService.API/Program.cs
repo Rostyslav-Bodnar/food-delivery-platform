@@ -1,8 +1,10 @@
+using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Repositories;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using NetTopologySuite;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +32,24 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection"),
         o => o.UseNetTopologySuite()
     ));
+
+// RabbitMQ connection
+builder.Services.AddSingleton<IConnection>(sp =>
+{
+    var config = builder.Configuration.GetSection("RabbitMQ");
+    var factory = new ConnectionFactory
+    {
+        HostName = config["HostName"],
+        UserName = config["UserName"],
+        Password = config["Password"],
+        Port = int.Parse(config["Port"])
+    };
+    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+});
+
+// RPC clients
+builder.Services.AddSingleton<UserServiceRpcClient>();
+builder.Services.AddSingleton<MenuServiceRpcClient>();
 
 //Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
