@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.UserService;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
@@ -42,12 +43,12 @@ public class GetBusinessAccountConsumer : IConsumer
             var message = Encoding.UTF8.GetString(body);
 
             // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetBusinessAccountResponse>(message);
+            var request = JsonSerializer.Deserialize<GetBusinessAccountRequest>(message);
 
             // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.AccountId != null)
+            if (request.BusinessAccountId != null)
             {
-                var account = await accountRepository.Get(request.AccountId) as BusinessAccount;
+                var account = await accountRepository.Get(request.BusinessAccountId) as BusinessAccount;
 
                 var response = new GetBusinessAccountResponse(
                     account.Id,

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
+using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.UserService;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
@@ -43,12 +44,12 @@ public class GetCustomerAccountConsumer : IConsumer
             var message = Encoding.UTF8.GetString(body);
 
             // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetCustomerAccountResponse>(message);
+            var request = JsonSerializer.Deserialize<GetCustomerAccountRequest>(message);
 
-            if (request.AccountId != null)
+            if (request.CustomerId != null)
             {
-                var account = await accountRepository.Get(request.AccountId) as CustomerAccount;
-                var user = await userRepository.Get(request.UserId);
+                var account = await accountRepository.Get(request.CustomerId) as CustomerAccount;
+                var user = await userRepository.Get(account.UserId);
                 
                 var response = new GetCustomerAccountResponse(
                     account.Id,
