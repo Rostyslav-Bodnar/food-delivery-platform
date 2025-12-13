@@ -1,9 +1,10 @@
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Repositories;
 using DF.OrderService.Application.Repositories.Interfaces;
+using DF.OrderService.Application.Services;
+using DF.OrderService.Application.Services.Interfaces;
 using DF.OrderService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
-using NetTopologySuite;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,8 +12,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+
+// 🔹 Swagger
+// Swagger / OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // CORS Policy
 builder.Services.AddCors(options =>
@@ -56,6 +60,10 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
+//Services
+builder.Services.AddScoped<IOrderService, OrderService>();
+
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
@@ -64,10 +72,11 @@ using (var scope = app.Services.CreateScope())
     db.Database.Migrate(); 
 }
 
-// Configure the HTTP request pipeline.
+// Configure middleware pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
