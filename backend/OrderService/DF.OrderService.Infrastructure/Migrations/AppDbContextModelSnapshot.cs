@@ -73,11 +73,15 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("DeliverToId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DeliveredBy")
+                    b.Property<Guid?>("DeliveredBy")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("OrderNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("OrderStatus")
                         .HasColumnType("integer");
