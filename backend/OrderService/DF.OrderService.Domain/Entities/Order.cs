@@ -12,6 +12,8 @@ public class Order
     public Location DeliverTo { get; set; }
     public Guid DeliverFromId { get; set; }
     public Location DeliverFrom { get; set; }
-    public Guid DeliveredBy {get; set;}
+    public Guid? DeliveredBy {get; set;}
     public OrderStatus OrderStatus { get; set; }
+    
+    public string OrderNumber { get; set; }
 }
