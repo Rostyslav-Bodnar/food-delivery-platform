@@ -42,15 +42,21 @@ public class OrderRepository(AppDbContext dbContext) : IOrderRepository
         return true;
     }
 
-    public async Task<IEnumerable<Order>> GetOrdersByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(Guid customerId)
     {
-        var orders = await dbContext.Orders.Where(o => o.DeliveredBy == userId).ToListAsync();
+        var orders = await dbContext.Orders.Where(o => o.OrderedBy == customerId).ToListAsync();
         return orders;
     }
 
     public async Task<IEnumerable<Order>> GetOrdersByBusinessIdAsync(Guid businessId)
     {
         var orders = await dbContext.Orders.Where(o => o.BusinessId == businessId).ToListAsync();
+        return orders;
+    }
+
+    public async Task<IEnumerable<Order>> GetOrdersByCourierIdAsync(Guid courierId)
+    {
+        var orders = await dbContext.Orders.Where(o => o.DeliveredBy == courierId).ToListAsync();
         return orders;
     }
 }
