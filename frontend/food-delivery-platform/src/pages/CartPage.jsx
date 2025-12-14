@@ -99,9 +99,12 @@ const CartPage = () => {
                             <div className="summary-row"><span>Доставка:</span><span>Безкоштовно</span></div>
                             <div className="summary-divider" />
                             <div className="summary-row total"><span>До сплати:</span><strong className="final-price">{totalPrice} ₴</strong></div>
-                            <button className="checkout-btn">Оформити замовлення</button>
-                            <Link to="/" className="continue-shopping">Продовжити покупки</Link>
+                            <Link to="/checkout" className="checkout-btn">
+    Оформити замовлення
+</Link>
+<Link to="/" className="continue-shopping">Продовжити покупки</Link>
                         </motion.div>
+
                     </div>
                 </div>
             </div>

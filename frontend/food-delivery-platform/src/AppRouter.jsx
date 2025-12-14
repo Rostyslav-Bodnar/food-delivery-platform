@@ -10,6 +10,7 @@ import CreateAccountPage from "./pages/CreateAccountPage.jsx";
 import DishPage from "./pages/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
 import CartPage from "./pages/CartPage.jsx";
+import CheckoutPage from "./pages/CheckoutPage.jsx"; // ← НОВИЙ ІМПОРТ
 import RestaurantsPage from "./pages/RestaurantsPage.jsx";
 import RestaurantDetailsPage from './pages/RestaurantDetailsPage';
 import CustomerOrdersPage from "./pages/CustomerOrdersPage.jsx";
@@ -27,6 +28,7 @@ const AppRouter = () => {
                         <Route path="/register" element={<RegisterForm />} />
                         <Route path="/dish/:id" element={<DishPage />} />
                         <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} /> {/* ← НОВИЙ МАРШРУТ */}
                         <Route path="/restaurants" element={<RestaurantsPage />} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
                         <Route path="/customer/orders" element={<CustomerOrdersPage />} />
@@ -61,4 +63,5 @@ const AppRouter = () => {
         </Router>
     );
 };
+
 export default AppRouter;
