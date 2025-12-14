@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import './styles/CustomerOrdersPage.css';
 import CustomerSidebar from '../components/customer-components/CustomerSidebar';
-import OrderDetailsComponent from '../components/OrderDetailsComponent.jsx'; // імпорт модалки
+import OrderDetailsComponent from '../components/OrderDetailsComponent.jsx';
 
 const CustomerOrdersPage = () => {
     const [orders, setOrders] = useState([]);
@@ -16,8 +16,6 @@ const CustomerOrdersPage = () => {
                     id: '1328',
                     restaurant: 'Sushi Master',
                     status: 'preparing',
-                    progress: 70,
-                    eta: '20–30 хв',
                     total: 980,
                     itemsCount: 4,
                     address: 'вул. Шевченка, 12, кв. 45',
@@ -39,10 +37,8 @@ const CustomerOrdersPage = () => {
                     id: '1325',
                     restaurant: 'Burger Lab',
                     status: 'on-the-way',
-                    progress: 92,
-                    eta: '5–10 хв',
                     total: 520,
-                    itemsCount: 2,
+                    itemsCount: 3,
                     address: 'пр. Свободи, 78',
                     courier: { name: 'Аліна', phone: '+380671234567', rating: 5.0 },
                     items: [
@@ -72,12 +68,10 @@ const CustomerOrdersPage = () => {
     return (
         <div className="app-wrapper">
             <CustomerSidebar />
-
             <main className="auth-homepage customer-orders-page">
                 <div className="page-header">
                     <h1 className="gradient-title">Активні замовлення</h1>
                 </div>
-
                 {loading ? (
                     <div className="active-orders-list">
                         <div className="active-order-card skeleton"></div>
@@ -102,24 +96,24 @@ const CustomerOrdersPage = () => {
                                             {s.icon} {s.text}
                                         </div>
                                     </div>
-
                                     <div className="active-order-body">
                                         <h3>{order.restaurant}</h3>
-                                        <div className="order-details">
-                                            <span>{order.itemsCount} позиції • {order.total} ₴</span>
-                                            <span className="eta">Приблизно {order.eta}</span>
+
+                                        {/* Прибрано рядок з кількістю позицій та сумою */}
+
+                                        {/* Список замовлених страв */}
+                                        <div className="order-items-list">
+                                            {order.items.map((item, index) => (
+                                                <div key={index} className="order-item">
+                                                    <span className="item-name">{item.name}</span>
+                                                    <span className="item-details">
+                                                        {item.quantity} × {item.price} ₴
+                                                    </span>
+                                                </div>
+                                            ))}
                                         </div>
 
-                                        <div className="progress-container">
-                                            <div className="progress-bar">
-                                                <div
-                                                    className="progress-fill"
-                                                    style={{ width: `${order.progress}%`, background: s.color }}
-                                                ></div>
-                                            </div>
-                                            <span className="progress-text">{order.progress}%</span>
-                                        </div>
-
+                                        {/* Інформація про кур'єра (тільки для "В дорозі") */}
                                         {order.status === 'on-the-way' && (
                                             <div className="courier-info">
                                                 <div className="courier-avatar">👤</div>
@@ -129,6 +123,24 @@ const CustomerOrdersPage = () => {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* Новий блок із загальною сумою перед футером */}
+                                        <div style={{
+                                            padding: '20px 0 0',
+                                            borderTop: '1px solid var(--glass-border)',
+                                            marginTop: '20px'
+                                        }}>
+                                            <div style={{
+                                                display: 'flex',
+                                                justifyContent: 'flex-end',
+                                                alignItems: 'center',
+                                                fontSize: '20px',
+                                                fontWeight: '700',
+                                                color: 'var(--text)'
+                                            }}>
+                                                До сплати: {order.total} ₴
+                                            </div>
+                                        </div>
                                     </div>
 
                                     <div className="active-order-footer">
@@ -145,7 +157,6 @@ const CustomerOrdersPage = () => {
                     </div>
                 )}
             </main>
-            {/* Модалка з деталями */}
             {selectedOrder && (
                 <OrderDetailsComponent
                     order={selectedOrder}
