@@ -2,6 +2,7 @@
 import { Package, Clock, CheckCircle, XCircle, ChevronRight } from "lucide-react";
 import "./styles/BusinessOrdersPage.css";
 import BusinessSidebar from "../components/business/BusinessSidebar.jsx";   
+import OrderDetailsComponent from "../components/OrderDetailsComponent.jsx";
 
 const STATUS_MAP = {
     pending: { label: "Нове", color: "#7c5cff", icon: Package },
@@ -21,6 +22,10 @@ const MOCK_ORDERS = [
         address: "вул. Франка 12, кв. 5",
         total: 1240,
         status: "pending",
+        courier: {
+            name: "Іван К.",
+            phone: "+380 67 444 22 11"
+        },
         items: [
             { name: "Філадельфія класична", quantity: 2, price: 340 },
             { name: "Каліфорнія з лососем", quantity: 1, price: 360 },
@@ -35,6 +40,10 @@ const MOCK_ORDERS = [
         address: "пр. Свободи 78",
         total: 680,
         status: "preparing",
+        courier: {
+            name: "Іван К.",
+            phone: "+380 67 444 22 11"
+        },
         items: [
             { name: "Чізбургер меню", quantity: 1, price: 420 },
             { name: "Картопля фрі велика", quantity: 1, price: 140 },
@@ -49,6 +58,10 @@ const MOCK_ORDERS = [
         address: "вул. Грушевського 5",
         total: 890,
         status: "ready",
+        courier: {
+            name: "Іван К.",
+            phone: "+380 67 444 22 11"
+        },
         items: [
             { name: "Піца Маргарита 30см", quantity: 1, price: 520 },
             { name: "Цезар з куркою", quantity: 1, price: 370 },
@@ -62,6 +75,10 @@ const MOCK_ORDERS = [
         address: "вул. Шевченка 23",
         total: 450,
         status: "delivered",
+        courier: {
+            name: "Іван М.",
+            phone: "+380 67 444 22 11"
+        },
         items: [
             { name: "Рол Філадельфія", quantity: 1, price: 340 },
             { name: "Соус васабі", quantity: 1, price: 30 },
@@ -72,6 +89,7 @@ const MOCK_ORDERS = [
 export default function BusinessOrdersPage({ userData }) {
     const [orders, setOrders] = useState(MOCK_ORDERS);
     const [filter, setFilter] = useState("all");
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     const filteredOrders = filter === "all"
         ? orders
@@ -176,9 +194,13 @@ export default function BusinessOrdersPage({ userData }) {
                                                 )}
                                             </div>
 
-                                            <button className="details-btn">
+                                            <button
+                                                className="details-btn"
+                                                onClick={() => setSelectedOrder(order)}
+                                            >
                                                 Детальніше <ChevronRight size={16} />
                                             </button>
+
                                         </div>
                                     </div>
                                 );
@@ -187,6 +209,14 @@ export default function BusinessOrdersPage({ userData }) {
                     )}
                 </section>
             </main>
+            {selectedOrder && (
+                <OrderDetailsComponent
+                    order={selectedOrder}
+                    statusMap={STATUS_MAP}
+                    onClose={() => setSelectedOrder(null)}
+                />
+            )}
+
         </div>
     );
 }

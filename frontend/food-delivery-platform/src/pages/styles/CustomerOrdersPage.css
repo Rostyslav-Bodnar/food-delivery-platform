@@ -181,7 +181,6 @@
     animation: pulse 1.8s infinite ease-in-out;
 }
 
-/* Адаптивність */
 @media (max-width: 768px) {
     .active-order-footer {
         flex-direction: column;
