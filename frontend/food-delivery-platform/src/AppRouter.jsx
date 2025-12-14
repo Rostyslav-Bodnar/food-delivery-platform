@@ -14,8 +14,6 @@ import RestaurantsPage from "./pages/RestaurantsPage.jsx";
 import RestaurantDetailsPage from './pages/RestaurantDetailsPage';
 import CustomerOrdersPage from "./pages/CustomerOrdersPage.jsx";
 import BusinessOrdersPage from "./pages/BusinessOrdersPage";
-import CourierHomePage from "./components/curier/CourierHomePage.jsx";
-
 
 const AppRouter = () => {
     return (
@@ -57,17 +55,6 @@ const AppRouter = () => {
                                 </ProtectedRoute>
                             }
                         />
-
-                        {/* НОВИЙ МАРШРУТ ДЛЯ КУР’ЄРА */}
-                        <Route
-                            path="/courier"
-                            element={
-                                <ProtectedRoute>
-                                    <CourierHomePage />
-                                </ProtectedRoute>
-                            }
-                        />
-
                     </Routes>
                 </main>
             </div>

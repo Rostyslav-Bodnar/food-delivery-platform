@@ -7,7 +7,7 @@ import './styles/HomePage.css';
 import UnauthenticatedHome from '../components/UnauthenticatedHome';
 import CustomerHomePage from '../components/CustomerHomePage.jsx';
 import BusinessHomePage from "../components/BusinessHomePage.jsx";
-// (за потреби згодом можна буде додати інші типи, наприклад BusinessHomePage, CourierHomePage)
+import CourierHomePage from "../components/curier/CourierHomePage.jsx";
 
 const HomePage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -64,14 +64,13 @@ const HomePage = () => {
         return <UnauthenticatedHome />;
     }
 
-    // ✅ Відображення відповідної домашньої сторінки
     switch (accountType?.toLowerCase()) {
         case 'customer':
             return <CustomerHomePage /*currentAccountId={currentAccountId}*/ />;
         case 'business':
             return <BusinessHomePage userData={userData} />;
-        // case 'courier':
-        //     return <CourierHomePage />;
+        case 'courier':
+             return <CourierHomePage />;
         default:
             return <UnauthenticatedHome />;
     }
