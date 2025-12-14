@@ -271,3 +271,121 @@
         transform: scale(1.3);
     }
 }
+.order-card.new-order {
+    background: var(--glass);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(14px);
+    box-shadow: 0 10px 28px rgba(2,6,23,0.65);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.order-card.new-order:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 14px 36px rgba(2,6,23,0.75);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+}
+
+.order-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    letter-spacing: 0.3px;
+}
+
+.order-price {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+    background: rgba(255, 215, 0, 0.08);
+    padding: 6px 12px;
+    border-radius: 10px;
+}
+
+.order-details {
+    margin: 16px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--muted-2);
+}
+
+.order-details > div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.05);
+}
+
+.order-details > div:last-child {
+    border-bottom: none;
+}
+
+.order-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: auto;
+}
+
+.accept-btn {
+    flex: 1;
+    padding: 14px;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
+    color: #041021;
+    border: none;
+    border-radius: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.accept-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.25);
+}
+
+.map-btn {
+    flex: 1;
+    padding: 14px;
+    background: rgba(255,255,255,0.08);
+    color: var(--accent-3);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.map-btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+}
+
+.map-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 6px;
+    font-size: 14px;
+    color: var(--accent-3);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.map-link:hover {
+    color: var(--accent-1);
+}
+

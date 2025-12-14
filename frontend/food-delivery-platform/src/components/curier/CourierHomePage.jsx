@@ -5,6 +5,11 @@ import {
     Package, MapPin, Phone, Clock, CheckCircle, Bike,
     DollarSign, History, Power, Calendar, Star
 } from 'lucide-react';
+import CourierSidebar from './components/CourierSidebar.jsx';
+import NewOrderSection from './components/NewOrdersSection.jsx';
+import ActiveOrderSection from './components/ActiveOrderSection.jsx';
+import HistorySection from './components/HistorySection.jsx';
+
 import './styles/CourierHomePage.css';
 
 // Мок-дані з повними адресами та телефонами ресторанів
@@ -118,48 +123,16 @@ export default function CourierHomePage({ userData }) {
     return (
         <div className="app-wrapper">
             {/* САЙДБАР */}
-            <aside className="courier-sidebar">
-                <div className="sidebar-logo">ШвидкоДоставка</div>
-                <nav className="sidebar-nav">
-                    <a href="#" className={`sidebar-item ${activeTab === "new" ? "active" : ""}`}
-                        onClick={() => setActiveTab("new")}>
-                        <Package size={20} /> <span>Нові замовлення</span>
-                    </a>
-                    <a href="#" className={`sidebar-item ${activeTab === "active" ? "active" : ""}`}
-                        onClick={() => setActiveTab("active")}>
-                        <Bike size={20} /> <span>Активне</span>
-                        {activeOrder && <div className="sidebar-badge">1</div>}
-                    </a>
-                    <a href="#" className={`sidebar-item ${activeTab === "history" ? "active" : ""}`}
-                        onClick={() => setActiveTab("history")}>
-                        <History size={20} /> <span>Історія</span>
-                        <div className="sidebar-badge">{history.length}</div>
-                    </a>
-                </nav>
-                <div className="sidebar-bottom">
-                    <motion.button
-                        whileHover={{ scale: 1.04 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`online-toggle ${isOnline ? "online" : "offline"}`}
-                        onClick={() => setIsOnline(!isOnline)}
-                    >
-                        <Power size={18} />
-                        {isOnline ? "Онлайн" : "Оффлайн"}
-                        <div className="status-dot" />
-                    </motion.button>
-                    <div className="courier-info">
-                        <div className="courier-avatar">
-                            {userData?.name?.[0] || "К"}
-                        </div>
-                        <div>
-                            <div className="courier-name">{userData?.name || "Кур’єр"}</div>
-                            <div className="courier-earnings">
-                                Зароблено сьогодні: <strong>{history.reduce((sum, o) => sum + o.earned, 0) + (activeOrder?.earned || 0)} ₴</strong>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
+            <CourierSidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                activeOrder={activeOrder}
+                history={history}
+                isOnline={isOnline}
+                setIsOnline={setIsOnline}
+                userData={userData}
+            />
+
 
             {/* КОНТЕНТ */}
             <div className="auth-homepage courier-homepage">
@@ -176,150 +149,27 @@ export default function CourierHomePage({ userData }) {
                 <AnimatePresence mode="wait">
                     {/* НОВІ ЗАМОВЛЕННЯ */}
                     {activeTab === "new" && (
-                        <motion.section key="new" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="courier-section">
-                            <h1 className="gradient-title">{isOnline ? "Доступні замовлення" : "Ви оффлайн"}</h1>
-                            {isOnline ? (
-                                newOrders.length === 0 ? (
-                                    <div className="empty-state">
-                                        <Package size={64} strokeWidth={1} />
-                                        <p>Нових замовлень немає</p>
-                                        <small>Оновлюється автоматично</small>
-                                    </div>
-                                ) : (
-                                    <div className="orders-grid">
-                                        {newOrders.map(order => (
-                                            <motion.div key={order.id} layout whileHover={{ y: -6 }} className="order-card new-order">
-                                                <div className="order-header">
-                                                    <h3>{order.restaurant}</h3>
-                                                    <div className="order-price">+{Math.round(order.price * 0.25)} ₴</div>
-                                                </div>
-                                                <div className="order-details">
-                                                    <div><MapPin size={14} /> {order.restaurantAddress}</div>
-                                                    <div><Clock size={14} /> {order.time} • {order.distance}</div>
-                                                    <div><Package size={14} /> {order.items} позицій</div>
-                                                </div>
-                                                <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} className="accept-btn" onClick={() => acceptOrder(order)}>
-                                                    Прийняти замовлення
-                                                </motion.button>
-                                            </motion.div>
-                                        ))}
-                                    </div>
-                                )
-                            ) : (
-                                <div className="offline-message">
-                                    <Power size={48} />
-                                    <p>Увімкніть статус «Онлайн», щоб отримувати замовлення</p>
-                                </div>
-                            )}
-                        </motion.section>
+                        <NewOrderSection
+                            isOnline={isOnline}
+                            newOrders={newOrders}
+                            acceptOrder={acceptOrder}
+                        />
                     )}
 
                     {/* АКТИВНЕ ЗАМОВЛЕННЯ */}
                     {activeTab === "active" && (
-                        <motion.section key="active" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }} className="courier-section active-order-section">
-                            {activeOrder ? (
-                                <div className="active-order-card">
-                                    <div className="active-order-header">
-                                        <h2>Замовлення #{activeOrder.id}</h2>
-                                        <div className="timer"><Clock size={20} /> {activeOrder.timeLeft}</div>
-                                    </div>
-
-                                    <div className="route-steps">
-                                        <div className="step">
-                                            <div className="step-icon restaurant"><Package size={18} /></div>
-                                            <div>
-                                                <div className="step-title">{activeOrder.restaurant}</div>
-                                                <div className="step-address">{activeOrder.restaurantAddress}</div>
-                                                <a href={`tel:${activeOrder.restaurantPhone}`} className="phone-link">
-                                                    <Phone size={14} /> {activeOrder.restaurantPhone}
-                                                </a>
-                                            </div>
-                                            {activeOrder.status !== "waiting_pickup" && <CheckCircle className="check" size={20} />}
-                                        </div>
-                                        <div className="step-connector" />
-                                        <div className="step">
-                                            <div className="step-icon client"><MapPin size={18} /></div>
-                                            <div>
-                                                <div className="step-title">{activeOrder.clientName}</div>
-                                                <div className="step-address">{activeOrder.clientAddress}</div>
-                                                <a href={`tel:${activeOrder.clientPhone}`} className="phone-link">
-                                                    <Phone size={14} /> {activeOrder.clientPhone}
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="order-summary">
-                                        <div><strong>Страви:</strong> {activeOrder.items} шт</div>
-                                        <div><strong>Вартість:</strong> {activeOrder.price} ₴</div>
-                                        <div className="earnings">
-                                            <DollarSign size={18} /> Ваш заробіток: <strong>{activeOrder.earned} ₴</strong>
-                                        </div>
-                                    </div>
-
-                                    <div className="active-actions">
-                                        {activeOrder.status === "waiting_pickup" && (
-                                            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="action-btn primary"
-                                                onClick={() => setActiveOrder({ ...activeOrder, status: "picked_up" })}>
-                                                Забрав замовлення
-                                            </motion.button>
-                                        )}
-                                        {activeOrder.status === "picked_up" && (
-                                            <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }} className="action-btn success"
-                                                onClick={completeDelivery}>
-                                                Доставлено клієнту
-                                            </motion.button>
-                                        )}
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="empty-state">
-                                    <Bike size={64} strokeWidth={1} />
-                                    <p>Немає активного замовлення</p>
-                                </div>
-                            )}
-                        </motion.section>
+                        <ActiveOrderSection
+                            activeOrder={activeOrder}
+                            setActiveOrder={setActiveOrder}
+                            completeDelivery={completeDelivery}
+                        />
                     )}
 
                     {/* ІСТОРІЯ */}
                     {activeTab === "history" && (
-                        <motion.section key="history" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="courier-section">
-                            <h1 className="gradient-title">Історія доставок</h1>
-                            {history.length === 0 ? (
-                                <div className="empty-state">
-                                    <History size={56} />
-                                    <p>Ви ще не завершили жодної доставки</p>
-                                </div>
-                            ) : (
-                                <div className="orders-grid" style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))' }}>
-                                    {history.map(order => (
-                                        <motion.div key={order.id} layout whileHover={{ y: -4 }} className="order-card history-order">
-                                            <div className="order-header">
-                                                <div>
-                                                    <h3>{order.restaurant}</h3>
-                                                    <div style={{ fontSize: '13px', color: 'var(--muted-2)', marginTop: '4px' }}>
-                                                        <Calendar size={12} /> {order.date}
-                                                    </div>
-                                                </div>
-                                                <div className="order-price">+{order.earned} ₴</div>
-                                            </div>
-                                            <div className="order-details" style={{ margin: '12px 0' }}>
-                                                <div><MapPin size={14} /> {order.clientName}</div>
-                                            </div>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                <div style={{ display: 'flex', gap: '4px' }}>
-                                                    {[...Array(order.rating)].map((_, i) => (
-                                                        <Star key={i} size={16} fill="gold" stroke="gold" />
-                                                    ))}
-                                                </div>
-                                                <small style={{ color: 'var(--muted)' }}>Замовлення #{order.id}</small>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            )}
-                        </motion.section>
+                        <HistorySection history={history} />
                     )}
+
                 </AnimatePresence>
             </div>
         </div>
