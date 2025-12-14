@@ -2,10 +2,12 @@
 import { Link } from 'react-router-dom';
 import './styles/CustomerOrdersPage.css';
 import CustomerSidebar from '../components/customer-components/CustomerSidebar';
+import OrderDetailsComponent from '../components/OrderDetailsComponent.jsx'; // імпорт модалки
 
 const CustomerOrdersPage = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [selectedOrder, setSelectedOrder] = useState(null);
 
     useEffect(() => {
         setTimeout(() => {
@@ -19,7 +21,19 @@ const CustomerOrdersPage = () => {
                     total: 980,
                     itemsCount: 4,
                     address: 'вул. Шевченка, 12, кв. 45',
-                    courier: { name: 'Олег', rating: 4.9 },
+                    courier: { name: 'Олег', phone: '+380501234567', rating: 4.9 },
+                    items: [
+                        { name: 'Філадельфія рол', quantity: 2, price: 220 },
+                        { name: 'Суп місо', quantity: 1, price: 120 },
+                        { name: 'Салат чука', quantity: 1, price: 90 },
+                    ],
+                    paymentStatus: 'Оплачено',
+                    paymentMethod: 'Картка Visa',
+                    transactionId: 'TXN-1328-2025',
+                    paymentDate: '14.12.2025 17:30',
+                    deliveryMethod: 'Курʼєрська доставка',
+                    notes: 'Додати імбир та васабі',
+                    createdAt: '14.12.2025 17:00',
                 },
                 {
                     id: '1325',
@@ -30,7 +44,19 @@ const CustomerOrdersPage = () => {
                     total: 520,
                     itemsCount: 2,
                     address: 'пр. Свободи, 78',
-                    courier: { name: 'Аліна', rating: 5.0 },
+                    courier: { name: 'Аліна', phone: '+380671234567', rating: 5.0 },
+                    items: [
+                        { name: 'Бургер BBQ', quantity: 1, price: 250 },
+                        { name: 'Картопля фрі', quantity: 1, price: 70 },
+                        { name: 'Кола 0.5л', quantity: 1, price: 50 },
+                    ],
+                    paymentStatus: 'Очікує оплати',
+                    paymentMethod: 'Готівка',
+                    transactionId: 'TXN-1325-2025',
+                    paymentDate: '-',
+                    deliveryMethod: 'Курʼєрська доставка',
+                    notes: 'Без майонезу',
+                    createdAt: '14.12.2025 16:45',
                 },
             ]);
             setLoading(false);
@@ -38,9 +64,9 @@ const CustomerOrdersPage = () => {
     }, []);
 
     const getStatus = (status) => {
-        if (status === 'preparing') return { text: 'Готується', color: '#ffb86b', icon: 'CookingPot' };
-        if (status === 'on-the-way') return { text: 'В дорозі', color: '#00d4ff', icon: 'Motorcycle' };
-        return { text: 'Нове', color: '#7c5cff', icon: 'Package' };
+        if (status === 'preparing') return { text: 'Готується', color: '#ffb86b', icon: '🍳' };
+        if (status === 'on-the-way') return { text: 'В дорозі', color: '#00d4ff', icon: '🏍️' };
+        return { text: 'Нове', color: '#7c5cff', icon: '📦' };
     };
 
     return (
@@ -59,7 +85,7 @@ const CustomerOrdersPage = () => {
                     </div>
                 ) : orders.length === 0 ? (
                     <div className="no-active-orders">
-                        <div className="big-icon">Pizza</div>
+                        <div className="big-icon">🍕</div>
                         <h3>Немає активних замовлень</h3>
                         <p>Коли ви замовите їжу — статус з’явиться тут</p>
                         <Link to="/" className="big-cta-btn">Замовити зараз</Link>
@@ -96,10 +122,10 @@ const CustomerOrdersPage = () => {
 
                                         {order.status === 'on-the-way' && (
                                             <div className="courier-info">
-                                                <div className="courier-avatar">Person</div>
+                                                <div className="courier-avatar">👤</div>
                                                 <div>
                                                     <div className="courier-name">{order.courier.name}</div>
-                                                    <div className="courier-rating">Rating {order.courier.rating}</div>
+                                                    <div className="courier-rating">⭐ {order.courier.rating}</div>
                                                 </div>
                                             </div>
                                         )}
@@ -109,7 +135,9 @@ const CustomerOrdersPage = () => {
                                         <button className="track-btn">
                                             Відстежити на карті
                                         </button>
-                                        <button className="details-btn">Деталі замовлення</button>
+                                        <button className="details-btn" onClick={() => setSelectedOrder(order)}>
+                                            Деталі замовлення
+                                        </button>
                                     </div>
                                 </div>
                             );
@@ -117,6 +145,18 @@ const CustomerOrdersPage = () => {
                     </div>
                 )}
             </main>
+            {/* Модалка з деталями */}
+            {selectedOrder && (
+                <OrderDetailsComponent
+                    order={selectedOrder}
+                    statusMap={{
+                        preparing: { label: 'Готується', color: '#ffb86b', icon: () => <span>🍳</span> },
+                        'on-the-way': { label: 'В дорозі', color: '#00d4ff', icon: () => <span>🏍️</span> },
+                        new: { label: 'Нове', color: '#7c5cff', icon: () => <span>📦</span> },
+                    }}
+                    onClose={() => setSelectedOrder(null)}
+                />
+            )}
         </div>
     );
 };
