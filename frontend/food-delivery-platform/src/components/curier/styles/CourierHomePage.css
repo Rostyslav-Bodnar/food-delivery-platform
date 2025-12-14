@@ -367,6 +367,7 @@
     text-decoration: none;
     cursor: pointer;
     transition: all 0.3s ease;
+    margin-top: 14px;
 }
 
 .map-btn:hover {
