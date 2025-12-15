@@ -1,19 +1,18 @@
-﻿using DF.Contracts.RPC.Requests.UserService;
+﻿using DF.Contracts.EventDriven;
+using DF.Contracts.RPC.Requests.UserService;
 using DF.OrderService.Application.Messaging.Clients;
+using DF.OrderService.Application.Messaging.Publishers;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services.Interfaces;
 using DF.OrderService.Contracts.Models.Requests;
 using DF.OrderService.Contracts.Models.Responses;
 using DF.OrderService.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
-using NetTopologySuite.Geometries;
-using Location = DF.OrderService.Domain.Entities.Location;
 
 namespace DF.OrderService.Application.Services;
 
 public class OrderService(
     IOrderRepository orderRepository, 
-    ILocationRepository locationRepository,
+    IEventPublisher eventPublisher,
     UserServiceRpcClient userServiceRpcClient) : IOrderService
 {
     public async Task<bool> CreateOrdersAsync(List<CreateOrderRequest> orderRequests)
@@ -38,72 +37,54 @@ public class OrderService(
             );
         }
     }
-    
+
     public async Task<bool> CreateOrderAsync(CreateOrderRequest request)
     {
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        try
+        var order = new Order
         {
-            var deliverToLocation = await locationRepository.Create(
-                new Location
-                {
-                    FullAddress = request.DeliverTo.FullAddress,
-                    City = request.DeliverTo.City,
-                    Street = request.DeliverTo.Street,
-                    House = request.DeliverTo.House,
-                    GeoPoint = new Point(
-                        request.DeliverTo.Longitude,
-                        request.DeliverTo.Latitude
-                    )
-                }
-            );
+            Id = Guid.NewGuid(),
+            BusinessId = request.BusinessId,
+            OrderedBy = request.OrderedBy,
+            OrderDate = request.OrderDate,
+            TotalPrice = request.TotalPrice,
+            OrderStatus = OrderStatus.Preparing, // або Draft/PendingLocations
+            OrderNumber = GenerateOrderNumber(),
+            DeliverToId = null,
+            DeliverFromId = null
+        };
 
-            var deliverFromLocation = await locationRepository.Create(
-                new Location
-                {
-                    FullAddress = request.DeliverFrom.FullAddress,
-                    City = request.DeliverFrom.City,
-                    Street = request.DeliverFrom.Street,
-                    House = request.DeliverFrom.House,
-                    GeoPoint = new Point(
-                        request.DeliverFrom.Longitude,
-                        request.DeliverFrom.Latitude
-                    )
-                }
-            );
+        await orderRepository.Create(order);
 
-            await orderRepository.Create(
-                new Order
-                {
-                    BusinessId = request.BusinessId,
-                    OrderedBy = request.OrderedBy,
-                    OrderDate = request.OrderDate,
-                    TotalPrice = request.TotalPrice,
-                    DeliverToId = deliverToLocation.Id,
-                    DeliverFromId = deliverFromLocation.Id,
-                    OrderStatus = request.OrderStatus,
-                    OrderNumber = GenerateOrderNumber()
-                }
-            );
+        var evt = new OrderCreatedEvent(
+            OrderId: order.Id,
+            BusinessId: order.BusinessId,
+            OrderedBy: order.OrderedBy,
+            OrderDate: order.OrderDate,
+            TotalPrice: order.TotalPrice,
+            DeliverTo: new LocationDto(
+                request.DeliverTo.FullAddress,
+                request.DeliverTo.City,
+                request.DeliverTo.Street,
+                request.DeliverTo.House,
+                request.DeliverTo.Latitude,
+                request.DeliverTo.Longitude
+            ),
+            DeliverFrom: new LocationDto(
+                request.DeliverFrom.FullAddress,
+                request.DeliverFrom.City,
+                request.DeliverFrom.Street,
+                request.DeliverFrom.House,
+                request.DeliverFrom.Latitude,
+                request.DeliverFrom.Longitude
+            )
+        );
 
-            return true;
-        }
-        catch (DbUpdateException ex)
-        {
-            throw new InvalidOperationException(
-                "Database error while creating order",
-                ex
-            );
-        }
-        catch (Exception ex)
-        {
-            throw new ApplicationException(
-                "Unexpected error while creating order",
-                ex
-            );
-        }
+        await eventPublisher.PublishOrderCreatedEvent(evt);
+
+        return true;
     }
 
     public async Task<IEnumerable<OrderResponse>> GetAllOrdersAsync()
