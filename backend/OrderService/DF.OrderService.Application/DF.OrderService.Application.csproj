@@ -1,0 +1,24 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net9.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="Messaging\Consumers\" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\DF.OrderService.Contracts\DF.OrderService.Contracts.csproj" />
+      <ProjectReference Include="..\DF.OrderService.Domain\DF.OrderService.Domain.csproj" />
+      <ProjectReference Include="..\DF.OrderService.Infrastructure\DF.OrderService.Infrastructure.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="DF.Contracts" Version="1.0.0-preview5" />
+      <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+    </ItemGroup>
+
+</Project>

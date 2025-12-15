@@ -1,4 +1,4 @@
-using DF.Contracts.RPC.Requests;
+using DF.Contracts.RPC.Requests.UserService;
 using DF.MenuService.Application.Messaging;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
@@ -183,9 +183,9 @@ public class DishService(
         var d = await repository.Get(dishId);
         var ingredients = await ingredientService.GetAllIngredientsByDishId(dishId);
 
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(d.BusinessId));
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(d.BusinessId));
 
-        var businessDetails = new BusinessResponse(businessResponse.BusinessAccountId,  businessResponse.Name, businessResponse.Description);
+        var businessDetails = new BusinessResponse(businessResponse.AccountId,  businessResponse.Name, businessResponse.Description);
         
         return new DishForCustomerResponse(
             d.Id,
@@ -205,9 +205,9 @@ public class DishService(
     {
         var dishes = await repository.GetAll();
 
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(dishes.Where(d => d.BusinessId != Guid.Empty).First().BusinessId));
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(dishes.Where(d => d.BusinessId != Guid.Empty).First().BusinessId));
         
-        var businessDetails = new  BusinessResponse(businessResponse.BusinessAccountId, businessResponse.Name, businessResponse.Description);
+        var businessDetails = new  BusinessResponse(businessResponse.AccountId, businessResponse.Name, businessResponse.Description);
         
         // Потрібно підтягувати інгредієнти
         var result = new List<DishForCustomerResponse>();
@@ -236,9 +236,9 @@ public class DishService(
     {
         var dishes = await repository.GetByBusinessIdAsync(businessId);
         
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountDetailsRequest(dishes.First().BusinessId));
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(dishes.First().BusinessId));
         
-        var businessDetails = new  BusinessResponse(businessResponse.BusinessAccountId, businessResponse.Name, businessResponse.Description);
+        var businessDetails = new  BusinessResponse(businessResponse.AccountId, businessResponse.Name, businessResponse.Description);
 
         var result = new List<DishForCustomerResponse>();
         foreach (var d in dishes)

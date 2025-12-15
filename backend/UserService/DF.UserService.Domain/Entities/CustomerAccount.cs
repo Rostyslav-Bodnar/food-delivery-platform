@@ -4,6 +4,8 @@ public class CustomerAccount : Account
 {
     public required string Name { get; set; }
     public required string Surname { get; set; }
+    
+    public Guid LocationId { get; set; }
     public string? Address { get; set; } 
     
     public string? PhoneNumber { get; set; }

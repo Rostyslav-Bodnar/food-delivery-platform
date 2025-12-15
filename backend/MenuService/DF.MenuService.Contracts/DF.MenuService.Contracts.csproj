@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <Folder Include="Models\DTO\" />
-    </ItemGroup>
-
-    <ItemGroup>
       <ProjectReference Include="..\DF.MenuService.Domain\DF.MenuService.Domain.csproj" />
     </ItemGroup>
 

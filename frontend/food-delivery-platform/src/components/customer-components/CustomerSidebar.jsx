@@ -25,7 +25,7 @@ const CustomerSidebar = () => {
                     <Store size={22} /> <span>Заклади</span>
                 </Link>
 
-                <Link to="/orders" className={`sidebar-item ${isActive("/orders") ? "active" : ""}`}>
+                <Link to="/customer/orders" className={`sidebar-item ${isActive("/customer/orders") ? "active" : ""}`}>
                     <Package size={22} /> <span>Замовлення</span>
                 </Link>
 

@@ -1,8 +1,8 @@
 using System.Collections.Concurrent;
 using System.Text;
 using System.Text.Json;
-using DF.Contracts.RPC.Requests;
-using DF.Contracts.RPC.Responses;
+using DF.Contracts.RPC.Requests.UserService;
+using DF.Contracts.RPC.Responses.UserService;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -43,8 +43,8 @@ public class UserServiceRpcClient : IDisposable
                         if (response1 != null) tcs.SetResult(response1);
                         break;
 
-                    case TaskCompletionSource<GetBusinessAccountDetailsResponse> tcs2:
-                        var response2 = JsonSerializer.Deserialize<GetBusinessAccountDetailsResponse>(json);
+                    case TaskCompletionSource<GetBusinessAccountResponse> tcs2:
+                        var response2 = JsonSerializer.Deserialize<GetBusinessAccountResponse>(json);
                         if (response2 != null) tcs2.SetResult(response2);
                         break;
                 }
@@ -81,7 +81,7 @@ public class UserServiceRpcClient : IDisposable
         return tcs.Task;
     }
 
-    public Task<GetBusinessAccountDetailsResponse> GetBusinessAccountAsync(GetBusinessAccountDetailsRequest request)
+    public Task<GetBusinessAccountResponse> GetBusinessAccountAsync(GetBusinessAccountRequest request)
     {
         var correlationId = Guid.NewGuid().ToString();
         var props = new BasicProperties
@@ -93,7 +93,7 @@ public class UserServiceRpcClient : IDisposable
         props.ReplyTo = replyQueueName;
 
         var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
-        var tcs = new TaskCompletionSource<GetBusinessAccountDetailsResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource<GetBusinessAccountResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         callbackMapper[correlationId] = tcs;
 
         channel.BasicPublishAsync(
@@ -105,6 +105,33 @@ public class UserServiceRpcClient : IDisposable
 
         return tcs.Task;
     }
+    
+    public Task<GetCustomerAccountResponse> GetCustomerAccountAsync(GetCustomerAccountRequest request)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        var props = new BasicProperties
+        {
+            CorrelationId = correlationId,
+            ReplyTo = replyQueueName
+        };
+        props.CorrelationId = correlationId;
+        props.ReplyTo = replyQueueName;
+
+        var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
+        var tcs = new TaskCompletionSource<GetCustomerAccountResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        callbackMapper[correlationId] = tcs;
+
+        channel.BasicPublishAsync(
+            exchange: "",
+            routingKey: "user.getcustomeraccount",
+            mandatory: false,
+            basicProperties: props,
+            body: messageBytes);
+
+        return tcs.Task;
+    }
+
+
     
     public void Dispose()
     {

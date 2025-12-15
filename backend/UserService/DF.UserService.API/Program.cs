@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Messaging;
+using DF.UserService.Application.Messaging.Consumers;
 using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services;
@@ -70,6 +71,7 @@ builder.Services.AddAuthorization();
 
 //Repositories
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
 
 // Services
 builder.Services.AddScoped<IUserService, UserService>();
@@ -98,7 +100,10 @@ builder.Services.AddSingleton<IConnection>(sp =>
 
 // Consumer
 builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
-builder.Services.AddSingleton<IConsumer, GetBusinessAccountDetailsConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCustomerAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCourierAccountConsumer>();
+
 builder.Services.AddHostedService<ConsumerHostedService>();
 
 

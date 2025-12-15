@@ -1,5 +1,6 @@
 using System.Text;
 using DF.MenuService.Application.Messaging;
+using DF.MenuService.Application.Messaging.Consumers;
 using DF.MenuService.Application.Repositories;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services;
@@ -54,6 +55,12 @@ builder.Services.AddSingleton<IConnection>(sp =>
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
+
+// Consumers
+builder.Services.AddSingleton<IConsumer, GetDishesConsumer>();
+builder.Services.AddSingleton<IConsumer, GetDishConsumer>();
+
+builder.Services.AddHostedService<ConsumerHostedService>();
 
 // JWT 
 var jwtSection = builder.Configuration.GetSection("Jwt");

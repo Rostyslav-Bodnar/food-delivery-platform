@@ -8,7 +8,6 @@
 
     <ItemGroup>
       <Folder Include="Mappers\" />
-      <Folder Include="Messaging\Consumers\" />
       <Folder Include="Messaging\RPC\" />
     </ItemGroup>
 
@@ -20,8 +19,9 @@
 
     <ItemGroup>
       <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
-      <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
+      <PackageReference Include="DF.Contracts" Version="1.0.0-preview5" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.0" />
+      <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.11" />
       <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
       <PackageReference Include="StackExchange.Redis" Version="2.7.27" />
     </ItemGroup>
