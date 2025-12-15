@@ -1,0 +1,30 @@
+﻿services:
+  df.orderservice.api:
+    image: df.trackingservice.api
+    build:
+      context: .
+      dockerfile: DF.TrackingService.API/Dockerfile
+    container_name: df.trackingservice.api
+    ports:
+      - "5006:8100"  # 5004 — порт на твоїй машині, 8080 — у контейнері
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
+    depends_on:
+      - df.trackingservice.db
+
+  df.trackingservice.db:
+    image: postgis/postgis:16-3.4
+    container_name: df.trackingservice.db
+    restart: always
+    environment:
+      POSTGRES_USER: TrackingService
+      POSTGRES_PASSWORD: TrackingService2025!
+      POSTGRES_DB: TrackingServiceDb
+    ports:
+      - "5437:5432"
+    volumes:
+      - tracking_service_data:/var/lib/postgresql/data
+
+volumes:
+  tracking_service_data:
