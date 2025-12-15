@@ -1,4 +1,4 @@
-﻿namespace DF.OrderService.Domain.Entities;
+﻿namespace DF.TrackingService.Domain.Entities;
 
 public class BusinessLocation
 {
