@@ -3,11 +3,12 @@
 }
 
 .active-orders-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-    max-width: 720px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    max-width: 1200px;
     margin: 0 auto;
+    padding: 0 16px;
 }
 
 .active-order-card {
@@ -19,10 +20,10 @@
     transition: var(--transition);
 }
 
-.active-order-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(2,6,23,0.75);
-}
+    .active-order-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 50px rgba(2,6,23,0.75);
+    }
 
 .active-order-header {
     display: flex;
@@ -47,51 +48,41 @@
     padding: 20px;
 }
 
-.active-order-body h3 {
-    margin: 0 0 12px 0;
-    font-size: 20px;
-    font-weight: 700;
+    .active-order-body h3 {
+        margin: 0 0 12px 0;
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+.order-summary {
+    color: var(--muted);
+    font-size: 15px;
+    margin-bottom: 16px;
+    font-weight: 500;
 }
 
-.order-details {
+.order-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.order-item {
     display: flex;
     justify-content: space-between;
-    color: var(--muted);
-    margin-bottom: 16px;
+    align-items: center;
     font-size: 15px;
 }
 
-.eta {
+.item-name {
     color: var(--text);
-    font-weight: 600;
-}
-
-.progress-container {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 16px 0;
-}
-
-.progress-bar {
     flex: 1;
-    height: 10px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 6px;
-    overflow: hidden;
 }
 
-.progress-fill {
-    height: 100%;
-    border-radius: 6px;
-    transition: width 0.6s ease;
-}
-
-.progress-text {
-    font-weight: 700;
-    font-size: 14px;
-    min-width: 40px;
-    text-align: right;
+.item-details {
+    color: var(--muted);
+    font-weight: 600;
 }
 
 .courier-info {
@@ -186,12 +177,33 @@
     margin-bottom: 24px;
 }
 
+/* Адаптивність */
+@media (max-width: 1024px) {
+    .active-orders-list {
+        gap: 20px;
+    }
+}
+
 @media (max-width: 768px) {
+    .active-orders-list {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0;
+    }
+
     .active-order-footer {
         flex-direction: column;
     }
 
-    .track-btn, .details-btn {
+    .track-btn,
+    .details-btn {
         width: 100%;
+    }
+}
+
+@media (min-width: 1025px) {
+    .active-orders-list {
+        grid-template-columns: repeat(2, minmax(0, 520px));
+        justify-content: center;
     }
 }
