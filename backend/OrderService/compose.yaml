@@ -14,7 +14,7 @@
       - df.orderservice.db
 
   df.orderservice.db:
-    image: postgis/postgis:16-3.4
+    image: postgres:16
     container_name: df.orderservice.db
     restart: always
     environment:
