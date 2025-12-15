@@ -8,6 +8,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderedDish> OrderedDishes { get; set; }
     public DbSet<Location> Locations { get; set; }
+    public DbSet<BusinessLocation> BusinessLocations { get; set; }
+
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -40,6 +42,24 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasColumnType("geography (point)")
                 .IsRequired(false);
 
+        });
+
+        modelBuilder.Entity<BusinessLocation>(entity =>
+        {
+            entity.ToTable("BusinessLocations");
+
+            entity.HasKey(bl => bl.Id);
+
+            entity.Property(bl => bl.BusinessId)
+                .IsRequired();
+
+            entity.Property(bl => bl.LocationId)
+                .IsRequired();
+
+            entity.HasOne(bl => bl.Location)
+                .WithMany()
+                .HasForeignKey(bl => bl.LocationId)
+                .OnDelete(DeleteBehavior.Cascade);
         });
 
         // ORDER
