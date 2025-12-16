@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DF.TrackingService.Application.Repositories;
 
-public class LocationRepository(AppDbContext dbContext) : ILocationRepository
+public class LocationRepository(SqlDbContext dbContext) : ILocationRepository
 {
     public async Task<Location?> Get(Guid id)
     {
