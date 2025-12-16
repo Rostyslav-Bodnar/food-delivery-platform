@@ -44,7 +44,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             entity.Property(o => o.DeliverFromId);
 
-            entity.Property(o => o.DeliveredBy);
+            entity.Property(o => o.DeliveredById);
         });
 
         // ORDERED DISH

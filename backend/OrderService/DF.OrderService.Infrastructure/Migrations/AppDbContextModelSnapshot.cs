@@ -37,7 +37,7 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid?>("DeliverToId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("DeliveredBy")
+                    b.Property<Guid?>("DeliveredById")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("OrderDate")
