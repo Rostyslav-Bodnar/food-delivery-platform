@@ -12,6 +12,7 @@
       - ConnectionStrings__DefaultConnection=Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
     depends_on:
       - df.trackingservice.db
+      - df.trackingservice.mongo
 
   df.trackingservice.db:
     image: postgis/postgis:16-3.4
@@ -26,5 +27,20 @@
     volumes:
       - tracking_service_data:/var/lib/postgresql/data
 
+  df.trackingservice.mongo:
+    image: mongo:7.0
+    container_name: df.trackingservice.mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: TrackingService
+      MONGO_INITDB_ROOT_PASSWORD: TrackingService2025!
+      MONGO_INITDB_DATABASE: TrackingServiceMongoDb
+    ports:
+      - "27018:27017"
+    volumes:
+      - tracking_service_mongo_data:/data/db
+
+
 volumes:
   tracking_service_data:
+  tracking_service_mongo_data:

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DF.TrackingService.Infrastructure.Data;
 
-public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
+public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(options)
 {
     public DbSet<Location> Locations { get; set; }
     public DbSet<BusinessLocation> BusinessLocations { get; set; }

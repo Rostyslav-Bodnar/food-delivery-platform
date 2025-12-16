@@ -2,6 +2,8 @@ using DF.TrackingService.Application.Messaging.Consumers;
 using DF.TrackingService.Application.Messaging.Publishers;
 using DF.TrackingService.Application.Repositories;
 using DF.TrackingService.Application.Repositories.Interfaces;
+using DF.TrackingService.Application.Services;
+using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
@@ -30,11 +32,16 @@ builder.Services.AddCors(options =>
 });
 
 // Database connection (PostgreSQL)
-builder.Services.AddDbContext<AppDbContext>(options =>
+builder.Services.AddDbContext<SqlDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         o => o.UseNetTopologySuite()
     ));
+
+builder.Services.AddDbContext<MongoDbContext>(options =>
+    options.UseMongoDB(builder.Configuration.GetConnectionString("MongoDdConnection"), "TrackingDb"));
+
+
 
 // RabbitMQ connection
 builder.Services.AddSingleton<IConnection>(sp =>
@@ -50,10 +57,25 @@ builder.Services.AddSingleton<IConnection>(sp =>
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
 
+builder.Services.AddHttpClient<GeolocationService>(client =>
+{
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+builder.Services.AddSingleton(sp => new GeolocationService(
+    sp.GetRequiredService<HttpClient>(),
+    "693f09a9c9da2935478707hjvd2ab0f" // твій API key
+));
+
 
 
 //Repositories
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
+builder.Services.AddScoped<IBusinessLocationRepository, BusinessLocationRepository>();
+builder.Services.AddScoped<ICourierLocationRepository, CourierLocationRepository>();
+
+//Services
+builder.Services.AddScoped<ILocationService, LocationService>();
+builder.Services.AddScoped<IBusinessLocationService, BusinessLocationService>();
 
 //EventPublishers
 builder.Services.AddSingleton<IEventPublisher, TrackingEventPublisher>();
@@ -69,7 +91,7 @@ var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    var db = scope.ServiceProvider.GetRequiredService<SqlDbContext>();
     db.Database.Migrate(); 
 }
 
