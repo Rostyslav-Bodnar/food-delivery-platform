@@ -56,4 +56,12 @@ public class OrderController(IOrderService orderService) : ControllerBase
         var result = await orderService.CreateOrdersAsync(request);
         return Ok(result);
     }
+
+    [HttpPost]
+    [Route("courier/deliver")]
+    public async Task<IActionResult> SelectOrder(Guid orderId, Guid courierId)
+    {
+        var result = await orderService.DeliverOrderAsync(orderId, courierId);
+        return Ok(result);
+    }
 }

@@ -10,7 +10,7 @@ public class Order
     
     public Guid? DeliverToId { get; set; }
     public Guid? DeliverFromId { get; set; }
-    public Guid? DeliveredBy {get; set;}
+    public Guid? DeliveredById {get; set;}
     public OrderStatus OrderStatus { get; set; }
     
     public string OrderNumber { get; set; }
