@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Messaging;
+using DF.UserService.Application.Messaging.Clients;
 using DF.UserService.Application.Messaging.Consumers;
 using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
@@ -80,7 +81,6 @@ builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 
-
 //Builders
 builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 
@@ -106,6 +106,8 @@ builder.Services.AddSingleton<IConsumer, GetCourierAccountConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
+// RPC Clients
+builder.Services.AddSingleton<TrackingServiceRpcClient>();
 
 
 builder.Services.AddControllers();
