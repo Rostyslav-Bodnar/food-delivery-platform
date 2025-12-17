@@ -12,10 +12,5 @@ public record OrderCreatedEvent(
 );
 
 public record LocationDto(
-    string FullAddress,
-    string City,
-    string Street,
-    string House,
-    double Latitude,
-    double Longitude
+    string FullAddress
 );

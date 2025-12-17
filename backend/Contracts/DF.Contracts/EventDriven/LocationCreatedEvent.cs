@@ -1,3 +1,13 @@
 ﻿namespace DF.Contracts.EventDriven;
 
-public record LocationsCreatedForOrder(Guid OrderId, Guid DeliverToId, Guid DeliverFromId);
+public record LocationsCreatedForOrder(
+    Guid OrderId,
+    LocationDTO DeliverTo, 
+    LocationDTO DeliverFromId
+    );
+    
+    public record LocationDTO(
+        Guid Id, 
+        double Latitude,
+        double Longitude
+    );
