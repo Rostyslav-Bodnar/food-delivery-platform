@@ -71,6 +71,9 @@ builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
 
 //Services
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IProfitService, ProfitService>();
+
+builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
 
 var app = builder.Build();

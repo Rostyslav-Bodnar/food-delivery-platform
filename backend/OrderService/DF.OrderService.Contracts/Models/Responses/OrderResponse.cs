@@ -48,5 +48,6 @@ public record CourierOrderResponse(
     string CustomerAddress,
     DateTime OrderDate,
     decimal TotalPrice,
-    string OrderStatus
+    string OrderStatus,
+    decimal Profit
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);

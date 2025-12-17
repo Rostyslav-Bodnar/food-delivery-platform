@@ -13,7 +13,9 @@ namespace DF.OrderService.Application.Services;
 public class OrderService(
     IOrderRepository orderRepository, 
     IEventPublisher eventPublisher,
-    UserServiceRpcClient userServiceRpcClient) : IOrderService
+    UserServiceRpcClient userServiceRpcClient,
+    IDistanceService distanceService,
+    IProfitService profitService) : IOrderService
 {
     public async Task<bool> CreateOrdersAsync(List<CreateOrderRequest> orderRequests)
     {
@@ -43,6 +45,14 @@ public class OrderService(
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
+        // 1️⃣ Отримуємо дистанцію між закладом і клієнтом через OSRM
+        var distanceKm = await distanceService.GetDistanceKmAsync(
+            request.DeliverFrom.Latitude, request.DeliverFrom.Longitude,
+            request.DeliverTo.Latitude, request.DeliverTo.Longitude);
+
+        var profit = profitService.Calculate(request.TotalPrice, distanceKm);
+
+        // 3️⃣ Створюємо ордер
         var order = new Order
         {
             Id = Guid.NewGuid(),
@@ -50,14 +60,16 @@ public class OrderService(
             OrderedBy = request.OrderedBy,
             OrderDate = request.OrderDate,
             TotalPrice = request.TotalPrice,
-            OrderStatus = OrderStatus.Preparing, // або Draft/PendingLocations
+            OrderStatus = OrderStatus.Preparing,
             OrderNumber = GenerateOrderNumber(),
             DeliverToId = null,
-            DeliverFromId = null
+            DeliverFromId = null,
+            Profit = profit
         };
 
         await orderRepository.Create(order);
 
+        // 4️⃣ Публікуємо подію
         var evt = new OrderCreatedEvent(
             OrderId: order.Id,
             BusinessId: order.BusinessId,
@@ -86,6 +98,7 @@ public class OrderService(
 
         return true;
     }
+
 
     public async Task<IEnumerable<OrderResponse>> GetAllOrdersAsync()
     {
@@ -360,7 +373,8 @@ public class OrderService(
                 CustomerAddress: customer.Address,
                 OrderDate: o.OrderDate,
                 TotalPrice: o.TotalPrice,
-                OrderStatus: o.OrderStatus.ToString()
+                OrderStatus: o.OrderStatus.ToString(),
+                Profit: o.Profit
             );
         });
     }
@@ -470,7 +484,8 @@ public class OrderService(
                 CustomerAddress: customer.Address,
                 OrderDate: o.OrderDate,
                 TotalPrice: o.TotalPrice,
-                OrderStatus: o.OrderStatus.ToString()
+                OrderStatus: o.OrderStatus.ToString(),
+                Profit: o.Profit
             );
         });
     }
