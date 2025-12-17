@@ -41,6 +41,22 @@ public class OrderController(IOrderService orderService) : ControllerBase
         return Ok(result);
     }
     
+    [HttpGet]
+    [Route("get-customer-history")]
+    public async Task<IActionResult> GetCustomerOrderHistory(Guid customerId)
+    {
+        var result = await orderService.GetCustomerOrderHistoryAsync(customerId);
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [Route("get-courier-history")]
+    public async Task<IActionResult> GetCourierOrderHistory(Guid customerId)
+    {
+        var result = await orderService.GetCourierOrderHistoryAsync(customerId);
+        return Ok(result);
+    }
+    
     [HttpPost]
     [Route("create-order")]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
@@ -59,7 +75,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
 
     [HttpPost]
     [Route("courier/deliver")]
-    public async Task<IActionResult> SelectOrder(Guid orderId, Guid courierId)
+    public async Task<IActionResult> DeliverOrder(Guid orderId, Guid courierId)
     {
         var result = await orderService.DeliverOrderAsync(orderId, courierId);
         return Ok(result);
