@@ -20,6 +20,7 @@ const ProfilePage = () => {
     const [isAvatarHovered, setIsAvatarHovered] = useState(false);
     const inputRef = useRef(null);
 
+    // Стан для карток (Customer)
     const [paymentCards, setPaymentCards] = useState([]);
     const [activeCardId, setActiveCardId] = useState(null);
     const [editingCardId, setEditingCardId] = useState(null);
@@ -30,6 +31,11 @@ const ProfilePage = () => {
         cardHolder: ""
     });
     const [cardSuccess, setCardSuccess] = useState(null);
+
+    // Стан для адрес закладів (Business)
+    const [businessAddresses, setBusinessAddresses] = useState([]);
+    const [editingAddressId, setEditingAddressId] = useState(null);
+    const [addressForm, setAddressForm] = useState({ address: "" });
 
     const accountTypeMap = { Customer: 0, Business: 1, Courier: 2 };
 
@@ -44,6 +50,7 @@ const ProfilePage = () => {
                     avatar: currentAccount?.imageUrl || null,
                 });
 
+                // Ініціалізація платіжних карток
                 if (paymentCards.length === 0 && Array.isArray(currentAccount.paymentCards)) {
                     const cards = currentAccount.paymentCards.map((card, index) => ({
                         id: card.id || `card-${index}`,
@@ -55,6 +62,17 @@ const ProfilePage = () => {
                     if (cards.length > 0) {
                         setActiveCardId(cards[0].id);
                     }
+                }
+
+                // Ініціалізація адрес для бізнес-акаунту
+                if (currentAccount.accountType === "Business" && currentAccount.businessAddresses) {
+                    const addresses = currentAccount.businessAddresses.map((addr, index) => ({
+                        id: addr.id || `addr-${index}`,
+                        address: addr.address || addr
+                    }));
+                    setBusinessAddresses(addresses);
+                } else if (currentAccount.accountType !== "Business") {
+                    setBusinessAddresses([]);
                 }
             }
         }
@@ -70,17 +88,21 @@ const ProfilePage = () => {
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
+
         const avatarUrl = URL.createObjectURL(file);
         setFormData(prev => ({ ...prev, avatar: avatarUrl }));
         setIsAvatarHovered(false);
+
         try {
             let token = localStorage.getItem("accessToken");
             if (!token) {
                 const tokens = await refresh();
                 token = tokens.accessToken;
             }
+
             const currentAccount = accounts.find(a => a.id === currentAccountId);
             if (!currentAccount) throw new Error("No active account found");
+
             const body = {
                 Id: currentAccount.id,
                 UserId: currentAccount.userId,
@@ -92,6 +114,7 @@ const ProfilePage = () => {
                 Description: currentAccount.description || "",
                 ImageFile: file
             };
+
             await updateProfile(currentAccount.accountType.toLowerCase(), body, token);
             await reloadUser();
         } catch (err) {
@@ -106,8 +129,10 @@ const ProfilePage = () => {
                 const tokens = await refresh();
                 token = tokens.accessToken;
             }
+
             const currentAccount = accounts.find(a => a.id === currentAccountId);
             if (!currentAccount) throw new Error("No active account found");
+
             const body = {
                 Id: currentAccount.id,
                 UserId: currentAccount.userId,
@@ -118,9 +143,11 @@ const ProfilePage = () => {
                 Surname: currentAccount.surname || "",
                 Description: currentAccount.description || "",
             };
+
             if (inputRef.current?.files?.[0]) {
                 body.ImageFile = inputRef.current.files[0];
             }
+
             await updateProfile(currentAccount.accountType.toLowerCase(), body, token);
             setEditingField(null);
             await reloadUser();
@@ -134,6 +161,7 @@ const ProfilePage = () => {
         await reloadUser();
     };
 
+    // === Функції для карток ===
     const formatCardNumber = (value) =>
         value.replace(/\D/g, "").match(/.{1,4}/g)?.join(" ") || "";
 
@@ -174,11 +202,8 @@ const ProfilePage = () => {
 
     const handleCardSubmit = (e) => {
         e.preventDefault();
-
         const cleanNumber = cardForm.cardNumber.replace(/\s/g, "");
-        if (cleanNumber.length !== 16 && editingCardId === "new") {
-            return;
-        }
+        if (editingCardId === "new" && cleanNumber.length !== 16) return;
 
         const formattedExpiry = cardForm.expiryDate.length === 4
             ? `${cardForm.expiryDate.slice(0, 2)}/${cardForm.expiryDate.slice(2)}`
@@ -191,10 +216,7 @@ const ProfilePage = () => {
         };
 
         if (editingCardId === "new") {
-            const newCard = {
-                id: Date.now().toString(),
-                ...cardData
-            };
+            const newCard = { id: Date.now().toString(), ...cardData };
             setPaymentCards(prev => [...prev, newCard]);
             setActiveCardId(newCard.id);
             setCardSuccess("Картку додано!");
@@ -215,16 +237,58 @@ const ProfilePage = () => {
 
     const selectCard = (id) => setActiveCardId(id);
 
+    // === Функції для адрес бізнесу ===
+    const startAddingAddress = () => {
+        setEditingAddressId("new");
+        setAddressForm({ address: "" });
+    };
+
+    const startEditingAddress = (addr) => {
+        setEditingAddressId(addr.id);
+        setAddressForm({ address: addr.address });
+    };
+
+    const deleteAddress = (id) => {
+        setBusinessAddresses(prev => prev.filter(a => a.id !== id));
+    };
+
+    const handleAddressSubmit = (e) => {
+        e.preventDefault();
+        if (!addressForm.address.trim()) return;
+
+        if (editingAddressId === "new") {
+            const newAddr = {
+                id: Date.now().toString(),
+                address: addressForm.address.trim()
+            };
+            setBusinessAddresses(prev => [...prev, newAddr]);
+        } else {
+            setBusinessAddresses(prev => prev.map(a =>
+                a.id === editingAddressId ? { ...a, address: addressForm.address.trim() } : a
+            ));
+        }
+
+        setEditingAddressId(null);
+        setAddressForm({ address: "" });
+    };
+
+    const cancelAddressEdit = () => {
+        setEditingAddressId(null);
+        setAddressForm({ address: "" });
+    };
+
     if (loading) return <>⏳ Loading profile...</>;
     if (error) return <>❌ {error}</>;
 
     const currentAccount = accounts.find(a => a.id === currentAccountId);
     const isCustomer = currentAccount?.accountType === "Customer";
+    const isBusiness = currentAccount?.accountType === "Business";
 
     return (
         <div className="page-wrapper">
             <div className="user-container">
                 <h2>🍔 FoodExpress — Profile</h2>
+
                 <div className="user-card">
                     <div
                         className="user-avatar"
@@ -234,7 +298,7 @@ const ProfilePage = () => {
                         {formData.avatar ? (
                             <img src={formData.avatar} alt="Avatar" className="avatar-image" />
                         ) : (
-                            (currentAccount?.name?.[0] ?? "U")
+                            <div className="avatar-initial">{currentAccount?.name?.[0] ?? "U"}</div>
                         )}
                         {isAvatarHovered && (
                             <>
@@ -248,6 +312,7 @@ const ProfilePage = () => {
                             </>
                         )}
                     </div>
+
                     <div className="meta">
                         {editingField === "name" ? (
                             <div className="edit-field">
@@ -269,6 +334,7 @@ const ProfilePage = () => {
                             </div>
                         )}
                         <p>📧 {user?.email}</p>
+
                         {editingField === "phone" ? (
                             <div className="edit-field">
                                 <input
@@ -288,6 +354,7 @@ const ProfilePage = () => {
                                 <button className="field-edit-btn" onClick={() => handleEditToggle("phone")}>✏️</button>
                             </p>
                         )}
+
                         {editingField === "address" ? (
                             <div className="edit-field">
                                 <input
@@ -309,6 +376,7 @@ const ProfilePage = () => {
                         )}
                     </div>
                 </div>
+
                 <div className="user-info">
                     <div className="active-accounts">
                         <h3>Accounts</h3>
@@ -323,7 +391,7 @@ const ProfilePage = () => {
                                         {account.imageUrl ? (
                                             <img src={account.imageUrl} alt={account.name} className="account-avatar-image" />
                                         ) : (
-                                            (account?.name?.[0] ?? "U")
+                                            <div className="avatar-initial">{account.name?.[0] ?? "U"}</div>
                                         )}
                                     </div>
                                     <div>
@@ -333,13 +401,17 @@ const ProfilePage = () => {
                             ))}
                         </ul>
                     </div>
+
+                    {/* Блок платіжних карток — тільки для Customer */}
                     {isCustomer && (
                         <div style={{ marginTop: "24px" }}>
                             <h3 style={{ color: "#fff" }}>💳 Банківські картки</h3>
+                            {cardSuccess && (
+                                <div style={{ color: "#52c41a", marginBottom: "12px", fontWeight: "500" }}>
+                                    {cardSuccess}
+                                </div>
+                            )}
 
-                            {cardSuccess && <div style={{ color: "#52c41a", marginBottom: "12px", fontWeight: "500" }}>{cardSuccess}</div>}
-
-                            {/* Список карток — темний стиль */}
                             {paymentCards.map((card) => (
                                 <div
                                     key={card.id}
@@ -357,7 +429,6 @@ const ProfilePage = () => {
                                     <p style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: "500", color: "#fff" }}>
                                         •••• •••• •••• {card.last4}
                                         <button
-                                            className="field-edit-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 startEditingCard(card);
@@ -367,7 +438,6 @@ const ProfilePage = () => {
                                             ✏️ Змінити
                                         </button>
                                         <button
-                                            className="field-edit-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 deleteCard(card.id);
@@ -382,7 +452,6 @@ const ProfilePage = () => {
                                 </div>
                             ))}
 
-                            {/* Форма — темний стиль */}
                             {editingCardId && (
                                 <div style={{
                                     padding: "16px",
@@ -401,7 +470,6 @@ const ProfilePage = () => {
                                                 value={cardForm.cardHolder}
                                                 onChange={handleCardInputChange}
                                                 required
-                                                className="edit-input"
                                                 style={{
                                                     width: "100%",
                                                     padding: "12px",
@@ -413,6 +481,7 @@ const ProfilePage = () => {
                                                 }}
                                             />
                                         </div>
+
                                         {editingCardId === "new" && (
                                             <div style={{ marginBottom: "16px" }}>
                                                 <input
@@ -423,7 +492,6 @@ const ProfilePage = () => {
                                                     onChange={handleCardInputChange}
                                                     required
                                                     maxLength="19"
-                                                    className="edit-input"
                                                     style={{
                                                         width: "100%",
                                                         padding: "12px",
@@ -436,6 +504,7 @@ const ProfilePage = () => {
                                                 />
                                             </div>
                                         )}
+
                                         <div style={{ display: "flex", gap: "12px", marginBottom: "16px" }}>
                                             <input
                                                 type="text"
@@ -445,7 +514,6 @@ const ProfilePage = () => {
                                                 onChange={handleCardInputChange}
                                                 required
                                                 maxLength="4"
-                                                className="edit-input"
                                                 style={{
                                                     flex: 1,
                                                     padding: "12px",
@@ -464,7 +532,6 @@ const ProfilePage = () => {
                                                 onChange={handleCardInputChange}
                                                 required={editingCardId === "new"}
                                                 maxLength="4"
-                                                className="edit-input"
                                                 style={{
                                                     width: "100px",
                                                     padding: "12px",
@@ -477,6 +544,7 @@ const ProfilePage = () => {
                                                 autoComplete="off"
                                             />
                                         </div>
+
                                         <button
                                             type="submit"
                                             style={{
@@ -493,6 +561,7 @@ const ProfilePage = () => {
                                         >
                                             {editingCardId === "new" ? "Додати картку" : "Зберегти зміни"}
                                         </button>
+
                                         <button
                                             type="button"
                                             onClick={cancelCardEdit}
@@ -514,7 +583,6 @@ const ProfilePage = () => {
                                 </div>
                             )}
 
-                            {/* Кнопка додавання — темний стиль */}
                             {!editingCardId && (
                                 <button
                                     onClick={startAddingCard}
@@ -533,6 +601,149 @@ const ProfilePage = () => {
                                     }}
                                 >
                                     ➕ Додати картку
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Блок адрес закладів — тільки для Business */}
+                    {isBusiness && (
+                        <div style={{ marginTop: "24px" }}>
+                            <h3 style={{ color: "#fff" }}>🏪 Адреси закладів</h3>
+
+                            {businessAddresses.map((addr) => (
+                                <div
+                                    key={addr.id}
+                                    style={{
+                                        position: "relative",
+                                        marginBottom: "12px",
+                                        padding: "16px",
+                                        background: "#2d2d2d",
+                                        borderRadius: "12px",
+                                        border: "1px solid #434343",
+                                        boxShadow: "0 4px 12px rgba(0,0,0,0.3)"
+                                    }}
+                                >
+                                    <p style={{ margin: "0 0 8px 0", color: "#fff", fontSize: "16px" }}>
+                                        📍 {addr.address}
+                                    </p>
+                                    <button
+                                        onClick={() => startEditingAddress(addr)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "12px",
+                                            right: "120px",  // ← Змінено з 68px на 100px — тепер не наїжджає
+                                            background: "none",
+                                            border: "none",
+                                            color: "#69b1ff",
+                                            fontSize: "14px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        ✏️ Змінити
+                                    </button>
+                                    <button
+                                        onClick={() => deleteAddress(addr.id)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "12px",
+                                            right: "12px",
+                                            background: "none",
+                                            border: "none",
+                                            color: "#ff4d4f",
+                                            fontSize: "14px",
+                                            cursor: "pointer"
+                                        }}
+                                    >
+                                        🗑️ Видалити
+                                    </button>
+                                </div>
+                            ))}
+
+                            {editingAddressId && (
+                                <div style={{
+                                    padding: "16px",
+                                    background: "#2d2d2d",
+                                    borderRadius: "12px",
+                                    border: "1px solid #434343",
+                                    marginBottom: "16px",
+                                    boxShadow: "0 4px 12px rgba(0,0,0,0.4)"
+                                }}>
+                                    <form onSubmit={handleAddressSubmit}>
+                                        <input
+                                            type="text"
+                                            placeholder="Введіть адресу закладу"
+                                            value={addressForm.address}
+                                            onChange={(e) => setAddressForm({ address: e.target.value })}
+                                            required
+                                            autoFocus
+                                            style={{
+                                                width: "100%",
+                                                padding: "12px",
+                                                fontSize: "15px",
+                                                background: "#1e1e1e",
+                                                color: "#fff",
+                                                border: "1px solid #434343",
+                                                borderRadius: "8px",
+                                                marginBottom: "12px"
+                                            }}
+                                        />
+                                        <div style={{ display: "flex", gap: "12px" }}>
+                                            <button
+                                                type="submit"
+                                                style={{
+                                                    flex: 1,
+                                                    padding: "14px",
+                                                    background: "#1890ff",
+                                                    color: "white",
+                                                    border: "none",
+                                                    borderRadius: "8px",
+                                                    fontSize: "16px",
+                                                    fontWeight: "500",
+                                                    cursor: "pointer"
+                                                }}
+                                            >
+                                                {editingAddressId === "new" ? "Додати адресу" : "Зберегти"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={cancelAddressEdit}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: "14px",
+                                                    background: "#434343",
+                                                    color: "#fff",
+                                                    border: "none",
+                                                    borderRadius: "8px",
+                                                    fontSize: "16px",
+                                                    cursor: "pointer"
+                                                }}
+                                            >
+                                                Скасувати
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            )}
+
+                            {!editingAddressId && (
+                                <button
+                                    onClick={startAddingAddress}
+                                    style={{
+                                        width: "100%",
+                                        padding: "16px",
+                                        background: "#1890ff",
+                                        color: "white",
+                                        border: "none",
+                                        borderRadius: "12px",
+                                        fontSize: "16px",
+                                        fontWeight: "500",
+                                        cursor: "pointer",
+                                        marginTop: businessAddresses.length > 0 ? "12px" : "0",
+                                        boxShadow: "0 4px 12px rgba(24, 144, 255, 0.4)"
+                                    }}
+                                >
+                                    ➕ Додати адресу закладу
                                 </button>
                             )}
                         </div>
