@@ -22,7 +22,8 @@ public record CustomerOrderResponse(
     decimal TotalPrice,
     Guid DeliveredBy,
     string CourierName,
-    string OrderStatus
+    string OrderStatus,
+    List<DishResponse> dishes
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
 
 public record BusinessOrderResponse(
@@ -36,7 +37,8 @@ public record BusinessOrderResponse(
     decimal TotalPrice,
     Guid DeliveredBy,
     string CourierName,
-    string OrderStatus
+    string OrderStatus,
+    List<DishResponse> dishes
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
 
 public record CourierOrderResponse(
@@ -46,8 +48,35 @@ public record CourierOrderResponse(
     Guid OrderedBy,
     string CustomerFullName,
     string CustomerAddress,
+    string CustomerPhoneNumber,
     DateTime OrderDate,
     decimal TotalPrice,
     string OrderStatus,
     decimal Profit
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
+
+public record OrderDetailsResponse(
+    Guid Id,
+    Guid BusinessId,
+    string BusinessName,
+    Guid OrderedById,
+    string CustomerFullName,
+    string CustomerAddress,
+    string CustomerPhoneNumber,
+    DateTime OrderDate,
+    decimal TotalPrice,
+    string OrderStatus,
+    decimal Profit,
+    List<DishResponse> dishes,
+    Guid? DeliveredById,
+    string? CourierName,
+    string? CourierPhoneNumber
+    );
+    
+    public record DishResponse(
+        Guid Id,
+        Guid BusinessId,
+        string DishName,
+        int  Quantity,
+        decimal Price
+        );

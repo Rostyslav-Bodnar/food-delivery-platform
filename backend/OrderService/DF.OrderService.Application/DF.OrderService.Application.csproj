@@ -13,7 +13,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DF.Contracts" Version="1.0.0-preview6" />
+      <PackageReference Include="DF.Contracts" Version="1.0.0-preview8" />
       <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     </ItemGroup>
 

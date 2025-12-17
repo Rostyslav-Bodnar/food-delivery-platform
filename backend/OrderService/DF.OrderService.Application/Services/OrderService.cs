@@ -1,5 +1,7 @@
 ﻿using DF.Contracts.EventDriven;
+using DF.Contracts.RPC.Requests.MenuService;
 using DF.Contracts.RPC.Requests.UserService;
+using DF.Contracts.RPC.Responses.UserService;
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Publishers;
 using DF.OrderService.Application.Repositories.Interfaces;
@@ -15,7 +17,8 @@ public class OrderService(
     IEventPublisher eventPublisher,
     UserServiceRpcClient userServiceRpcClient,
     IDistanceService distanceService,
-    IProfitService profitService) : IOrderService
+    MenuServiceRpcClient menuServiceRpcClient,
+    IOrderDishRepository orderDishRepository) : IOrderService
 {
     public async Task<bool> CreateOrdersAsync(List<CreateOrderRequest> orderRequests)
     {
@@ -45,13 +48,6 @@ public class OrderService(
         if (request == null)
             throw new ArgumentNullException(nameof(request));
 
-        // 1️⃣ Отримуємо дистанцію між закладом і клієнтом через OSRM
-        var distanceKm = await distanceService.GetDistanceKmAsync(
-            request.DeliverFrom.Latitude, request.DeliverFrom.Longitude,
-            request.DeliverTo.Latitude, request.DeliverTo.Longitude);
-
-        var profit = profitService.Calculate(request.TotalPrice, distanceKm);
-
         // 3️⃣ Створюємо ордер
         var order = new Order
         {
@@ -64,7 +60,7 @@ public class OrderService(
             OrderNumber = GenerateOrderNumber(),
             DeliverToId = null,
             DeliverFromId = null,
-            Profit = profit
+            Profit = 0
         };
 
         await orderRepository.Create(order);
@@ -77,20 +73,10 @@ public class OrderService(
             OrderDate: order.OrderDate,
             TotalPrice: order.TotalPrice,
             DeliverTo: new LocationDto(
-                request.DeliverTo.FullAddress,
-                request.DeliverTo.City,
-                request.DeliverTo.Street,
-                request.DeliverTo.House,
-                request.DeliverTo.Latitude,
-                request.DeliverTo.Longitude
+                request.DeliverTo.FullAddress
             ),
             DeliverFrom: new LocationDto(
-                request.DeliverFrom.FullAddress,
-                request.DeliverFrom.City,
-                request.DeliverFrom.Street,
-                request.DeliverFrom.House,
-                request.DeliverFrom.Latitude,
-                request.DeliverFrom.Longitude
+                request.DeliverFrom.FullAddress
             )
         );
 
@@ -98,8 +84,7 @@ public class OrderService(
 
         return true;
     }
-
-
+    
     public async Task<IEnumerable<OrderResponse>> GetAllOrdersAsync()
     {
         var orders = (await orderRepository.GetAll()).ToList();
@@ -137,13 +122,74 @@ public class OrderService(
             );
         });
     }
-    
+
+    public async Task<OrderDetailsResponse> GetOrderAsync(Guid orderId)
+    {
+        var order = await orderRepository.Get(orderId)
+                     ?? throw new InvalidOperationException($"Order {orderId} not found");
+
+        // 1️⃣ Business
+        var businessTask = userServiceRpcClient.GetBusinessAccountAsync(
+            new GetBusinessAccountRequest(order.BusinessId));
+
+        // 2️⃣ Customer
+        var customerTask = userServiceRpcClient.GetCustomerAccountAsync(
+            new GetCustomerAccountRequest(order.OrderedBy));
+
+        // 3️⃣ Courier (optional)
+        Task<GetCourierAccountResponse?> courierTask = order.DeliveredById != null
+            ? userServiceRpcClient.GetCourierAccountAsync(
+                new GetCourierAccountRequest(order.DeliveredById.Value))
+            : Task.FromResult<GetCourierAccountResponse?>(null);
+
+        // 4️⃣ Dishes from MenuService
+        var dishesTask = menuServiceRpcClient.GetDishesAsync(
+            new GetDishesRequest(order.Id));
+
+        await Task.WhenAll(businessTask, customerTask, courierTask, dishesTask);
+
+        var business = await businessTask;
+        var customer = await customerTask;
+        var courier = await courierTask;
+        var dishesResponse = await dishesTask;
+
+        // 5️⃣ Map dishes
+        var dishDtos = dishesResponse.Dishes.Select(d =>
+            new DishResponse(
+                Id: d.DishId,
+                BusinessId: d.BusinessId,
+                DishName: d.Name,
+                Quantity: 1,
+                Price: d.Price
+            )
+        ).ToList();
+
+        // 6️⃣ Build response
+        return new OrderDetailsResponse(
+            Id: order.Id,
+            BusinessId: order.BusinessId,
+            BusinessName: business.Name,
+            OrderedById: order.OrderedBy,
+            CustomerFullName: $"{customer.Name} {customer.Surname}",
+            CustomerAddress: customer.Address,
+            CustomerPhoneNumber: customer.PhoneNumber,
+            OrderDate: order.OrderDate,
+            TotalPrice: order.TotalPrice,
+            OrderStatus: order.OrderStatus.ToString(),
+            Profit: order.Profit,
+            dishes: dishDtos,
+            DeliveredById: order.DeliveredById,
+            CourierName: courier != null ? $"{courier.Name} {courier.Surname}" : null,
+            CourierPhoneNumber: courier?.PhoneNumber
+        );
+    }
+
+
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
     {
         var orders = (await orderRepository.GetAll())
             .Where(o => o.OrderStatus != OrderStatus.Canceled && o.OrderStatus != OrderStatus.Delivered)
             .ToList();
-
 
         if (!orders.Any())
             return Enumerable.Empty<BusinessOrderResponse>();
@@ -194,8 +240,10 @@ public class OrderService(
             x => x.Value.Result
         );
 
-        // 6️⃣ Map
-        return orders.Select(o =>
+        // 6️⃣ Map orders + dishes
+        var responses = new List<BusinessOrderResponse>();
+
+        foreach (var o in orders)
         {
             var courier = o.DeliveredById != null
                 ? couriers.GetValueOrDefault(o.DeliveredById.Value)
@@ -203,7 +251,26 @@ public class OrderService(
 
             var customer = customers[o.OrderedBy];
 
-            return new BusinessOrderResponse(
+            // 🔑 Отримуємо OrderedDishes для цього ордера
+            var orderedDishes = await orderDishRepository.GetOrderDishesByOrderId(o.Id);
+
+            var dishResponses = new List<DishResponse>();
+
+            foreach (var od in orderedDishes)
+            {
+                // RPC виклик до MenuService для деталей страви
+                var dishInfo = await menuServiceRpcClient.GetDishAsync(new GetDishRequest(od.DishId));
+
+                dishResponses.Add(new DishResponse(
+                    Id: od.Id,
+                    BusinessId: dishInfo.BusinessId,
+                    DishName: dishInfo.Name,
+                    Quantity: 1,
+                    Price: dishInfo.Price
+                ));
+            }
+
+            responses.Add(new BusinessOrderResponse(
                 Id: o.Id,
                 BusinessId: o.BusinessId,
                 BusinessName: business.Name,
@@ -216,17 +283,20 @@ public class OrderService(
                 CourierName: courier != null
                     ? $"{courier.Name} {courier.Surname}"
                     : string.Empty,
-                OrderStatus: o.OrderStatus.ToString()
-            );
-        });
+                OrderStatus: o.OrderStatus.ToString(),
+                dishes: dishResponses
+            ));
+        }
+
+        return responses;
     }
+
     
     public async Task<IEnumerable<CustomerOrderResponse>> GetAllByCustomerIdAsync(Guid customerId)
     {
         var orders = (await orderRepository.GetAll())
             .Where(o => o.OrderStatus != OrderStatus.Canceled && o.OrderStatus != OrderStatus.Delivered)
             .ToList();
-
 
         if (!orders.Any())
             return Enumerable.Empty<CustomerOrderResponse>();
@@ -278,15 +348,34 @@ public class OrderService(
             x => x.Value.Result
         );
 
-        // 5️⃣ DTO generation
-        return orders.Select(order =>
+        // 5️⃣ DTO generation з отриманням страв
+        var responses = new List<CustomerOrderResponse>();
+
+        foreach (var order in orders)
         {
             var business = businesses[order.BusinessId];
             var courier = order.DeliveredById != null
                 ? couriers.GetValueOrDefault(order.DeliveredById.Value)
                 : null;
 
-            return new CustomerOrderResponse(
+            // 🔑 Отримуємо OrderedDishes для цього ордера
+            var orderedDishes = await orderDishRepository.GetOrderDishesByOrderId(order.Id);
+
+            var dishResponses = new List<DishResponse>();
+            foreach (var od in orderedDishes)
+            {
+                var dishInfo = await menuServiceRpcClient.GetDishAsync(new GetDishRequest(od.DishId));
+
+                dishResponses.Add(new DishResponse(
+                    Id: od.Id,
+                    BusinessId: dishInfo.BusinessId,
+                    DishName: dishInfo.Name,
+                    Quantity: 1,
+                    Price: dishInfo.Price
+                ));
+            }
+
+            responses.Add(new CustomerOrderResponse(
                 Id: order.Id,
                 BusinessId: order.BusinessId,
                 BusinessName: business.Name,
@@ -298,10 +387,14 @@ public class OrderService(
                 CourierName: courier != null
                     ? $"{courier.Name} {courier.Surname}"
                     : string.Empty,
-                OrderStatus: order.OrderStatus.ToString()
-            );
-        });
+                OrderStatus: order.OrderStatus.ToString(),
+                dishes: dishResponses
+            ));
+        }
+
+        return responses;
     }
+
     
     public async Task<IEnumerable<CourierOrderResponse>> GetAllByCourierIdAsync(Guid courierId)
     {
@@ -371,6 +464,7 @@ public class OrderService(
                 OrderedBy: o.OrderedBy,
                 CustomerFullName: $"{customer.Name} {customer.Surname}",
                 CustomerAddress: customer.Address,
+                CustomerPhoneNumber: customer.PhoneNumber,
                 OrderDate: o.OrderDate,
                 TotalPrice: o.TotalPrice,
                 OrderStatus: o.OrderStatus.ToString(),
@@ -413,12 +507,31 @@ public class OrderService(
         var businesses = businessTasks.ToDictionary(x => x.Key, x => x.Value.Result);
         var couriers = courierTasks.ToDictionary(x => x.Key, x => x.Value.Result);
 
-        return orders.Select(order =>
+        var responses = new List<CustomerOrderResponse>();
+
+        foreach (var order in orders)
         {
             var business = businesses[order.BusinessId];
             var courier = order.DeliveredById != null ? couriers.GetValueOrDefault(order.DeliveredById.Value) : null;
 
-            return new CustomerOrderResponse(
+            // 🔑 Отримуємо OrderedDishes для цього ордера
+            var orderedDishes = await orderDishRepository.GetOrderDishesByOrderId(order.Id);
+
+            var dishResponses = new List<DishResponse>();
+            foreach (var od in orderedDishes)
+            {
+                var dishInfo = await menuServiceRpcClient.GetDishAsync(new GetDishRequest(od.DishId));
+
+                dishResponses.Add(new DishResponse(
+                    Id: od.Id,
+                    BusinessId: dishInfo.BusinessId,
+                    DishName: dishInfo.Name,
+                    Quantity: 1,
+                    Price: dishInfo.Price
+                ));
+            }
+
+            responses.Add(new CustomerOrderResponse(
                 Id: order.Id,
                 BusinessId: order.BusinessId,
                 BusinessName: business.Name,
@@ -428,10 +541,14 @@ public class OrderService(
                 TotalPrice: order.TotalPrice,
                 DeliveredBy: order.DeliveredById ?? Guid.Empty,
                 CourierName: courier != null ? $"{courier.Name} {courier.Surname}" : string.Empty,
-                OrderStatus: order.OrderStatus.ToString()
-            );
-        });
+                OrderStatus: order.OrderStatus.ToString(),
+                dishes: dishResponses
+            ));
+        }
+
+        return responses;
     }
+
 
     public async Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId)
     {
@@ -482,6 +599,7 @@ public class OrderService(
                 OrderedBy: o.OrderedBy,
                 CustomerFullName: $"{customer.Name} {customer.Surname}",
                 CustomerAddress: customer.Address,
+                CustomerPhoneNumber: customer.PhoneNumber,
                 OrderDate: o.OrderDate,
                 TotalPrice: o.TotalPrice,
                 OrderStatus: o.OrderStatus.ToString(),
@@ -489,8 +607,7 @@ public class OrderService(
             );
         });
     }
-
-
+    
     public async Task<OrderResponse> ChangeOrderStatus(Guid orderId, OrderStatus status)
     {
         var order = await orderRepository.Get(orderId)

@@ -32,6 +32,14 @@ public class OrderController(IOrderService orderService) : ControllerBase
     {
         return Ok(await orderService.ChangeOrderStatus(orderId, status));
     }
+
+    [HttpGet]
+    [Route("get-order-details/{orderId}")]
+    public async Task<IActionResult> GetOrderDetails(Guid orderId)
+    {
+        var result = await orderService.GetOrderAsync(orderId);
+        return Ok(result);
+    }
     
     [HttpGet]
     [Route("get-customer-orders")]

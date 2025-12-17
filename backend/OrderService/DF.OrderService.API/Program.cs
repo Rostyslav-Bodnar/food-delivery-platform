@@ -71,7 +71,6 @@ builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
 
 //Services
 builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IProfitService, ProfitService>();
 
 builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
@@ -90,6 +89,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 
