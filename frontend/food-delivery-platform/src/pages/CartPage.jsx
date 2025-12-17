@@ -5,23 +5,26 @@ import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 
 import "./styles/CartPage.css";
 import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
+import { getCart, saveCart } from "../utils/CartStorage.jsx";
 
 const CartPage = () => {
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Маргарита Піца", restaurant: "Pizza Palace", price: 249, quantity: 2, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500" },
-        { id: 2, name: "Бургер з яловичиною", restaurant: "Burger Hub", price: 189, quantity: 1, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" },
-        { id: 3, name: "Суші Сет Дракон", restaurant: "Sushi Master", price: 429, quantity: 1, image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500" },
-    ]);
+    const [cartItems, setCartItems] = useState(getCart());
+    console.log(cartItems);
 
     const updateQuantity = (id, newQuantity) => {
         if (newQuantity < 1) return;
-        setCartItems(prev => prev.map(item =>
+        const updated = cartItems.map(item =>
             item.id === id ? { ...item, quantity: newQuantity } : item
-        ));
+        );
+        setCartItems(updated);
+        saveCart(updated);
+        console.log(cartItems);
     };
 
     const removeItem = (id) => {
-        setCartItems(prev => prev.filter(item => item.id !== id));
+        const updated = cartItems.filter(item => item.id !== id);
+        setCartItems(updated);
+        saveCart(updated);
     };
 
     const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -45,18 +48,6 @@ const CartPage = () => {
         <div className="app-wrapper">
             <CustomerSidebar />
             <div className="cart-page-wrapper">
-                <div className="particles">
-                    {[...Array(6)].map((_, i) => (
-                        <motion.div
-                            key={i}
-                            className="particle"
-                            initial={{ y: -100, x: Math.random() * window.innerWidth }}
-                            animate={{ y: window.innerHeight + 100 }}
-                            transition={{ duration: 15 + Math.random() * 10, repeat: Infinity, ease: "linear", delay: Math.random() * 5 }}
-                        />
-                    ))}
-                </div>
-
                 <div className="cart-container">
                     <motion.h1 initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="cart-title">
                         <ShoppingCart size={32} /> Ваш кошик
@@ -66,15 +57,7 @@ const CartPage = () => {
                         <div className="cart-items">
                             <AnimatePresence>
                                 {cartItems.map((item, index) => (
-                                    <motion.div
-                                        key={item.id}
-                                        layout
-                                        initial={{ opacity: 0, x: -50 }}
-                                        animate={{ opacity: 1, x: 0 }}
-                                        exit={{ opacity: 0, x: 50 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="cart-item-card"
-                                    >
+                                    <motion.div key={item.id} layout className="cart-item-card">
                                         <img src={item.image} alt={item.name} className="cart-item-image" />
                                         <div className="cart-item-info">
                                             <h3>{item.name}</h3>
@@ -94,17 +77,14 @@ const CartPage = () => {
                             </AnimatePresence>
                         </div>
 
-                        <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.4 }} className="cart-summary">
+                        <motion.div className="cart-summary">
                             <div className="summary-row"><span>Разом:</span><strong>{totalPrice} ₴</strong></div>
                             <div className="summary-row"><span>Доставка:</span><span>Безкоштовно</span></div>
                             <div className="summary-divider" />
                             <div className="summary-row total"><span>До сплати:</span><strong className="final-price">{totalPrice} ₴</strong></div>
-                            <Link to="/checkout" className="checkout-btn">
-    Оформити замовлення
-</Link>
-<Link to="/" className="continue-shopping">Продовжити покупки</Link>
+                            <Link to="/checkout" className="checkout-btn">Оформити замовлення</Link>
+                            <Link to="/" className="continue-shopping">Продовжити покупки</Link>
                         </motion.div>
-
                     </div>
                 </div>
             </div>
