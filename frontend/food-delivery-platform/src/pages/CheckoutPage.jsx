@@ -1,6 +1,6 @@
 ﻿// src/pages/CheckoutPage.jsx
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     ShoppingCart, User, Truck, Store, CreditCard,
@@ -9,24 +9,41 @@ import {
 
 import "./styles/CheckoutPage.css";
 import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
+import { createOrders } from "../api/Order.jsx";
+
+import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+// utils localStorage
+const getCart = () => JSON.parse(localStorage.getItem("cart")) || [];
+const clearCart = () => localStorage.removeItem("cart");
 
 const CheckoutPage = () => {
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Маргарита Піца", restaurant: "Pizza Palace", price: 249, quantity: 2, image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500" },
-        { id: 2, name: "Бургер з яловичиною", restaurant: "Burger Hub", price: 189, quantity: 1, image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=500" },
-        { id: 3, name: "Суші Сет Дракон", restaurant: "Sushi Master", price: 429, quantity: 1, image: "https://images.unsplash.com/photo-1579584425555-c3ce17fd4351?w=500" },
-    ]);
+    const navigate = useNavigate();
+    const [mapPosition, setMapPosition] = useState(null); // {lat, lng}
+    const [mapAddress, setMapAddress] = useState('');
 
+    const [cartItems, setCartItems] = useState([]);
     const [formData, setFormData] = useState({
         name: '', phone: '', email: '', comment: ''
     });
-
     const [restaurantSettings, setRestaurantSettings] = useState({});
+
+    useEffect(() => {
+        setCartItems(getCart());
+    }, []);
 
     const getSettingsFor = (restaurant) => {
         if (!restaurantSettings[restaurant]) {
-            return { deliveryType: 'delivery', paymentType: 'cash', address: '', cardData: { cardNumber: '', cardExpiry: '', cardCVV: '', cardName: '' } };
+            return {
+                deliveryType: 'delivery',
+                paymentType: 'cash',
+                address: '',
+                cardData: { cardNumber: '', cardExpiry: '', cardCVV: '', cardName: '' }
+            };
         }
+        console.log(restaurantSettings[restaurant]);
         return restaurantSettings[restaurant];
     };
 
@@ -49,18 +66,20 @@ const CheckoutPage = () => {
     };
 
     const removeItem = (id) => {
-        setCartItems(cartItems.filter(item => item.id !== id));
+        const updated = cartItems.filter(item => item.id !== id);
+        setCartItems(updated);
+        localStorage.setItem("cart", JSON.stringify(updated));
     };
 
+    // 🔹 групування по ресторанах
     const groupedItems = cartItems.reduce((acc, item) => {
         if (!acc[item.restaurant]) acc[item.restaurant] = [];
         acc[item.restaurant].push(item);
         return acc;
     }, {});
 
-    const getRestaurantSubtotal = (restaurant) => {
-        return groupedItems[restaurant]?.reduce((sum, item) => sum + item.price * item.quantity, 0) || 0;
-    };
+    const getRestaurantSubtotal = (restaurant) =>
+        groupedItems[restaurant]?.reduce((sum, i) => sum + i.price * i.quantity, 0) || 0;
 
     const getDeliveryCost = (paymentType) => paymentType === 'card' ? 50 : 0;
 
@@ -69,31 +88,104 @@ const CheckoutPage = () => {
         return getRestaurantSubtotal(restaurant) + getDeliveryCost(settings.paymentType);
     };
 
-    const getGrandTotal = () => {
-        return Object.keys(groupedItems).reduce((sum, restaurant) => sum + getRestaurantTotal(restaurant), 0);
+    const getGrandTotal = () =>
+        Object.keys(groupedItems).reduce((sum, r) => sum + getRestaurantTotal(r), 0);
+
+    // всередині CheckoutPage.jsx
+    const LocationPicker = ({ position, setPosition }) => {
+        useMapEvents({
+            click(e) {
+                setPosition(e.latlng);
+            },
+        });
+
+        return position === null ? null : (
+            <Marker position={position} />
+        );
     };
 
-    const handleSubmit = (e) => {
+    const fetchAddressFromCoords = async ({ lat, lng }) => {
+        try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await res.json();
+            if (data.display_name) setMapAddress(data.display_name);
+        } catch (err) {
+            console.error("Помилка отримання адреси з координатів:", err);
+        }
+    };
+
+    useEffect(() => {
+        if (mapPosition) fetchAddressFromCoords(mapPosition);
+    }, [mapPosition]);
+
+
+
+    // 🔥 ОСНОВНЕ — звʼязок з бекендом
+    const handleSubmit = async (e) => {
         e.preventDefault();
+
         if (!formData.name || !formData.phone) {
             alert('Будь ласка, заповніть імʼя та телефон');
             return;
         }
-        for (const restaurant of Object.keys(groupedItems)) {
-            const settings = getSettingsFor(restaurant);
-            if (settings.deliveryType === 'delivery' && !settings.address) {
-                alert(`Вкажіть адресу доставки для ${restaurant}`);
-                return;
-            }
-            if (settings.paymentType === 'card') {
-                const card = settings.cardData;
-                if (!card.cardNumber || !card.cardExpiry || !card.cardCVV || !card.cardName) {
-                    alert(`Заповніть дані карти для ${restaurant}`);
-                    return;
+        debugger;
+        const now = new Date().toISOString();
+
+        try {
+            const ordersPayload = Object.entries(groupedItems).map(([restaurant, items]) => {
+                const settings = getSettingsFor(restaurant);
+
+                const finalAddress = settings.address || mapAddress;
+
+                if (settings.deliveryType === 'delivery' && !finalAddress) {
+                    throw new Error(`Адреса не вказана для ${restaurant}`);
                 }
-            }
+
+
+                return {
+                    businessId: items[0].businessId,
+
+                    // ❗ GUID, не string "null"
+                    orderedBy: localStorage.getItem("currentAccountId"),
+
+                    // ISO string → DateTime OK
+                    orderDate: now,
+
+                    totalPrice: getRestaurantTotal(restaurant),
+
+                    // nullable Guid
+                    deliveredBy: null,
+                    
+                    // CreateLocationRequest
+                    deliverFrom: {
+                        fullAddress: items[0].businessAddress ?? "2, вулиця Святослава Гординського, Кант, Івано-Франківськ, Івано-Франківська міська громада, Івано-Франківський район, Івано-Франківська область, 76010, Україна"
+                    },
+
+                    // CreateLocationRequest
+                    deliverTo: {
+                        fullAddress: finalAddress
+                    },
+
+                    // List<CreateOrderDishRequest>
+                    dishes: items.map(i => ({
+                        orderId: "00000000-0000-0000-0000-000000000000",
+                        dishId: i.id
+                    }))
+                };
+
+
+            });
+
+            await createOrders(ordersPayload);
+
+            clearCart();
+            alert("Замовлення успішно створені 🎉");
+            navigate("/orders");
+
+        } catch (err) {
+            console.error(err);
+            alert("Помилка при оформленні замовлення");
         }
-        alert('Усі замовлення успішно оформлено! Дякуємо 🎉');
     };
 
     return (
@@ -187,9 +279,27 @@ const CheckoutPage = () => {
 
                                     {settings.deliveryType === 'delivery' && (
                                         <div className="delivery-address-wrapper">
-                                            <motion.input initial={{ opacity: 0 }} animate={{ opacity: 1 }} type="text" placeholder="Адреса доставки *" value={settings.address} onChange={(e) => updateSettingsFor(restaurant, { address: e.target.value })} required />
+                                            <motion.input
+                                                initial={{ opacity: 0 }}
+                                                animate={{ opacity: 1 }}
+                                                type="text"
+                                                placeholder="Адреса доставки *"
+                                                value={settings.address || mapAddress}
+                                                onChange={(e) => updateSettingsFor(restaurant, { address: e.target.value })}
+                                                required
+                                            />
+
+                                            <MapContainer center={[50.45, 30.52]} zoom={12} className="leaflet-container">
+                                                <TileLayer
+                                                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                                    attribution="&copy; OpenStreetMap contributors"
+                                                />
+                                                <LocationPicker position={mapPosition} setPosition={setMapPosition} />
+                                            </MapContainer>
+                                            <small>Клікніть на карті, щоб вибрати місце доставки</small>
                                         </div>
                                     )}
+
 
                                     {settings.paymentType === 'card' && (
                                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="card-form">

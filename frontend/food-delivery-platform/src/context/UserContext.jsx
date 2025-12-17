@@ -25,8 +25,11 @@ export const UserProvider = ({ children }) => {
 
             // Зберігаємо accountType у localStorage
             const currentAcc = data.accounts.find(a => a.id === data.currentAccount.id);
+            console.log(currentAcc);
+
             if (currentAcc) {
                 localStorage.setItem("currentAccountType", currentAcc.accountType);
+                localStorage.setItem("currentAccountId", data.currentAccount.id);
             }
         } catch (err) {
             console.error("Load user error:", err);
