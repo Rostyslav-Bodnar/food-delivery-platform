@@ -76,6 +76,7 @@ builder.Services.AddScoped<ICourierLocationRepository, CourierLocationRepository
 //Services
 builder.Services.AddScoped<ILocationService, LocationService>();
 builder.Services.AddScoped<IBusinessLocationService, BusinessLocationService>();
+builder.Services.AddHttpClient<IRoutingService, RoutingService>();
 
 //EventPublishers
 builder.Services.AddSingleton<IEventPublisher, TrackingEventPublisher>();
