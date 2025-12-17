@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Star, Clock, MapPin, ChevronLeft, Plus, Minus, Zap, MessageCircle } from 'lucide-react';
 import './styles/DishPage.css';
 import {getDishForCustomer} from "../api/Dish.jsx";
+import { addToCart } from "../utils/CartStorage.jsx";
+
 
 // МОК ВІДГУКИ — ЗАЛИШАЮТЬСЯ
 const mockReviews = {
@@ -28,10 +30,10 @@ const DishPage = () => {
             try {
                 const data = await getDishForCustomer(id);
 
-                // Мапаємо дані з бекенду у формат сторінки
                 const mappedDish = {
                     id: data.id,
                     name: data.name,
+                    businessId: data.businessDetails.id,
                     image: data.imageUrl,
                     price: data.price,
                     cookingTime: data.cookingTime ? `${data.cookingTime} хв` : "",
@@ -77,6 +79,11 @@ const DishPage = () => {
     }
 
     const reviewsList = mockReviews[id] ?? [];
+
+    const handleAddToCart = () => {
+        addToCart(dish, quantity);
+    };
+
 
     return (
         <div className="dish-page">
@@ -162,9 +169,13 @@ const DishPage = () => {
                             </motion.button>
                         </div>
 
-                        <motion.button className="add-to-cart-btn">
+                        <motion.button
+                            className="add-to-cart-btn"
+                            onClick={handleAddToCart}
+                        >
                             Додати в кошик · {dish.price * quantity} ₴
                         </motion.button>
+
 
                         {/* Додаткова інформація */}
                         <div className="extra-info">
