@@ -2,6 +2,8 @@
 using System.Text.Json;
 using DF.Contracts.EventDriven;
 using DF.OrderService.Application.Repositories.Interfaces;
+using DF.OrderService.Application.Services;
+using DF.OrderService.Application.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -36,15 +38,24 @@ public class LocationsCreatedConsumer(IConnection connection, IServiceScopeFacto
         var evt = JsonSerializer.Deserialize<LocationsCreatedForOrder>(json);
 
         if (evt == null) return;
-
+        
         using var scope = scopeFactory.CreateScope();
         var orderRepository = scope.ServiceProvider.GetRequiredService<IOrderRepository>();
+        var distanceService = scope.ServiceProvider.GetRequiredService<IDistanceService>();
 
+        // 1️⃣ Отримуємо дистанцію між закладом і клієнтом через OSRM
+        var distanceKm = await distanceService.GetDistanceKmAsync(
+            evt.DeliverFromId.Latitude, evt.DeliverFromId.Longitude,
+            evt.DeliverTo.Latitude, evt.DeliverTo.Longitude);
+        
         var order = await orderRepository.Get(evt.OrderId);
         if (order == null) return;
+            
+        var profit = ProfitService.Calculate(order.TotalPrice, distanceKm);
 
-        order.DeliverToId = evt.DeliverToId;
-        order.DeliverFromId = evt.DeliverFromId;
+        order.DeliverToId = evt.DeliverTo.Id;
+        order.DeliverFromId = evt.DeliverFromId.Id;
+        order.Profit = profit;
         await orderRepository.Update(order);
     }
 }

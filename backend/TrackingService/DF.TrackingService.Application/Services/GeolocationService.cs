@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using DF.TrackingService.Contracts.Models.Responses;
 
 namespace DF.TrackingService.Application.Services
@@ -21,11 +22,13 @@ namespace DF.TrackingService.Application.Services
             if (doc.RootElement.ValueKind == JsonValueKind.Array && doc.RootElement.GetArrayLength() > 0)
             {
                 var first = doc.RootElement[0];
-                if (double.TryParse(first.GetProperty("lat").GetString(), out var lat) &&
-                    double.TryParse(first.GetProperty("lon").GetString(), out var lon))
+
+                if (double.TryParse(first.GetProperty("lat").GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var lat) &&
+                    double.TryParse(first.GetProperty("lon").GetString(), NumberStyles.Float, CultureInfo.InvariantCulture, out var lon))
                 {
                     return new GeodataResponse(lat, lon);
                 }
+
             }
 
             return null;

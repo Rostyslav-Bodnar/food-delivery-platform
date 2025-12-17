@@ -3,6 +3,7 @@ using System.Text.Json;
 using DF.Contracts.EventDriven;
 using DF.TrackingService.Application.Messaging.Publishers;
 using DF.TrackingService.Application.Repositories.Interfaces;
+using DF.TrackingService.Application.Services;
 using Microsoft.Extensions.DependencyInjection;
 using NetTopologySuite.Geometries;
 using RabbitMQ.Client;
@@ -13,6 +14,7 @@ namespace DF.TrackingService.Application.Messaging.Consumers;
 
 public class OrderCreatedConsumer(
     IConnection connection,
+    GeolocationService geolocationService,
     IServiceScopeFactory scopeFactory,
     IEventPublisher eventPublisher)
     : IConsumer
@@ -47,26 +49,30 @@ public class OrderCreatedConsumer(
         using var scope = scopeFactory.CreateScope();
         var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
 
+        var deliverToGeolocation = await geolocationService.GetGeodataAsync(evt.DeliverTo.FullAddress);
+        if(deliverToGeolocation == null) return;
         var deliverTo = await locationRepository.Create(new Location
         {
             FullAddress = evt.DeliverTo.FullAddress,
-            City = evt.DeliverTo.City,
-            Street = evt.DeliverTo.Street,
-            House = evt.DeliverTo.House,
-            GeoPoint = new Point(evt.DeliverTo.Longitude, evt.DeliverTo.Latitude)
+            GeoPoint = new Point(deliverToGeolocation.Latitude, deliverToGeolocation.Longitude)
         });
 
+        await Task.Delay(1000);
+        
+        var deliverFromGeolocation = await geolocationService.GetGeodataAsync(evt.DeliverFrom.FullAddress);
+        if(deliverFromGeolocation == null) return;
+        
         var deliverFrom = await locationRepository.Create(new Location
         {
             FullAddress = evt.DeliverFrom.FullAddress,
-            City = evt.DeliverFrom.City,
-            Street = evt.DeliverFrom.Street,
-            House = evt.DeliverFrom.House,
-            GeoPoint = new Point(evt.DeliverFrom.Longitude, evt.DeliverFrom.Latitude)
+            GeoPoint = new Point(deliverFromGeolocation.Latitude, deliverFromGeolocation.Longitude)
         });
 
         await eventPublisher.PublishLocationsCreatedForOrder(
-            new LocationsCreatedForOrder(evt.OrderId, deliverTo.Id, deliverFrom.Id)
+            new LocationsCreatedForOrder(
+                evt.OrderId, 
+                new LocationDTO(deliverTo.Id, deliverToGeolocation.Latitude, deliverToGeolocation.Longitude),
+                new LocationDTO(deliverFrom.Id, deliverFromGeolocation.Latitude, deliverFromGeolocation.Longitude))
         );
     }
 }
