@@ -12,16 +12,22 @@ public class TrackingEventPublisher : IEventPublisher
     public TrackingEventPublisher(IConnection connection)
     {
         channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
-        channel.ExchangeDeclareAsync("trackingservice", ExchangeType.Fanout, durable: true)
-            .GetAwaiter().GetResult();
+
+        channel.ExchangeDeclareAsync(
+            exchange: "trackingservice",
+            type: ExchangeType.Fanout,
+            durable: true
+        ).GetAwaiter().GetResult();
     }
 
     public async Task PublishLocationsCreatedForOrder(LocationsCreatedForOrder evt)
     {
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
+
         await channel.BasicPublishAsync(
             exchange: "trackingservice",
             routingKey: "",
+            mandatory: false,
             body: body
         );
     }

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { BarChart2, Package, Filter, Users } from "lucide-react";
 
 const SIDEBAR_ITEMS = [
-    { id: "dashboard", label: "Dashboard", icon: BarChart2, path: "/business" },
+    { id: "dashboard", label: "Dashboard", icon: BarChart2, path: "/" },
     { id: "orders", label: "Orders", icon: Package, path: "/business/orders" },
     { id: "dishes", label: "Menu", icon: Filter, path: "/business/dishes" },
     { id: "staff", label: "Staff", icon: Users, path: "/business/staff" },

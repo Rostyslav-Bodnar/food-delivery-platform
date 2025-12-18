@@ -55,6 +55,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
 // RPC clients
 builder.Services.AddSingleton<UserServiceRpcClient>();
 builder.Services.AddSingleton<MenuServiceRpcClient>();
+builder.Services.AddSingleton<TrackingServiceRpcClient>();
 
 //EventPublishers
 builder.Services.AddSingleton<IEventPublisher, OrderEventPublisher>();

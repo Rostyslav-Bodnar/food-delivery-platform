@@ -18,7 +18,7 @@ const CustomerHomePage = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('all');
     const [selectedRating, setSelectedRating] = useState('all');
-    const [priceRange, setPriceRange] = useState([0, 500]);
+    const [priceRange, setPriceRange] = useState([0, 5000]);
     const [loading, setLoading] = useState(true);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -41,9 +41,9 @@ const CustomerHomePage = () => {
 
                 // 3. Завантажуємо реальні страви з бекенду
                 setLoading(true);
+                debugger;
 
                 const data = await getAllDishesForCustomer();
-
                 // Перетворення у формат, з яким працює фронт
                 const mappedDishes = data.map(d => ({
                     id: d.id,
@@ -173,7 +173,7 @@ const CustomerHomePage = () => {
                                             <span>{priceRange[0]}₴</span>
                                             <span>{priceRange[1]}₴</span>
                                         </div>
-                                        <input type="range" min="0" max="500" value={priceRange[1]}
+                                        <input type="range" min="0" max="5000" value={priceRange[1]}
                                             onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
                                             className="range-slider" />
                                     </div>

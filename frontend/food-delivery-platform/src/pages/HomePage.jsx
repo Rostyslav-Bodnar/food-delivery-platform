@@ -70,7 +70,7 @@ const HomePage = () => {
         case 'business':
             return <BusinessHomePage userData={userData} />;
         case 'courier':
-             return <CourierHomePage />;
+             return <CourierHomePage userData={userData} />;
         default:
             return <UnauthenticatedHome />;
     }

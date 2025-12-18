@@ -203,17 +203,40 @@ public class DishService(
 
     public async Task<List<DishForCustomerResponse>> GetAllDishForCustomerAsync()
     {
-        var dishes = await repository.GetAll();
+        var dishes = (await repository.GetAll()).ToList();
 
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(dishes.Where(d => d.BusinessId != Guid.Empty).First().BusinessId));
-        
-        var businessDetails = new  BusinessResponse(businessResponse.AccountId, businessResponse.Name, businessResponse.Description);
-        
-        // Потрібно підтягувати інгредієнти
+        // 1️⃣ Витягуємо всі унікальні бізнеси
+        var businessIds = dishes
+            .Where(d => d.BusinessId != Guid.Empty)
+            .Select(d => d.BusinessId)
+            .Distinct()
+            .ToList();
+
+        // 2️⃣ Робимо fan-out RPC виклики паралельно
+        var businessTasks = businessIds.ToDictionary(
+            id => id,
+            id => userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(id))
+        );
+
+        await Task.WhenAll(businessTasks.Values);
+
+        // 3️⃣ Формуємо словник BusinessId -> BusinessResponse
+        var businesses = businessTasks.ToDictionary(
+            x => x.Key,
+            x => new BusinessResponse(
+                x.Value.Result.AccountId,
+                x.Value.Result.Name,
+                x.Value.Result.Description
+            )
+        );
+
+        // 4️⃣ Підтягуємо інгредієнти для кожної страви
         var result = new List<DishForCustomerResponse>();
         foreach (var d in dishes)
         {
             var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
+
+            var businessDetails = businesses.GetValueOrDefault(d.BusinessId);
 
             result.Add(new DishForCustomerResponse(
                 d.Id,
@@ -228,8 +251,7 @@ public class DishService(
                 ingredients
             ));
         }
-
-        return result;
+        return result.Where(r => r.BusinessDetails != null).ToList();
     }
 
     public async Task<List<DishForCustomerResponse>> GetDishesForCustomerByBusinessIdAsync(Guid businessId)

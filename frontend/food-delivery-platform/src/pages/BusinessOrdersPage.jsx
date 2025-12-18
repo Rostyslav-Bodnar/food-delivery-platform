@@ -1,8 +1,18 @@
-﻿import React, { useState } from "react";
-import { Package, Clock, CheckCircle, XCircle, ChevronRight } from "lucide-react";
+﻿import React, { useEffect, useState } from "react";
+import {
+    Package,
+    Clock,
+    CheckCircle,
+    XCircle,
+    ChevronRight
+} from "lucide-react";
 import "./styles/BusinessOrdersPage.css";
-import BusinessSidebar from "../components/business/BusinessSidebar.jsx";   
+import BusinessSidebar from "../components/business/BusinessSidebar.jsx";
 import OrderDetailsComponent from "../components/OrderDetailsComponent.jsx";
+import {
+    getOrdersByBusiness,
+    changeOrderStatus
+} from "../api/Order.jsx";
 
 const STATUS_MAP = {
     pending: { label: "Нове", color: "#7c5cff", icon: Package },
@@ -12,97 +22,87 @@ const STATUS_MAP = {
     cancelled: { label: "Скасовано", color: "#ff6b6b", icon: XCircle },
 };
 
-// Мок-замовлення (як ніби прийшли з бекенду)
-const MOCK_ORDERS = [
-    {
-        id: "1488",
-        createdAt: "14:32",
-        customerName: "Олександр П.",
-        customerPhone: "+380 97 123 45 67",
-        address: "вул. Франка 12, кв. 5",
-        total: 1240,
-        status: "pending",
-        courier: {
-            name: "Іван К.",
-            phone: "+380 67 444 22 11"
-        },
-        items: [
-            { name: "Філадельфія класична", quantity: 2, price: 340 },
-            { name: "Каліфорнія з лососем", quantity: 1, price: 360 },
-            { name: "Місо-суп", quantity: 1, price: 120 },
-        ],
-    },
-    {
-        id: "1485",
-        createdAt: "13:55",
-        customerName: "Марія К.",
-        customerPhone: "+380 63 987 65 43",
-        address: "пр. Свободи 78",
-        total: 680,
-        status: "preparing",
-        courier: {
-            name: "Іван К.",
-            phone: "+380 67 444 22 11"
-        },
-        items: [
-            { name: "Чізбургер меню", quantity: 1, price: 420 },
-            { name: "Картопля фрі велика", quantity: 1, price: 140 },
-            { name: "Кола 0.5л", quantity: 1, price: 60 },
-        ],
-    },
-    {
-        id: "1482",
-        createdAt: "13:20",
-        customerName: "Дмитро С.",
-        customerPhone: "+380 50 111 22 33",
-        address: "вул. Грушевського 5",
-        total: 890,
-        status: "ready",
-        courier: {
-            name: "Іван К.",
-            phone: "+380 67 444 22 11"
-        },
-        items: [
-            { name: "Піца Маргарита 30см", quantity: 1, price: 520 },
-            { name: "Цезар з куркою", quantity: 1, price: 370 },
-        ],
-    },
-    {
-        id: "1479",
-        createdAt: "12:45",
-        customerName: "Аліна В.",
-        customerPhone: "+380 98 555 44 33",
-        address: "вул. Шевченка 23",
-        total: 450,
-        status: "delivered",
-        courier: {
-            name: "Іван М.",
-            phone: "+380 67 444 22 11"
-        },
-        items: [
-            { name: "Рол Філадельфія", quantity: 1, price: 340 },
-            { name: "Соус васабі", quantity: 1, price: 30 },
-        ],
-    },
-];
+const BACKEND_STATUS_MAP = {
+    Preparing: "preparing",
+    Ready: "ready",
+    OutForDelivery: "ready",
+    Delivered: "delivered",
+    Canceled: "cancelled"
+};
+
+const FRONT_TO_BACK_STATUS = {
+    preparing: "Preparing",
+    ready: "Ready",
+    delivered: "Delivered",
+    cancelled: "Canceled"
+};
 
 export default function BusinessOrdersPage({ userData }) {
-    const [orders, setOrders] = useState(MOCK_ORDERS);
+    const [orders, setOrders] = useState([]);
     const [filter, setFilter] = useState("all");
     const [selectedOrder, setSelectedOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    const filteredOrders = filter === "all"
-        ? orders
-        : orders.filter(o => o.status === filter);
+    const businessId = localStorage.getItem("currentAccountId");
 
-    const handleStatusChange = (orderId, newStatus) => {
-        setOrders(prev =>
-            prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o)
-        );
+    useEffect(() => {
+        if (!businessId) return;
+
+        const loadOrders = async () => {
+            try {
+                const data = await getOrdersByBusiness(businessId);
+
+                const mapped = data.map(o => ({
+                    id: o.id,
+                    createdAt: new Date(o.orderDate).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }),
+                    customerName: o.customerFullName,
+                    address: o.customerAddress,
+                    total: o.totalPrice,
+                    status: BACKEND_STATUS_MAP[o.orderStatus] ?? "pending",
+                    courier: o.courierName
+                        ? { name: o.courierName }
+                        : null,
+                    items: o.dishes.map(d => ({
+                        name: d.dishName,
+                        quantity: d.quantity,
+                        price: d.price
+                    }))
+                }));
+
+                setOrders(mapped);
+            } catch (e) {
+                console.error("Failed to load business orders", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadOrders();
+    }, [businessId]);
+
+    const filteredOrders =
+        filter === "all"
+            ? orders
+            : orders.filter(o => o.status === filter);
+
+    const handleStatusChange = async (orderId, newStatus) => {
+        try {
+            await changeOrderStatus(orderId, FRONT_TO_BACK_STATUS[newStatus]);
+
+            setOrders(prev =>
+                prev.map(o =>
+                    o.id === orderId
+                        ? { ...o, status: newStatus }
+                        : o
+                )
+            );
+        } catch (e) {
+            console.error("Failed to change order status", e);
+        }
     };
-
-    const businessName = userData?.currentAccount?.name || "Мій заклад";
-    const businessLogo = userData?.currentAccount?.imageUrl;
 
     return (
         <div className="bh-page">
@@ -111,24 +111,25 @@ export default function BusinessOrdersPage({ userData }) {
             <main className="bh-main">
                 <header className="bh-top">
                     <h1 className="bh-heading">Замовлення</h1>
-                    <div className="bh-controls">
-                        <div className="filters">
-                            <select value={filter} onChange={e => setFilter(e.target.value)}>
-                                <option value="all">Усі</option>
-                                <option value="pending">Нові</option>
-                                <option value="preparing">Готується</option>
-                                <option value="ready">Готові</option>
-                                <option value="delivered">Доставлені</option>
-                                <option value="cancelled">Скасовані</option>
-                            </select>
-                        </div>
+
+                    <div className="filters">
+                        <select value={filter} onChange={e => setFilter(e.target.value)}>
+                            <option value="all">Усі</option>
+                            <option value="pending">Нові</option>
+                            <option value="preparing">Готується</option>
+                            <option value="ready">Готові</option>
+                            <option value="delivered">Доставлені</option>
+                            <option value="cancelled">Скасовані</option>
+                        </select>
                     </div>
                 </header>
 
                 <section className="bh-content">
-                    {filteredOrders.length === 0 ? (
+                    {loading ? (
+                        <div className="bh-empty">Завантаження...</div>
+                    ) : filteredOrders.length === 0 ? (
                         <div className="bh-empty">
-                            <Package size={64} strokeWidth={1} />
+                            <Package size={64} />
                             <p>Немає замовлень</p>
                         </div>
                     ) : (
@@ -140,16 +141,13 @@ export default function BusinessOrdersPage({ userData }) {
                                 return (
                                     <div key={order.id} className="order-card">
                                         <div className="order-header">
-                                            <div className="order-id">#{order.id}</div>
+                                            <div className="order-id">#{order.id.slice(0, 8)}</div>
                                             <div className="order-time">{order.createdAt}</div>
                                         </div>
 
                                         <div className="order-body">
-                                            <div className="customer-info">
-                                                <strong>{order.customerName}</strong>
-                                                <div>{order.customerPhone}</div>
-                                                <div className="address">{order.address}</div>
-                                            </div>
+                                            <strong>{order.customerName}</strong>
+                                            <div className="address">{order.address}</div>
 
                                             <div className="order-items">
                                                 {order.items.map((item, i) => (
@@ -161,12 +159,15 @@ export default function BusinessOrdersPage({ userData }) {
                                             </div>
 
                                             <div className="order-total">
-                                                <strong>Разом: {order.total} ₴</strong>
+                                                Разом: {order.total} ₴
                                             </div>
                                         </div>
 
                                         <div className="order-footer">
-                                            <div className="status-badge" style={{ background: s.color + "22", color: s.color }}>
+                                            <div
+                                                className="status-badge"
+                                                style={{ background: s.color + "22", color: s.color }}
+                                            >
                                                 <StatusIcon size={16} />
                                                 {s.label}
                                             </div>
@@ -177,16 +178,21 @@ export default function BusinessOrdersPage({ userData }) {
                                                         <button onClick={() => handleStatusChange(order.id, "preparing")}>
                                                             Прийняти
                                                         </button>
-                                                        <button className="danger" onClick={() => handleStatusChange(order.id, "cancelled")}>
+                                                        <button
+                                                            className="danger"
+                                                            onClick={() => handleStatusChange(order.id, "cancelled")}
+                                                        >
                                                             Скасувати
                                                         </button>
                                                     </>
                                                 )}
+
                                                 {order.status === "preparing" && (
                                                     <button onClick={() => handleStatusChange(order.id, "ready")}>
                                                         Готово
                                                     </button>
                                                 )}
+
                                                 {order.status === "ready" && (
                                                     <button onClick={() => handleStatusChange(order.id, "delivered")}>
                                                         Видано
@@ -200,7 +206,6 @@ export default function BusinessOrdersPage({ userData }) {
                                             >
                                                 Детальніше <ChevronRight size={16} />
                                             </button>
-
                                         </div>
                                     </div>
                                 );
@@ -209,6 +214,7 @@ export default function BusinessOrdersPage({ userData }) {
                     )}
                 </section>
             </main>
+
             {selectedOrder && (
                 <OrderDetailsComponent
                     order={selectedOrder}
@@ -216,7 +222,6 @@ export default function BusinessOrdersPage({ userData }) {
                     onClose={() => setSelectedOrder(null)}
                 />
             )}
-
         </div>
     );
 }

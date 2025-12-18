@@ -83,6 +83,7 @@ builder.Services.AddSingleton<IEventPublisher, TrackingEventPublisher>();
 
 //Consumers
 builder.Services.AddSingleton<IConsumer, OrderCreatedConsumer>();
+builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
