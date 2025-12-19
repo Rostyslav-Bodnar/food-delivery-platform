@@ -38,8 +38,8 @@ public class TrackingServiceRpcClient : IDisposable
 
                 switch (tcsObj)
                 {
-                    case TaskCompletionSource<UpdateLocationBusinessResponse> tcs3:
-                        var response3 = JsonSerializer.Deserialize<UpdateLocationBusinessResponse>(json);
+                    case TaskCompletionSource<UpdateBusinessLocationResponse> tcs3:
+                        var response3 = JsonSerializer.Deserialize<UpdateBusinessLocationResponse>(json);
                         if (response3 != null) tcs3.SetResult(response3);
                         break;
                 }
@@ -51,7 +51,7 @@ public class TrackingServiceRpcClient : IDisposable
         channel.BasicConsumeAsync(replyQueueName, autoAck: true, consumer: consumer).GetAwaiter().GetResult();
     }
 
-    public async Task<UpdateLocationBusinessResponse> UpdateBusinessLocationAsync(UpdateLocationBusinessRequest request)
+    public async Task<UpdateBusinessLocationResponse> UpdateBusinessLocationAsync(UpdateBusinessLocationRequest request)
     {
         var correlationId = Guid.NewGuid().ToString();
         var props = new BasicProperties
@@ -61,7 +61,7 @@ public class TrackingServiceRpcClient : IDisposable
         };
 
         var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
-        var tcs = new TaskCompletionSource<UpdateLocationBusinessResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var tcs = new TaskCompletionSource<UpdateBusinessLocationResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
         callbackMapper[correlationId] = tcs;
 
         await channel.BasicPublishAsync(

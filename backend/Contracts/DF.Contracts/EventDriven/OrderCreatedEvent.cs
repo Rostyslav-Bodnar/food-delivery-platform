@@ -1,4 +1,6 @@
-﻿namespace DF.Contracts.EventDriven;
+﻿using System;
+
+namespace DF.Contracts.EventDriven;
 
 // DTO контракт
 public record OrderCreatedEvent(

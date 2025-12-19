@@ -10,8 +10,6 @@
         <PackageReference Include="DF.Contracts" Version="1.0.1-preview" />
         <PackageReference Include="MongoDB.EntityFrameworkCore" Version="9.0.3" />
         <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
-        <PackageReference Include="DF.Contracts" Version="1.0.1-preview" />
-
     </ItemGroup>
 
     <ItemGroup>

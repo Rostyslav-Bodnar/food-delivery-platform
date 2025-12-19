@@ -1,4 +1,6 @@
-﻿namespace DF.Contracts.EventDriven;
+﻿using System;
+
+namespace DF.Contracts.EventDriven;
 
 public record AccountCreatedEvent(
     Guid AccountId,

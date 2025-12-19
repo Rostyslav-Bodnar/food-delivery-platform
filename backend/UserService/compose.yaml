@@ -6,23 +6,28 @@ services:
     build:
       context: .
       dockerfile: DF.UserService.API/Dockerfile
+    container_name: df.userservice.api
     ports:
       - "5000:5000"
     depends_on:
       - mssql
       - rabbitmq
+    networks:
+      - df-network
 
   mssql:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: mssql
     environment:
-      - ACCEPT_EULA=Y
-      - SA_PASSWORD=StrongPass123!
+      ACCEPT_EULA: Y
+      SA_PASSWORD: StrongPass123!
     ports:
       - "11433:1433"
     volumes:
       - mssql_data:/var/opt/mssql
-
+    networks:
+      - df-network
+  
   mssql-init:
     image: mcr.microsoft.com/mssql-tools
     depends_on:
@@ -39,11 +44,17 @@ services:
     image: rabbitmq:3-management
     container_name: rabbitmq
     ports:
-      - "5672:5672"       # RabbitMQ default port
-      - "15672:15672"     # Management UI
+      - "5672:5672"
+      - "15672:15672"
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - df-network
 
 volumes:
   mssql_data:
+
+networks:
+  df-network:
+    external: true

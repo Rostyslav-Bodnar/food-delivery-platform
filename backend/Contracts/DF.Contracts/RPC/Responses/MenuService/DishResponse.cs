@@ -1,4 +1,6 @@
-﻿using DF.Contracts.RPC.Requests.MenuService;
+﻿using System;
+using System.Collections.Generic;
+using DF.Contracts.RPC.Requests.MenuService;
 
 namespace DF.Contracts.RPC.Responses.MenuService;
 

@@ -2,18 +2,11 @@ using Microsoft.Extensions.Hosting;
 
 namespace DF.MenuService.Application.Messaging;
 
-public class ConsumerHostedService : IHostedService
+public class ConsumerHostedService(IEnumerable<IConsumer> consumers) : IHostedService
 {
-    private readonly IEnumerable<IConsumer> _consumers;
-
-    public ConsumerHostedService(IEnumerable<IConsumer> consumers)
-    {
-        _consumers = consumers;
-    }
-
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var consumer in _consumers)
+        foreach (var consumer in consumers)
         {
             consumer.Start();
         }

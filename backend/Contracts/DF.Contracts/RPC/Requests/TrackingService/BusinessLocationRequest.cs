@@ -1,4 +1,6 @@
-﻿namespace DF.Contracts.RPC.Requests.TrackingService;
+﻿using System;
+
+namespace DF.Contracts.RPC.Requests.TrackingService;
 
 public record UpdateBusinessLocationRequest(
     Guid  BusinessId,
