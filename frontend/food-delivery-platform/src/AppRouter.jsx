@@ -3,8 +3,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/HeaderComponent.jsx";
 import HomePage from "./pages/HomePage.jsx";
-import LoginForm from "./pages/LoginForm.jsx";
-import RegisterForm from "./pages/RegisterForm.jsx";
+import AuthorizationPage from "./pages/AuthorationPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import CreateAccountPage from "./pages/CreateAccountPage.jsx";
 import DishPage from "./pages/DishPage.jsx";
@@ -24,8 +23,7 @@ const AppRouter = () => {
                 <main>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/login" element={<LoginForm />} />
-                        <Route path="/register" element={<RegisterForm />} />
+                        <Route path="/auth" element={<AuthorizationPage />} />
                         <Route path="/dish/:id" element={<DishPage />} />
                         <Route path="/cart" element={<CartPage />} />
                         <Route path="/checkout" element={<CheckoutPage />} />

@@ -11,8 +11,7 @@ const UnauthenticatedHome = () => {
                     Craving something delicious? Order your favorite meals from top restaurants and have them delivered to your door in minutes!
                 </p>
                 <div className="cta-buttons">
-                    <Link className="cta-button" to="/login">Login</Link>
-                    <Link className="cta-button cta-button--register" to="/register">Register</Link>
+                    <Link className="cta-button" to="/auth">Get Started</Link>
                 </div>
             </div>
         </div>

@@ -38,7 +38,7 @@ const RestaurantDetailsPage = () => {
                     }))
                 );
             } catch (e) {
-                console.error("Помилка завантаження меню:", e);
+                console.error("Menu loading error:", e);
             } finally {
                 setLoading(false);
             }
@@ -132,7 +132,7 @@ const RestaurantDetailsPage = () => {
 
                         <div className="restaurant-location">
                             <MapPin size={18} />
-                            <span>Доставка з вул. {userAddress} — {userCity}</span>
+                            <span>Delivery from {userAddress} — {userCity}</span>
                         </div>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ const RestaurantDetailsPage = () => {
                 {searchQuery ? (
                     <div className="search-results">
                         {displayedMenu.length === 0 ? (
-                            <p className="no-results">Нічого не знайдено</p>
+                            <p className="no-results">Nothing found</p>
                         ) : (
                             displayedMenu.map(dish => (
                                 <DishCardComponent key={dish.id} dish={dish} isPopular={dish.popular} />
