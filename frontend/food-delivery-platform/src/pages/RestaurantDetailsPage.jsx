@@ -1,11 +1,12 @@
 ﻿import React, { useState, useRef, useEffect } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Search, X, Flame, MapPin } from 'lucide-react';
+import { ArrowLeft, Flame, MapPin } from 'lucide-react';
 import './styles/RestaurantDetailsPage.css';
 import DishCardComponent from "../components/customer-components/DishCardComponent.jsx";
 import {getDishesForCustomerByBusinessId} from "../api/Dish.jsx";
 import {CategoryMap} from "../constants/category.jsx";
+import StickyHeader from "../components/restaurant/StickyHeader.jsx";
 
 const RestaurantDetailsPage = () => {
     const { state } = useLocation();
@@ -137,41 +138,17 @@ const RestaurantDetailsPage = () => {
                 </div>
             </div>
 
-            {/* ХЕДЕР */}
-            <div className="sticky-header">
-                <div className="search-input-wrapper">
-                    <Search size={22} className="restaurant-search-icon" />
-                    <input
-                        type="text"
-                        placeholder={`Пошук в ${restaurant.name}...`}
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                    {searchQuery && (
-                        <X size={22} className="clear-search" onClick={() => setSearchQuery('')} />
-                    )}
-                    <div className="sort-bar">
-                        <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                            <option value="popular">Популярні</option>
-                            <option value="price-asc">Спочатку дешевші</option>
-                            <option value="price-desc">Спочатку дорожчі</option>
-                            <option value="rating">За рейтингом</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div className="categories-scroll">
-                    {categories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => scrollToCategory(cat)}
-                            className={`category-btn ${selectedCategory === cat ? 'active' : ''}`}
-                        >
-                            {cat === 'all' ? 'Усе меню' : cat}
-                        </button>
-                    ))}
-                </div>
-            </div>
+            <StickyHeader
+                restaurantName={restaurant.name}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onClearSearch={() => setSearchQuery("")}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+                categories={categories}
+                selectedCategory={selectedCategory}
+                onCategorySelect={scrollToCategory}
+            />
 
             {/* МЕНЮ */}
             <div className="menu-content">

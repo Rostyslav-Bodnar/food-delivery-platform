@@ -4,8 +4,8 @@ import { Store } from 'lucide-react';
 import './styles/RestaurantsPage.css';
 import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
 import { getAllBusinessAccounts } from "../api/Account.jsx";
-import RestaurantCard from "../components/restaurantsPage/RestaurantCard.jsx";
-import RestaurantsFilter from "../components/restaurantsPage/RestaurantsFilter.jsx";
+import RestaurantCard from "../components/restaurant/RestaurantCard.jsx";
+import RestaurantsFilter from "../components/restaurant/RestaurantsFilter.jsx";
 
 const RestaurantsPage = () => {
     const [restaurants, setRestaurants] = useState([]);
