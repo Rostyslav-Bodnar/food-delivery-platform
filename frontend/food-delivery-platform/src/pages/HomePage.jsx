@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { getProfile } from '../api/User.jsx';
 import './styles/HomePage.css';
 
-// Підкомпоненти
 import UnauthenticatedHome from '../components/UnauthenticatedHome';
 import CustomerHomePage from '../components/CustomerHomePage.jsx';
 import BusinessHomePage from "../components/BusinessHomePage.jsx";

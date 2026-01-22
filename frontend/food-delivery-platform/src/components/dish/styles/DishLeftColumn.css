@@ -1,0 +1,128 @@
+﻿.dish-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.dish-image-wrapper {
+    position: relative;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.dish-image {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+}
+
+.popular-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: #ff4500;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.reviews-section {
+    background: #333;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #444;
+}
+
+.reviews-title {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.reviews-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 8px;
+}
+
+.review-card {
+    background: #2a2a2a;
+    padding: 1rem;
+    border-radius: 12px;
+    border-left: 3px solid #ff4500;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.review-header strong {
+    font-size: 0.95rem;
+    color: #fff;
+}
+
+.review-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.review-text {
+    margin: 0.5rem 0;
+    font-size: 0.9rem;
+    color: #ccc;
+    line-height: 1.5;
+}
+
+.review-date {
+    color: #777;
+    font-size: 0.8rem;
+}
+
+.show-more-reviews {
+    background: none;
+    border: none;
+    color: #ff4500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: left;
+    margin-top: 0.5rem;
+    padding: 0;
+    font-weight: 500;
+}
+
+.show-more-reviews:hover {
+    text-decoration: underline;
+}
+
+/* Scrollbar */
+.reviews-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.reviews-list::-webkit-scrollbar-track {
+    background: #2a2a2a;
+    border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 3px;
+}
+
+.reviews-list::-webkit-scrollbar-thumb:hover {
+    background: #ff4500;
+}
