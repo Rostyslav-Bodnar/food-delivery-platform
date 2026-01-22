@@ -11,7 +11,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DF.Contracts" Version="1.0.0-preview5" />
+      <PackageReference Include="DF.Contracts" Version="1.0.0-preview9" />
     </ItemGroup>
 
 </Project>

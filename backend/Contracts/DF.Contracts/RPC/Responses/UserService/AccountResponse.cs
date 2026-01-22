@@ -1,4 +1,7 @@
-﻿namespace DF.Contracts.RPC.Responses.UserService;
+﻿using System;
+using System.Collections.Generic;
+
+namespace DF.Contracts.RPC.Responses.UserService;
 
 public record GetAccountResponse(Guid AccountId, Guid UserId, string AccountType);
 

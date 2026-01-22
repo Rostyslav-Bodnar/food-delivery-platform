@@ -7,13 +7,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DF.Contracts" Version="1.0.0-preview3" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.9" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+        <PackageReference Include="DF.Contracts" Version="1.0.1-preview" />
+        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.11" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.11">
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.9" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
         <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     </ItemGroup>

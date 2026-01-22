@@ -56,7 +56,7 @@ public class OrderRepository(AppDbContext dbContext) : IOrderRepository
 
     public async Task<IEnumerable<Order>> GetOrdersByCourierIdAsync(Guid courierId)
     {
-        var orders = await dbContext.Orders.Where(o => o.DeliveredBy == courierId).ToListAsync();
+        var orders = await dbContext.Orders.Where(o => o.DeliveredById == courierId).ToListAsync();
         return orders;
     }
 }

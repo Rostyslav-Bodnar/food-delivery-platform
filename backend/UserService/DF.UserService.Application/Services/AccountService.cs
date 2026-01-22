@@ -125,28 +125,4 @@ public class AccountService(
         return businessAccounts.ToList();
     }
 
-
-    
-    private string? ExtractPublicIdFromUrl(string imageUrl)
-    {
-        // Наприклад, якщо URL = https://res.cloudinary.com/demo/image/upload/v123456/accounts/abc123.jpg
-        // Ми беремо "accounts/abc123" як PublicId
-        try
-        {
-            var uri = new Uri(imageUrl);
-            var segments = uri.AbsolutePath.Split('/');
-            if (segments.Length >= 3)
-            {
-                // видаляємо розширення файлу
-                var filename = segments[^1];
-                var publicIdWithoutExtension = Path.GetFileNameWithoutExtension(filename);
-                return $"{segments[^2]}/{publicIdWithoutExtension}"; // "accounts/abc123"
-            }
-        }
-        catch { }
-
-        return null;
-    }
-
-
 }

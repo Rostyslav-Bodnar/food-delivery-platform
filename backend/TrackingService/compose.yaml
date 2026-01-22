@@ -1,0 +1,51 @@
+﻿version: '3.9'
+
+services:
+  df.trackingservice.api:
+    image: df.trackingservice.api
+    build:
+      context: .
+      dockerfile: DF.TrackingService.API/Dockerfile
+    container_name: df.trackingservice.api
+    ports:
+      - "5006:8100"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
+    depends_on:
+      - df.trackingservice.db
+      - df.trackingservice.mongo
+    networks:
+      - df-network
+
+  df.trackingservice.db:
+    image: postgis/postgis:16-3.4
+    container_name: df.trackingservice.db
+    environment:
+      POSTGRES_USER: TrackingService
+      POSTGRES_PASSWORD: TrackingService2025!
+      POSTGRES_DB: TrackingServiceDb
+    ports:
+      - "5437:5432"
+    volumes:
+      - tracking_service_data:/var/lib/postgresql/data
+    networks:
+      - df-network
+
+  df.trackingservice.mongo:
+    image: mongo:7.0
+    container_name: df.trackingservice.mongo
+    ports:
+      - "27018:27017"
+    volumes:
+      - tracking_service_mongo_data:/data/db
+    networks:
+      - df-network
+
+volumes:
+  tracking_service_data:
+  tracking_service_mongo_data:
+
+networks:
+  df-network:
+    external: true

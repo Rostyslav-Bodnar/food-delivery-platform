@@ -4,7 +4,6 @@ using DF.OrderService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using NetTopologySuite.Geometries;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
@@ -21,61 +20,7 @@ namespace DF.OrderService.Infrastructure.Migrations
                 .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "postgis");
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("DF.OrderService.Domain.Entities.BusinessLocation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BusinessId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("LocationId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LocationId");
-
-                    b.ToTable("BusinessLocations", (string)null);
-                });
-
-            modelBuilder.Entity("DF.OrderService.Domain.Entities.Location", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("FullAddress")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Point>("GeoPoint")
-                        .HasColumnType("geography (point)");
-
-                    b.Property<string>("House")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Locations", (string)null);
-                });
 
             modelBuilder.Entity("DF.OrderService.Domain.Entities.Order", b =>
                 {
@@ -86,13 +31,13 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("BusinessId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DeliverFromId")
+                    b.Property<Guid?>("DeliverFromId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DeliverToId")
+                    b.Property<Guid?>("DeliverToId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("DeliveredBy")
+                    b.Property<Guid?>("DeliveredById")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("OrderDate")
@@ -100,7 +45,8 @@ namespace DF.OrderService.Infrastructure.Migrations
 
                     b.Property<string>("OrderNumber")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("OrderStatus")
                         .HasColumnType("integer");
@@ -108,14 +54,13 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("OrderedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("Profit")
+                        .HasColumnType("numeric");
+
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("DeliverFromId");
-
-                    b.HasIndex("DeliverToId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -137,36 +82,6 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("OrderedDishes", (string)null);
-                });
-
-            modelBuilder.Entity("DF.OrderService.Domain.Entities.BusinessLocation", b =>
-                {
-                    b.HasOne("DF.OrderService.Domain.Entities.Location", "Location")
-                        .WithMany()
-                        .HasForeignKey("LocationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Location");
-                });
-
-            modelBuilder.Entity("DF.OrderService.Domain.Entities.Order", b =>
-                {
-                    b.HasOne("DF.OrderService.Domain.Entities.Location", "DeliverFrom")
-                        .WithMany()
-                        .HasForeignKey("DeliverFromId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("DF.OrderService.Domain.Entities.Location", "DeliverTo")
-                        .WithMany()
-                        .HasForeignKey("DeliverToId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("DeliverFrom");
-
-                    b.Navigation("DeliverTo");
                 });
 
             modelBuilder.Entity("DF.OrderService.Domain.Entities.OrderedDish", b =>

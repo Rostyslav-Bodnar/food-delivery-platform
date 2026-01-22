@@ -2,26 +2,21 @@
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
 
-        <!-- NuGet Package Metadata -->
         <PackageId>DF.Contracts</PackageId>
-        <Version>1.0.0-preview5</Version>
+        <Version>1.0.1-preview</Version>
         <Authors>Rostyslav</Authors>
         <PackageDescription>Shared contracts for DF microservices</PackageDescription>
+
         <RepositoryUrl>https://github.com/rostyslav/food-delivery-platform</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
 
-        <!-- Auto-generate package on build -->
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-
-        <!-- Symbols (optional) -->
-        <IncludeSymbols>true</IncludeSymbols>
-        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <PackageOutputPath>C:\Users\User\AppData\Roaming\LocalNuget</PackageOutputPath>
-
     </PropertyGroup>
+
 
     <ItemGroup>
       <Folder Include="RPC\" />

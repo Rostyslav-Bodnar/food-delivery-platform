@@ -1,5 +1,4 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
 using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Request;
@@ -103,7 +102,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
         var updated = await accountService.UpdateAccountAsync(request);
         return Ok(updated);
     }
-
+    
     [HttpPut("courier")]
     public async Task<ActionResult<AccountResponse>> UpdateCourier([FromForm] UpdateCourierAccountRequest request)
     {
@@ -112,12 +111,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
         var updated = await accountService.UpdateAccountAsync(request);
         return Ok(updated);
     }
-
-
-
-    /// <summary>
-    /// Delete account
-    /// </summary>
+    
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAccount(Guid id)
     {

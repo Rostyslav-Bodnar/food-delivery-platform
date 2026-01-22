@@ -8,11 +8,9 @@ public record CreateOrderRequest(
     DateTime OrderDate,
     decimal TotalPrice,
     Guid? DeliveredBy,
-    OrderStatus OrderStatus,
     CreateLocationRequest DeliverTo,
     CreateLocationRequest DeliverFrom,
-    List<CreateOrderDishRequest> Dishes,
-    string OrderNumber
+    List<CreateOrderDishRequest> Dishes
 );
 
     

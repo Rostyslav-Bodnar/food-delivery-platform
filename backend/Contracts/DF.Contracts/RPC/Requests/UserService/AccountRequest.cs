@@ -1,4 +1,6 @@
-﻿namespace DF.Contracts.RPC.Requests.UserService;
+﻿using System;
+
+namespace DF.Contracts.RPC.Requests.UserService;
 
 public record GetAccountRequest(Guid? UserId);
 

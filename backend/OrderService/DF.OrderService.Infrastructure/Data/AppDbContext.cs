@@ -7,60 +7,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderedDish> OrderedDishes { get; set; }
-    public DbSet<Location> Locations { get; set; }
-    public DbSet<BusinessLocation> BusinessLocations { get; set; }
-
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-        
-        // LOCATION
-        modelBuilder.Entity<Location>(entity =>
-        {
-            entity.ToTable("Locations");
-
-            entity.HasKey(l => l.Id);
-
-            entity.Property(l => l.FullAddress)
-                .HasMaxLength(300)
-                .IsRequired();
-
-            entity.Property(l => l.City)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            entity.Property(l => l.Street)
-                .HasMaxLength(100)
-                .IsRequired();
-
-            entity.Property(l => l.House)
-                .HasMaxLength(20)
-                .IsRequired();
-
-            entity.Property(l => l.GeoPoint)
-                .HasColumnType("geography (point)")
-                .IsRequired(false);
-
-        });
-
-        modelBuilder.Entity<BusinessLocation>(entity =>
-        {
-            entity.ToTable("BusinessLocations");
-
-            entity.HasKey(bl => bl.Id);
-
-            entity.Property(bl => bl.BusinessId)
-                .IsRequired();
-
-            entity.Property(bl => bl.LocationId)
-                .IsRequired();
-
-            entity.HasOne(bl => bl.Location)
-                .WithMany()
-                .HasForeignKey(bl => bl.LocationId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
 
         // ORDER
         modelBuilder.Entity<Order>(entity =>
@@ -68,6 +18,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             entity.ToTable("Orders");
 
             entity.HasKey(o => o.Id);
+
+            entity.Property(o => o.BusinessId)
+                .IsRequired();
+
+            entity.Property(o => o.OrderedBy)
+                .IsRequired();
 
             entity.Property(o => o.OrderDate)
                 .IsRequired();
@@ -80,15 +36,15 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasConversion<int>()
                 .IsRequired();
 
-            entity.HasOne(o => o.DeliverTo)
-                .WithMany()
-                .HasForeignKey(o => o.DeliverToId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(o => o.OrderNumber)
+                .HasMaxLength(50)
+                .IsRequired();
 
-            entity.HasOne(o => o.DeliverFrom)
-                .WithMany()
-                .HasForeignKey(o => o.DeliverFromId)
-                .OnDelete(DeleteBehavior.Restrict);
+            entity.Property(o => o.DeliverToId);
+
+            entity.Property(o => o.DeliverFromId);
+
+            entity.Property(o => o.DeliveredById);
         });
 
         // ORDERED DISH

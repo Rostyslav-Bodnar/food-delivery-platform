@@ -1,4 +1,6 @@
 using DF.OrderService.Application.Messaging.Clients;
+using DF.OrderService.Application.Messaging.Consumers;
+using DF.OrderService.Application.Messaging.Publishers;
 using DF.OrderService.Application.Repositories;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services;
@@ -33,8 +35,7 @@ builder.Services.AddCors(options =>
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
-        o => o.UseNetTopologySuite()
+        builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
 // RabbitMQ connection
@@ -54,14 +55,25 @@ builder.Services.AddSingleton<IConnection>(sp =>
 // RPC clients
 builder.Services.AddSingleton<UserServiceRpcClient>();
 builder.Services.AddSingleton<MenuServiceRpcClient>();
+builder.Services.AddSingleton<TrackingServiceRpcClient>();
+
+//EventPublishers
+builder.Services.AddSingleton<IEventPublisher, OrderEventPublisher>();
+
+//Consumers
+builder.Services.AddSingleton<IConsumer, LocationsCreatedConsumer>();
+
+builder.Services.AddHostedService<ConsumerHostedService>();
+
 
 //Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
-builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 
 //Services
 builder.Services.AddScoped<IOrderService, OrderService>();
+
+builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
 
 var app = builder.Build();
@@ -78,6 +90,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
 

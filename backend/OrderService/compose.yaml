@@ -1,4 +1,6 @@
-﻿services:
+﻿version: '3.9'
+
+services:
   df.orderservice.api:
     image: df.orderservice.api
     build:
@@ -6,17 +8,19 @@
       dockerfile: DF.OrderService.API/Dockerfile
     container_name: df.orderservice.api
     ports:
-      - "5005:8090"  # 5004 — порт на твоїй машині, 8080 — у контейнері
+      - "5005:8090"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=df.orderservice.db;Port=5432;Database=OrderServiceDb;Username=OrderService;Password=OrderService2025!
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Host=df.orderservice.db;Port=5432;Database=OrderServiceDb;Username=OrderService;Password=OrderService2025!
+      RabbitMQ__HostName: rabbitmq
     depends_on:
       - df.orderservice.db
+    networks:
+      - df-network
 
   df.orderservice.db:
-    image: postgis/postgis:16-3.4
+    image: postgres:16
     container_name: df.orderservice.db
-    restart: always
     environment:
       POSTGRES_USER: OrderService
       POSTGRES_PASSWORD: OrderService2025!
@@ -25,6 +29,12 @@
       - "5435:5432"
     volumes:
       - order_service_data:/var/lib/postgresql/data
+    networks:
+      - df-network
 
 volumes:
   order_service_data:
+
+networks:
+  df-network:
+    external: true

@@ -32,12 +32,36 @@ public class OrderController(IOrderService orderService) : ControllerBase
     {
         return Ok(await orderService.ChangeOrderStatus(orderId, status));
     }
+
+    [HttpGet]
+    [Route("get-order-details/{orderId}")]
+    public async Task<IActionResult> GetOrderDetails(Guid orderId)
+    {
+        var result = await orderService.GetOrderAsync(orderId);
+        return Ok(result);
+    }
     
     [HttpGet]
     [Route("get-customer-orders")]
     public async Task<IActionResult> GetCustomerOrders(Guid customerId)
     {
         var result = await orderService.GetAllByCustomerIdAsync(customerId);
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [Route("get-customer-history")]
+    public async Task<IActionResult> GetCustomerOrderHistory(Guid customerId)
+    {
+        var result = await orderService.GetCustomerOrderHistoryAsync(customerId);
+        return Ok(result);
+    }
+    
+    [HttpGet]
+    [Route("get-courier-history")]
+    public async Task<IActionResult> GetCourierOrderHistory(Guid customerId)
+    {
+        var result = await orderService.GetCourierOrderHistoryAsync(customerId);
         return Ok(result);
     }
     
@@ -54,6 +78,14 @@ public class OrderController(IOrderService orderService) : ControllerBase
     public async Task<IActionResult> CreateOrders([FromBody] List<CreateOrderRequest> request)
     {
         var result = await orderService.CreateOrdersAsync(request);
+        return Ok(result);
+    }
+
+    [HttpPost]
+    [Route("courier/deliver")]
+    public async Task<IActionResult> DeliverOrder(Guid orderId, Guid courierId)
+    {
+        var result = await orderService.DeliverOrderAsync(orderId, courierId);
         return Ok(result);
     }
 }
