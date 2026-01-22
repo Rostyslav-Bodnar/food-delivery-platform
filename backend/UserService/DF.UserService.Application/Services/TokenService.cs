@@ -32,11 +32,11 @@ public class TokenService(IConfiguration config, UserManager<User> userManager, 
 
         var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Role, user.UserRole.ToString()),
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
-            new Claim("email", user.Email ?? "")
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new(ClaimTypes.Role, user.UserRole.ToString()),
+            new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new(JwtRegisteredClaimNames.UniqueName, user.UserName ?? ""),
+            new("email", user.Email ?? "")
             // add more claims if needed (roles etc.)
         };
 
