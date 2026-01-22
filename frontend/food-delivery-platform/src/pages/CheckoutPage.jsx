@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 
 import "./styles/CheckoutPage.css";
-import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
+import CustomerSidebar from "../components/sidebars/CustomerSidebar.jsx";
 import { createOrders } from "../api/Order.jsx";
 
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';

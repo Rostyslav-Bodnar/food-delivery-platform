@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart, Trash2, Plus, Minus, ArrowLeft } from 'lucide-react';
 
 import "./styles/CartPage.css";
-import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
+import CustomerSidebar from "../components/sidebars/CustomerSidebar.jsx";
 import { getCart, saveCart } from "../utils/CartStorage.jsx";
 
 const CartPage = () => {

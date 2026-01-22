@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store } from 'lucide-react';
 import './styles/RestaurantsPage.css';
-import CustomerSidebar from "../components/customer-components/CustomerSidebar.jsx";
+import CustomerSidebar from "../components/sidebars/CustomerSidebar.jsx";
 import { getAllBusinessAccounts } from "../api/Account.jsx";
 import RestaurantCard from "../components/restaurant/RestaurantCard.jsx";
 import RestaurantsFilter from "../components/restaurant/RestaurantsFilter.jsx";

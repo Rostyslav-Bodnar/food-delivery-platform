@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Package, MapPin, Phone, Clock, DollarSign, Power
 } from 'lucide-react';
-import CourierSidebar from './components/CourierSidebar.jsx';
+import CourierSidebar from '../sidebars/CourierSidebar.jsx';
 import NewOrderSection from './components/NewOrdersSection.jsx';
 import ActiveOrderSection from './components/ActiveOrderSection.jsx';
 import HistorySection from './components/HistorySection.jsx';

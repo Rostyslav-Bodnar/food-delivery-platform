@@ -7,7 +7,7 @@ import {
     ChevronRight
 } from "lucide-react";
 import "./styles/BusinessOrdersPage.css";
-import BusinessSidebar from "../components/business/BusinessSidebar.jsx";
+import BusinessSidebar from "../components/sidebars/BusinessSidebar.jsx";
 import OrderDetailsComponent from "../components/OrderDetailsComponent.jsx";
 import {
     getOrdersByBusiness,

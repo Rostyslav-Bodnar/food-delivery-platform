@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import './styles/CustomerHomePage.css';
 import { getAllDishesForCustomer} from "../api/Dish.jsx";
-import CustomerSidebar from './customer-components/CustomerSidebar';
+import CustomerSidebar from './sidebars/CustomerSidebar';
 import DishCardComponent from './customer-components/DishCardComponent';
 import {CategoryList, CategoryMap} from "../constants/category.jsx";
 

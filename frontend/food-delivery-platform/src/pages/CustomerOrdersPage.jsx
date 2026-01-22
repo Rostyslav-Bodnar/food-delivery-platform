@@ -1,7 +1,7 @@
 ﻿import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./styles/CustomerOrdersPage.css";
-import CustomerSidebar from "../components/customer-components/CustomerSidebar";
+import CustomerSidebar from "../components/sidebars/CustomerSidebar";
 import OrderDetailsComponent from "../components/OrderDetailsComponent.jsx";
 import { getCustomerOrders } from "../api/Order.jsx";
 

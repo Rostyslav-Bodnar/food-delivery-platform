@@ -2,7 +2,7 @@
 import { Plus, Search, Trash2, Edit3, Filter, Grid, BarChart2, Users } from "lucide-react";
 import "./styles/BusinessHomePage.css";
 import DishComponent from "./DishComponent";
-import BusinessSidebar from "./business/BusinessSidebar.jsx";    
+import BusinessSidebar from "./sidebars/BusinessSidebar.jsx";    
 
 // 🟢 Імпорт API
 import {
