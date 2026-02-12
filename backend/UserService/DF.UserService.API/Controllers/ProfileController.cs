@@ -1,5 +1,5 @@
 ﻿using System.Security.Claims;
-using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

@@ -22,19 +22,17 @@ const CreateAccountPage = () => {
                 const existingTypes = accounts.map(acc => acc.accountType);
                 setExistingAccounts(existingTypes);
 
-                // Знаходимо перший доступний тип акаунта
                 const availableType = allAccountTypes.find(
                     type => !existingTypes.includes(type)
                 );
                 setAccountType(availableType || null);
 
-                await reloadUser();
             } catch (err) {
                 console.error("Failed to fetch accounts:", err);
             }
         };
         fetchAccounts();
-    }, [user, reloadUser]);
+    }, [user]);
 
     const renderForm = () => {
         switch (accountType) {
@@ -60,39 +58,46 @@ const CreateAccountPage = () => {
     return (
         <div className="create-page-wrapper">
             <div className="create-container">
-                <h2>Create Your Account</h2>
-                {availableAccountTypes.length > 0 ? (
-                    <>
-                        <div className="tabs">
-                            {availableAccountTypes.map(type => (
-                                <button
-                                    key={type}
-                                    className={`tab ${accountType === type ? "active" : ""}`}
-                                    onClick={() => setAccountType(type)}
-                                >
-                                    {type === "Customer" && "👤 Customer"}
-                                    {type === "Business" && "🏪 Business"}
-                                    {type === "Courier" && "🚚 Courier"}
-                                </button>
-                            ))}
+                <aside className="create-sidebar">
+                    <div className="create-brand">
+                        <div className="create-logo">FE</div>
+                        <div>
+                            <div className="create-title">Create account</div>
+                            <div className="create-sub">Select account type and fill the form</div>
                         </div>
+                    </div>
 
-                        <div className="form-wrapper fade-in">
-                            {renderForm()}
-                        </div>
-                    </>
-                ) : (
-                    <p className="no-accounts-text">
-                        You have already created all account types 🎉
-                    </p>
-                )}
+                    <div className="tabs" role="tablist" aria-label="Account types">
+                        {availableAccountTypes.map(type => (
+                            <button
+                                key={type}
+                                role="tab"
+                                aria-selected={accountType === type}
+                                className={`tab ${accountType === type ? "active" : ""}`}
+                                onClick={() => setAccountType(type)}
+                            >
+                                {type === "Customer" && "👤 Customer"}
+                                {type === "Business" && "🏪 Business"}
+                                {type === "Courier" && "🚚 Courier"}
+                            </button>
+                        ))}
+                    </div>
 
-                <p className="login-text">
-                    Already have an account? <Link to="/login">Login</Link>
-                </p>
+                    <div className="create-footer">
+                        <div>Need help? Contact support.</div>
+                    </div>
+                </aside>
+
+                <section className="form-area">
+                    <h2>{accountType ? `${accountType} — registration` : "Select account type"}</h2>
+                    <div className="form-wrapper fade-in">
+                        {renderForm()}
+                    </div>
+                </section>
             </div>
         </div>
     );
+
 };
 
 export default CreateAccountPage;

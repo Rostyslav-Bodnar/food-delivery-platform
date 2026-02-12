@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
-using System.Text.Json;
-using DF.UserService.Application.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,7 +16,7 @@ public class AccountController(IAccountService accountService) : ControllerBase
     /// Get account by userId
     /// </summary>
     [HttpGet("{userId:guid}")]
-    public async Task<ActionResult<AccountDTO>> GetAccount(Guid userId)
+    public async Task<ActionResult<AccountResponse>> GetAccount(Guid userId)
     {
         var account = await accountService.GetAccountByUserAsync(userId);
 
@@ -30,76 +30,88 @@ public class AccountController(IAccountService accountService) : ControllerBase
     /// Get accounts by userId
     /// </summary>
     [HttpGet("all/{userId:guid}")]
-    public async Task<ActionResult<IEnumerable<AccountDTO>>> GetAccounts(Guid userId)
+    public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAccounts(Guid userId)
     {
         var accounts = await accountService.GetAccountsByUserAsync(userId);
 
         return Ok(accounts);
     }
 
-    /// <summary>
-    /// Create account
-    /// </summary>
-    [HttpPost]
-    public async Task<ActionResult<AccountDTO>> CreateAccount([FromBody] JsonElement json)
+    [HttpGet("all/business")]
+    public async Task<IActionResult> GetAllBusinessAccounts()
     {
-        // Отримуємо тип акаунту
-        if (!json.TryGetProperty("accountType", out var accountTypeProp))
-            return BadRequest("Account type is required.");
+        var result = await accountService.GetBusinessAccountsAsync();
+        
+        if(result == null)
+            return NotFound($"Business accounts for user {User.Identity.Name} not found.");
+        
+        return Ok(result);
+    }
 
-        var accountType = accountTypeProp.GetString();
-        if (string.IsNullOrWhiteSpace(accountType))
-            return BadRequest("Invalid account type.");
+    [HttpPost("courier")]
+    public async Task<ActionResult<AccountResponse>> CreateCourierAccount([FromForm] CreateCourierAccountRequest request)
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+        if (userIdClaim == null)
+            return Unauthorized("User ID not found in token");
+        
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
+        return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
+    }
 
-        // Отримуємо userId з токена
+    [HttpPost("customer")]
+    public async Task<ActionResult<AccountResponse>> CreateCustomerAccount([FromForm] CreateCustomerAccountRequest request)
+    {
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
         if (userIdClaim == null)
             return Unauthorized("User ID not found in token");
 
-        var userId = userIdClaim.Value;
 
-        var account = DeserializeAccount(json, accountType, userId);
-
-        if (account == null)
-            return BadRequest($"Unknown account type: {accountType}");
-
-        // Створюємо акаунт
-        var created = await accountService.CreateAccountAsync(account);
-
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
-    
-    /// <summary>
-    /// Update account
-    /// </summary>
-    [HttpPut]
-    public async Task<ActionResult<AccountDTO>> UpdateAccount([FromBody] JsonElement json)
+
+    [HttpPost("business")]
+    public async Task<ActionResult<AccountResponse>> CreateBusinessAccount([FromForm] CreateBusinessAccountRequest request)
     {
-        if (!json.TryGetProperty("accountType", out var accountTypeProp))
-            return BadRequest("Account type is required.");
-
-        var accountType = accountTypeProp.GetString();
-        if (string.IsNullOrWhiteSpace(accountType))
-            return BadRequest("Invalid account type.");
-
-        var account = DeserializeAccount(json, accountType, userId: null);
-        if (account == null)
-            return BadRequest($"Unknown account type: {accountType}");
-        
         var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized("Invalid token or user id");
+        if (userIdClaim == null)
+            return Unauthorized("User ID not found in token");
 
-        account = account with { UserId = userId.ToString() };
 
-        var updated = await accountService.UpdateAccountAsync(account);
+        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
+        return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
+    }
+
+
+    
+    [HttpPut("customer")]
+    public async Task<ActionResult<AccountResponse>> UpdateCustomer([FromForm] UpdateCustomerAccountRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
         return Ok(updated);
     }
 
-
-    /// <summary>
-    /// Delete account
-    /// </summary>
+    [HttpPut("business")]
+    public async Task<ActionResult<AccountResponse>> UpdateBusiness([FromForm] UpdateBusinessAccountRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
+        return Ok(updated);
+    }
+    
+    [HttpPut("courier")]
+    public async Task<ActionResult<AccountResponse>> UpdateCourier([FromForm] UpdateCourierAccountRequest request)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        request = request with { UserId = userId };
+        var updated = await accountService.UpdateAccountAsync(request);
+        return Ok(updated);
+    }
+    
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> DeleteAccount(Guid id)
     {
@@ -109,19 +121,6 @@ public class AccountController(IAccountService accountService) : ControllerBase
             return NotFound($"Account with id {id} not found.");
 
         return NoContent();
-    }
-    
-    private static AccountDTO? DeserializeAccount(JsonElement json, string accountType, string userId)
-    {
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-
-        return accountType switch
-        {
-            "Customer" => JsonSerializer.Deserialize<CustomerAccountDTO>(json, options) with { UserId = userId },
-            "Business" => JsonSerializer.Deserialize<BusinessAccountDTO>(json, options) with { UserId = userId },
-            "Courier"  => JsonSerializer.Deserialize<CourierAccountDTO>(json, options) with { UserId = userId },
-            _ => null
-        };
     }
 
 }

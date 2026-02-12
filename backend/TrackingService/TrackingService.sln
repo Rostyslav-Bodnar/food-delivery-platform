@@ -1,0 +1,45 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.TrackingService.API", "DF.TrackingService.API\DF.TrackingService.API.csproj", "{9553AD2E-7E20-49D6-8AF7-4EEE68834320}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EF12D91D-D48E-4ACD-945F-02332830A771}"
+	ProjectSection(SolutionItems) = preProject
+		compose.yaml = compose.yaml
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.TrackingService.Application", "DF.TrackingService.Application\DF.TrackingService.Application.csproj", "{8D233D65-DD0A-49FE-BD4D-E5A102DBD55F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.TrackingService.Domain", "DF.TrackingService.Domain\DF.TrackingService.Domain.csproj", "{B076FEBF-1CFE-4509-82D4-5122B56B19EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.TrackingService.Infrastructure", "DF.TrackingService.Infrastructure\DF.TrackingService.Infrastructure.csproj", "{5A4E81DB-17A4-42A4-920F-636836F03707}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.TrackingService.Contracts", "DF.TrackingService.Contracts\DF.TrackingService.Contracts.csproj", "{541009A3-A5A3-4336-AA6E-170EE79323ED}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9553AD2E-7E20-49D6-8AF7-4EEE68834320}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9553AD2E-7E20-49D6-8AF7-4EEE68834320}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9553AD2E-7E20-49D6-8AF7-4EEE68834320}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9553AD2E-7E20-49D6-8AF7-4EEE68834320}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D233D65-DD0A-49FE-BD4D-E5A102DBD55F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D233D65-DD0A-49FE-BD4D-E5A102DBD55F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D233D65-DD0A-49FE-BD4D-E5A102DBD55F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D233D65-DD0A-49FE-BD4D-E5A102DBD55F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B076FEBF-1CFE-4509-82D4-5122B56B19EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B076FEBF-1CFE-4509-82D4-5122B56B19EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B076FEBF-1CFE-4509-82D4-5122B56B19EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B076FEBF-1CFE-4509-82D4-5122B56B19EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A4E81DB-17A4-42A4-920F-636836F03707}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A4E81DB-17A4-42A4-920F-636836F03707}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A4E81DB-17A4-42A4-920F-636836F03707}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A4E81DB-17A4-42A4-920F-636836F03707}.Release|Any CPU.Build.0 = Release|Any CPU
+		{541009A3-A5A3-4336-AA6E-170EE79323ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{541009A3-A5A3-4336-AA6E-170EE79323ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{541009A3-A5A3-4336-AA6E-170EE79323ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{541009A3-A5A3-4336-AA6E-170EE79323ED}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

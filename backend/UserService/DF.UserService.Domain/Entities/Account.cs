@@ -9,6 +9,7 @@ public abstract class Account
     public required AccountType AccountType { get; set; }
 
     public string? ImageUrl { get; set; }
+    public string? ImagePublicId { get; set; } 
     
     //TODO: Add score field from Quality Assessment DB 
 }

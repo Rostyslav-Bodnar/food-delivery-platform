@@ -1,3 +1,3 @@
 ﻿namespace DF.UserService.Contracts.Models.DTO;
 
-public record ProfileDTO(UserDto User, AccountDTO CurrentAccount, IEnumerable<AccountDTO> Accounts);
+public record ProfileDTO(UserDto User, AccountResponse CurrentAccount, IEnumerable<AccountResponse> Accounts);

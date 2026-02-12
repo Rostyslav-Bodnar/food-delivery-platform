@@ -1,65 +1,130 @@
-﻿import React, { useState } from "react";
+﻿import React, { useEffect, useRef, useState } from "react";
 import { createAccount } from "../../api/Account.jsx";
 import "../styles/FormBase.css";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 
-const CustomerForm = () => {
+export default function CustomerForm() {
     const navigate = useNavigate();
-    const { reloadUser } = useUser(); // Access reloadUser from UserContext
+    const { reloadUser } = useUser();
 
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",
         phone: "",
         address: "",
-        photo: null
+        photoFile: null,
+        photoPreview: ""
     });
 
-    const handleChange = (e) => {
-        const { name, value, files } = e.target;
-        setFormData({
-            ...formData,
-            [name]: files ? files[0] : value,
-        });
+    const dropRef = useRef(null);
+    const prevUrlRef = useRef(null);
+
+    useEffect(() => {
+        return () => {
+            if (prevUrlRef.current) {
+                URL.revokeObjectURL(prevUrlRef.current);
+                prevUrlRef.current = null;
+            }
+        };
+    }, []);
+
+    const changeField = (e) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
+
+    const handleFileSelect = (file) => {
+        if (!file) return;
+        if (prevUrlRef.current) {
+            URL.revokeObjectURL(prevUrlRef.current);
+            prevUrlRef.current = null;
+        }
+        const url = URL.createObjectURL(file);
+        prevUrlRef.current = url;
+        setFormData(prev => ({ ...prev, photoFile: file, photoPreview: url }));
+    };
+
+    const onDrop = (e) => {
+        e.preventDefault();
+        const f = e.dataTransfer?.files?.[0];
+        if (f && f.type.startsWith("image/")) handleFileSelect(f);
+        dropRef.current?.classList?.remove("dragover");
+    };
+    const onDragOver = (e) => { e.preventDefault(); dropRef.current?.classList?.add("dragover"); };
+    const onDragLeave = () => { dropRef.current?.classList?.remove("dragover"); };
+
+    const onFileChange = (e) => {
+        const f = e.target.files?.[0];
+        if (f && f.type.startsWith("image/")) handleFileSelect(f);
+    };
+
+    const removePhoto = (e) => {
+        e?.preventDefault();
+        if (prevUrlRef.current) {
+            URL.revokeObjectURL(prevUrlRef.current);
+            prevUrlRef.current = null;
+        }
+        setFormData(prev => ({ ...prev, photoFile: null, photoPreview: "" }));
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         const account = {
-            accountType: "Customer",
             name: formData.firstName,
             surname: formData.lastName,
             phoneNumber: formData.phone,
             address: formData.address,
-            imageUrl: formData.photo ? URL.createObjectURL(formData.photo) : null
+            imageFile: formData.photoFile,
+            accountType: 0
         };
 
         try {
-            await createAccount(account);
-            await reloadUser(); // Refresh user data to include new account
-            alert("Customer account created successfully!");
+            await createAccount("customer", account);
+            await reloadUser();
             navigate("/profile");
         } catch (err) {
             console.error(err);
-            alert("Failed to create account");
+            alert("Failed to create customer account");
         }
     };
 
     return (
         <form className="account-form" onSubmit={handleSubmit}>
-            <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={handleChange} required />
-            <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={handleChange} required />
-            <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={handleChange} required />
-            <input type="text" name="address" placeholder="Address" value={formData.address} onChange={handleChange} required />
-            <div className="file-input-wrapper">
-                <label className="file-label">Upload Profile Photo</label>
-                <input type="file" name="photo" accept="image/*" onChange={handleChange} className="file-input" />
+            <input type="text" name="firstName" placeholder="First Name" value={formData.firstName} onChange={changeField} required />
+            <input type="text" name="lastName" placeholder="Last Name" value={formData.lastName} onChange={changeField} required />
+            <input type="tel" name="phone" placeholder="Phone Number" value={formData.phone} onChange={changeField} required />
+            <input type="text" name="address" placeholder="Address" value={formData.address} onChange={changeField} required />
+
+            <div
+                ref={dropRef}
+                className={`file-input-wrapper file-label ${formData.photoPreview ? "has-preview" : ""}`}
+                onDrop={onDrop}
+                onDragOver={onDragOver}
+                onDragLeave={onDragLeave}
+                onClick={() => dropRef.current?.querySelector('input[type="file"]')?.click()}
+                role="button"
+                aria-label="Upload profile photo"
+            >
+                {formData.photoPreview ? (
+                    <>
+                        <img src={formData.photoPreview} alt="preview" className="drop-preview" />
+                        <div style={{ position: "absolute", right: 12, top: 12 }}>
+                            <button type="button" className="remove-address-btn" onClick={removePhoto}>Remove</button>
+                        </div>
+                    </>
+                ) : (
+                    <div style={{ textAlign: "center" }}>
+                        <div style={{ fontWeight: 700, color: "var(--muted-2)" }}>Drag photo here or click to select</div>
+                        <div style={{ fontSize: 13, color: "var(--muted-2)" }}>PNG / JPG, up to 5MB</div>
+                    </div>
+                )}
+
+                <input type="file" name="photo" accept="image/*" className="file-input" onChange={onFileChange} />
             </div>
-            <button type="submit">Create Account</button>
+
+            <button type="submit">Create Customer Account</button>
         </form>
     );
-};
-
-export default CustomerForm;
+}

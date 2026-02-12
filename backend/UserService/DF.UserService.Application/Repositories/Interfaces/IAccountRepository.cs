@@ -6,4 +6,5 @@ public interface IAccountRepository : IRepository<Account>
 {
     Task<Account?> GetAccountByUserAsync(Guid userId);
     Task<IEnumerable<Account?>> GetAccountsByUserAsync(Guid userId);
+    Task<Account?> GetCurrentAccountByUserId(Guid userId);
 }

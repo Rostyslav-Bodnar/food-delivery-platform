@@ -1,0 +1,251 @@
+﻿.od-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at top left, rgba(124, 92, 255, 0.18), rgba(0, 212, 255, 0.08), rgba(0, 0, 0, 0.85));
+    backdrop-filter: blur(16px) saturate(130%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.od-modal {
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: linear-gradient(180deg, var(--bg-900), var(--bg-800));
+    color: var(--text);
+    border-radius: 24px;
+    padding: 28px;
+    box-shadow: var(--card-shadow);
+    animation: modalIn 0.35s cubic-bezier(.2,.8,.2,1);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+}
+/* Щоб скрол виглядав сучасно */
+.od-modal::-webkit-scrollbar {
+    width: 6px;
+}
+.od-modal::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 10px;
+}
+.od-modal::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--accent-2), var(--accent-3));
+    border-radius: 10px;
+    box-shadow: 0 0 6px rgba(124,92,255,0.3);
+}
+.od-modal::-webkit-scrollbar-thumb:hover {
+    box-shadow: 0 0 10px rgba(124,92,255,0.5);
+}
+@keyframes modalIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+/* HEADER */
+.od-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+.od-header > div {
+    display: flex;
+    flex-direction: column;
+}
+.od-header h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.od-time {
+    font-size: 14px;
+    color: var(--muted-2);
+    margin-top: 4px;
+}
+/* CLOSE BUTTON */
+.od-close {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    color: var(--muted-2);
+    cursor: pointer;
+    transition: all var(--transition);
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.od-close:hover {
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.04));
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124,92,255,0.1);
+}
+/* STATUS */
+.od-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border-radius: 999px;
+    font-size: 15px;
+    margin: 20px 0;
+    font-weight: 600;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    transition: all var(--transition);
+    border: 1px solid rgba(255,255,255,0.03);
+}
+.od-status:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 30px rgba(124,92,255,0.15);
+}
+/* SECTIONS */
+.od-section {
+    margin-top: 0;
+}
+.od-section h4 {
+    margin-bottom: 12px;
+    font-size: 13px;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+}
+/* GRID & COL */
+.od-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+.od-col {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+/* CARD */
+.od-card {
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015));
+    border: 1px solid var(--glass-border);
+    transition: all var(--transition);
+    box-shadow: var(--soft-shadow);
+}
+.od-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 36px rgba(124,92,255,0.12);
+}
+.od-card p {
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 15px;
+}
+/* COURIER */
+.od-courier {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+}
+.od-courier-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 20px;
+    color: #041021;
+    box-shadow: 0 6px 18px rgba(124,92,255,0.25);
+    transition: transform var(--transition);
+}
+.od-courier:hover .od-courier-avatar {
+    transform: rotate(5deg) scale(1.05);
+}
+/* ITEMS */
+.od-items {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.od-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01));
+    border: 1px solid var(--glass-border);
+    transition: all var(--transition);
+    font-size: 15px;
+}
+.od-item:hover {
+    box-shadow: 0 8px 24px rgba(124,92,255,0.08);
+    transform: translateX(4px);
+}
+/* FOOTER */
+.od-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--glass-border);
+    font-size: 16px;
+    font-weight: 600;
+}
+.od-footer strong {
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.muted {
+    color: var(--muted-2);
+    font-size: 14px;
+}
+@media (max-width: 768px) {
+    .od-modal.wide {
+        max-width: 90%;
+        padding: 20px;
+    }
+    .od-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .od-header h2 {
+        font-size: 20px;
+    }
+    .od-status {
+        font-size: 14px;
+        padding: 8px 16px;
+    }
+    .od-card {
+        padding: 14px;
+    }
+    .od-item {
+        padding: 12px 14px;
+    }
+}

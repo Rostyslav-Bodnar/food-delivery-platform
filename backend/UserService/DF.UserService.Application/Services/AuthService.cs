@@ -1,9 +1,7 @@
-﻿using DF.UserService.Application.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
+﻿using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
-using DF.UserService.Infrastructure.Messaging;
 using Microsoft.AspNetCore.Identity;
 
 namespace DF.UserService.Application.Services;
@@ -11,7 +9,6 @@ namespace DF.UserService.Application.Services;
 public class AuthService(
     UserManager<User> userManager, 
     ITokenService tokenService, 
-    IMessageBroker broker,
     IAccountService accountService)
     : IAuthService
 {
@@ -30,34 +27,22 @@ public class AuthService(
         if (!result.Succeeded)
             throw new Exception(string.Join(", ", result.Errors.Select(e => e.Description)));
 
-        var customerDto = new CustomerAccountDTO(
-            Id: null,
-            UserId: user.Id.ToString(),
-            AccountType: "Customer",
-            ImageUrl: null,
+        var customerDto = new CreateCustomerAccountRequest(
+            AccountType: 0,
+            ImageFile: null,
             PhoneNumber: null,
             Name: user.Name,
             Surname: user.Surname,
             Address: null
         );
 
-        var accountDto = await accountService.CreateAccountAsync(customerDto);
+        var accountDto = await accountService.CreateAccountAsync(customerDto, user.Id);
 
         user.AccountId = Guid.Parse(accountDto.Id);
 
         var updateResult = await userManager.UpdateAsync(user);
         if (!updateResult.Succeeded)
             throw new Exception(string.Join(", ", updateResult.Errors.Select(e => e.Description)));
-
-        broker.Publish("user.registered", new
-        {
-            user.Id,
-            user.Email,
-            user.Name,
-            user.Surname,
-            user.CreatedAt,
-            accountDto.AccountType
-        });
 
         return await tokenService.GenerateTokensAsync(user);
     }
