@@ -1,6 +1,5 @@
 ﻿import React, { useState, useEffect } from "react";
 import "./styles/CreateAccountPage.css";
-import { Link } from "react-router-dom";
 import CustomerForm from "../components/forms/CustomerForm";
 import BusinessForm from "../components/forms/BusinessForm";
 import CourierForm from "../components/forms/CourierForm";

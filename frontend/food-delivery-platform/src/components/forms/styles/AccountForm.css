@@ -1,5 +1,4 @@
-﻿/* --- Палітра (якщо ще не визначена) --- */
-:root{
+﻿:root{
     --bg-900: #0b0f14;
     --bg-800: #0f1519;
     --text: #e6eef6;
@@ -10,7 +9,6 @@
     --transition: 180ms cubic-bezier(.2,.9,.2,1);
 }
 
-/* --- Загальні поля (темна палітра) --- */
 .account-form input,
 .account-form select,
 .account-form textarea {
@@ -33,7 +31,6 @@
     color: var(--muted);
 }
 
-/* Фокус */
 .account-form input:focus,
 .account-form select:focus,
 .account-form textarea:focus {
@@ -41,7 +38,6 @@
     box-shadow: 0 12px 36px rgba(124,92,255,0.12);
 }
 
-/* --- Header row: 3 поля в ряд --- */
 .account-form-header {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -49,22 +45,16 @@
     align-items: start;
 }
 
-/* Робимо інпути всередині header повнозначними (висота однакова) */
 .account-form-header input {
     padding: 12px 14px;
 }
 
-/* На вузьких екранах — стопка в колонку */
 @media (max-width: 880px) {
     .account-form-header {
         grid-template-columns: 1fr;
     }
 }
 
-/* Якщо потрібно, щоб перше поле трохи ширше (опціонально) */
-/* .account-form-header { grid-template-columns: 1.2fr 1fr 1fr; } */
-
-/* --- Drop area / file label (уніфіковано з DishComponent) --- */
 .file-input-wrapper,
 .file-label {
     position: relative;
@@ -97,7 +87,6 @@
     box-shadow: 0 18px 46px rgba(124,92,255,0.08);
 }
 
-/* preview */
 .drop-preview {
     width: 100%;
     max-height: 220px;
@@ -107,7 +96,6 @@
     box-shadow: 0 10px 30px rgba(2,6,23,0.5);
 }
 
-/* native input covers the area */
 .file-input {
     position: absolute;
     inset: 0;
@@ -117,7 +105,6 @@
     cursor: pointer;
 }
 
-/* remove button (over preview) */
 .remove-address-btn {
     padding: 8px 10px;
     border-radius: 8px;
@@ -130,7 +117,6 @@
 }
 .remove-address-btn:hover { transform: translateY(-2px); }
 
-/* --- Кнопка відправки --- */
 .account-form button[type="submit"] {
     margin-top: 10px;
     padding: 12px 16px;
@@ -145,7 +131,6 @@
 }
 .account-form button[type="submit"]:hover { transform: translateY(-3px); box-shadow: 0 22px 56px rgba(124,92,255,0.16); }
 
-/* --- Мобільні правки --- */
 @media (max-width: 520px) {
     .account-form {
         padding: 12px;
@@ -156,5 +141,4 @@
     .account-form button[type="submit"] { width: 100%; align-self: stretch; }
 }
 
-/* --- Дрібні деталі --- */
 .hint { color: var(--muted); font-size: 13px; }
