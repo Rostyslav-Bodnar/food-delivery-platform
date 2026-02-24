@@ -1,71 +1,23 @@
-﻿import React, { useState, useMemo, useEffect } from 'react';
+﻿// Assuming this is src/pages/RestaurantsPage.js
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Store } from 'lucide-react';
 import './styles/RestaurantsPage.css';
-import CustomerSidebar from "../components/sidebars/CustomerSidebar.jsx";
-import { getAllBusinessAccounts } from "../api/Account.jsx";
-import RestaurantCard from "../components/restaurant/RestaurantCard.jsx";
-import RestaurantsFilter from "../components/restaurant/RestaurantsFilter.jsx";
+import CustomerSidebar from "../sidebars/CustomerSidebar.jsx";
+import RestaurantCard from "./components/RestaurantCard.jsx";
+import RestaurantsFilter from "./components/RestaurantsFilter.jsx";
+import useFetchRestaurants from "./hooks/useFetchRestaurants";
+import useRestaurantFilters from "./hooks/useRestaurantFilters";
+import useFilteredRestaurants from "./hooks/useFilteredRestaurants";
 
 const RestaurantsPage = () => {
-    const [restaurants, setRestaurants] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all');
-    const [sortBy, setSortBy] = useState('rating');
-
-    useEffect(() => {
-        const fetchRestaurants = async () => {
-            try {
-                const response = await getAllBusinessAccounts();
-                setRestaurants(
-                    response.map(r => ({
-                        id: r.id,
-                        name: r.name,
-                        image: r.imageUrl,
-                        description: r.description,
-                        // бо бек поки не повертає рейтинг/доставку — ставимо заглушки
-                        rating: 4.8,
-                        deliveryTime: "25-40 хв",
-                        deliveryPrice: "Free",
-                        category: r.description ?? "Restaurant",
-                    }))
-                );
-            } catch (e) {
-                console.error("Error happened while getting business account:", e);
-            }
-        };
-        fetchRestaurants();
-    }, []);
-
-    const filteredAndSorted = useMemo(() => {
-        let result = [...restaurants];
-
-        if (searchQuery) {
-            result = result.filter(r =>
-                r.name.toLowerCase().includes(searchQuery.toLowerCase())
-            );
-        }
-
-        if (selectedCategory !== 'all') {
-            result = result.filter(r =>
-                r.category?.toLowerCase().includes(selectedCategory.toLowerCase())
-            );
-        }
-
-        result.sort((a, b) => {
-            if (sortBy === 'rating') return b.rating - a.rating;
-            if (sortBy === 'time') return parseInt(a.deliveryTime) - parseInt(b.deliveryTime);
-            if (sortBy === 'name') return a.name.localeCompare(b.name);
-            return 0;
-        });
-
-        return result;
-    }, [searchQuery, selectedCategory, sortBy, restaurants]);
+    const { restaurants } = useFetchRestaurants();
+    const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, sortBy, setSortBy } = useRestaurantFilters();
+    const filteredAndSorted = useFilteredRestaurants(restaurants, searchQuery, selectedCategory, sortBy);
 
     return (
         <div className="app-wrapper">
             <CustomerSidebar />
-
             <div className="main-content">
                 <div className="particles">
                     {[...Array(8)].map((_, i) => (
@@ -83,7 +35,6 @@ const RestaurantsPage = () => {
                         />
                     ))}
                 </div>
-
                 <div className="restaurants-container">
                     <motion.div
                         initial={{ opacity: 0, y: -30 }}
@@ -93,7 +44,6 @@ const RestaurantsPage = () => {
                         <h1 className="page-title">
                             <Store size={40} /> All establishments
                         </h1>
-
                         <RestaurantsFilter
                             searchQuery={searchQuery}
                             onSearchChange={setSearchQuery}
@@ -103,9 +53,7 @@ const RestaurantsPage = () => {
                             sortBy={sortBy}
                             onSortChange={setSortBy}
                         />
-
                     </motion.div>
-
                     <AnimatePresence mode="wait">
                         {filteredAndSorted.length === 0 ? (
                             <motion.div
@@ -125,7 +73,6 @@ const RestaurantsPage = () => {
                                     />
                                 ))}
                             </motion.div>
-
                         )}
                     </AnimatePresence>
                 </div>
@@ -133,5 +80,4 @@ const RestaurantsPage = () => {
         </div>
     );
 };
-
 export default RestaurantsPage;

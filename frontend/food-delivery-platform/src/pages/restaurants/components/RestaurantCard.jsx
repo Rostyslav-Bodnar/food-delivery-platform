@@ -1,7 +1,7 @@
 ﻿import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronRight, Star, Clock, MapPin } from "lucide-react";
-import "./styles/RestaurantCard.css";
+import "../styles/RestaurantCard.css";
 
 const RestaurantCard = ({ restaurant }) => {
     return (

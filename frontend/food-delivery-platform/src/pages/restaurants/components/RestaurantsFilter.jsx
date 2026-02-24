@@ -1,6 +1,6 @@
 ﻿import { Search, X, Filter } from "lucide-react";
-import { CategoryList } from "../../constants/category.jsx";
-import "./styles/RestaurantsFilter.css";
+import { CategoryList } from "../../../constants/category.jsx";
+import "../styles/RestaurantsFilter.css";
 
 const RestaurantsFilter = ({
                                searchQuery,
