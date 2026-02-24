@@ -1,0 +1,49 @@
+﻿/* src/pages/styles/DeliveryPaymentGrid.css */
+.delivery-payment-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.options-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.options-group label {
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 18px;
+    font-weight: 500;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.options-group label.active {
+    border-color: #7c5cff;
+    background: rgba(124,92,255,0.18);
+    box-shadow: 0 6px 20px rgba(124,92,255,0.25);
+}
+
+.options-group input[type="radio"] {
+    accent-color: #7c5cff;
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+    .delivery-payment-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+}

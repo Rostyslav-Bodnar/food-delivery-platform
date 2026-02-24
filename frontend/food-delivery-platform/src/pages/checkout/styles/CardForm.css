@@ -1,0 +1,23 @@
+﻿/* src/pages/styles/CardForm.css */
+.card-form {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255,0.12);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+@media (max-width: 900px) {
+    .card-row {
+        grid-template-columns: 1fr;
+    }
+}

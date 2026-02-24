@@ -1,0 +1,18 @@
+﻿/* src/pages/styles/ParticlesBackground.css */
+.particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+    left: 30px;
+}
+
+.particle {
+    position: absolute;
+    width: 6px;
+    height: 160px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.06), transparent);
+    filter: blur(6px);
+}

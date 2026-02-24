@@ -15,7 +15,7 @@ export const addToCart = (dish, quantity) => {
     } else {
         cart.push({
             id: dish.id,
-            businessId: dish.businessId, // 🔑
+            businessId: dish.businessId,
             name: dish.name,
             restaurant: dish.restaurant,
             price: dish.price,

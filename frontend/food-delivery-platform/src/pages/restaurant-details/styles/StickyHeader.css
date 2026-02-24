@@ -1,0 +1,137 @@
+﻿/* ===== STICKY HEADER ===== */
+.sticky-header {
+    position: sticky;
+    top: 80px;
+    z-index: 50;
+    background: rgba(10, 14, 23, 0.92);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(124, 92, 255, 0.2);
+    padding: 16px 24px;
+    gap: 16px;
+}
+
+/* SEARCH BAR */
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+    .search-input-wrapper input {
+        width: 100vh;
+        padding: 14px 48px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid rgba(124, 92, 255, 0.4);
+        color: white;
+        font-size: 16px;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+        .search-input-wrapper input:focus {
+            outline: none;
+            border-color: #7c5cff;
+            box-shadow:
+                    0 0 0 3px rgba(124, 92, 255, 0.3),
+                    0 8px 30px rgba(124, 92, 255, 0.2);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+.restaurant-search-icon {
+    position: absolute;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #7c5cff;
+    z-index: 1;
+}
+
+.clear-search {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+    .clear-search:hover {
+        color: #e2e8f0;
+    }
+
+/* SORT */
+.sort-bar {
+    align-items: center;
+    align-self: center;
+}
+
+    .sort-bar select {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(124, 92, 255, 0.4);
+        border-radius: 14px;
+        padding: 10px 16px;
+        color: #e2e8f0;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .sort-bar select:hover {
+            background: rgba(124, 92, 255, 0.2);
+        }
+
+        .sort-bar select option {
+            background-color: #0a0e17;
+            color: #e2e8f0;
+        }
+
+/* CATEGORIES */
+.categories-scroll {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 8px 0;
+    scrollbar-width: none;
+}
+
+    .categories-scroll::-webkit-scrollbar {
+        display: none;
+    }
+
+.category-btn {
+    padding: 10px 20px;
+    border-radius: 50px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(124, 92, 255, 0.3);
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 14px;
+    white-space: nowrap;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+    .category-btn::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, #7c5cff, #00d4ff);
+        opacity: 0;
+        transition: opacity 0.3s;
+        z-index: -1;
+    }
+
+    .category-btn.active::before,
+    .category-btn:hover::before {
+        opacity: 1;
+    }
+
+    .category-btn.active,
+    .category-btn:hover {
+        color: white;
+        border-color: transparent;
+    }
