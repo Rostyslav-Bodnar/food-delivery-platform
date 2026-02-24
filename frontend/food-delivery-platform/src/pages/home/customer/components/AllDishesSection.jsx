@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { motion } from 'framer-motion';
-import DishCardComponent from '../../../DishCardComponent';
+import DishCardComponent from '../../../../global-components/DishCardComponent';
 
 const AllDishesSection = ({ filteredDishes, loading }) => {
     return (

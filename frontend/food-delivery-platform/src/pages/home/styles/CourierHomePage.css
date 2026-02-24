@@ -1,22 +1,4 @@
 /* src/pages/courier/styles/CourierHomePage.css */
-.courier-sidebar {
-    width: 280px;
-    background: rgba(11, 15, 22, 0.98);
-    border-right: 1px solid var(--glass-border);
-    padding: 30px 20px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    z-index: 100;
-    backdrop-filter: blur(12px);
-}
-
-.sidebar-bottom {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-}
 
 .online-toggle {
     display: flex;
@@ -262,7 +244,7 @@
         color: var(--accent-1);
     }
 
-/* ==================== ACTIVE ORDER SECTION — ÎÍÎÂËÅÍ² ÑÒÈË² ==================== */
+/* ==================== ACTIVE ORDER SECTION ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í² ï¿½ï¿½ï¿½Ë² ==================== */
 
 .active-order-card {
     max-width: 560px;

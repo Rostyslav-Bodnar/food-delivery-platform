@@ -1,7 +1,7 @@
 ﻿// src/AppRouter.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./pages/HeaderComponent.jsx";
+import Header from "./global-components/header/HeaderComponent.jsx";
 import HomePage from "./pages/home/HomePage.jsx";
 import AuthorizationPage from "./pages/auth/AuthorationPage.jsx";
 import ProfilePage from "./pages/profile/ProfilePage.jsx";

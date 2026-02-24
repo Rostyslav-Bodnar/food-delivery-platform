@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Flame, MapPin } from 'lucide-react';
 import './styles/RestaurantDetailsPage.css';
-import DishCardComponent from "../DishCardComponent.jsx";
+import DishCardComponent from "../../global-components/DishCardComponent.jsx";
 import StickyHeader from "./components/StickyHeader.jsx";
 import useRestaurantMenu from "./hooks/useRestaurantMenu";
 import useUserLocation from "./hooks/useUserLocation";

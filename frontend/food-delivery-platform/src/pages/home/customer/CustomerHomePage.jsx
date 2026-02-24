@@ -9,6 +9,8 @@ import FilterSidebar from './components/FilterSidebar';
 import PopularSection from './components/PopularSection';
 import AllDishesSection from './components/AllDishesSection';
 
+import "../styles/CustomerHomePage.css";
+
 const CustomerHomePage = () => {
     const [popularDishes, setPopularDishes] = useState([]);
     const [allDishes, setAllDishes] = useState([]);

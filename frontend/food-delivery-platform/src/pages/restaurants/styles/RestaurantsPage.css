@@ -81,11 +81,6 @@
         flex-direction: column;
     }
 
-    CustomerSidebar {
-        width: 100%;
-        height: auto;
-    }
-
     .main-content {
         padding-top: 20px;
     }
