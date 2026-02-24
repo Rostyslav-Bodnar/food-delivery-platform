@@ -1,0 +1,56 @@
+﻿/* src/pages/styles/TotalSection.css */
+.total-section {
+    text-align: center;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(124,92,255,0.4);
+    border-radius: 20px;
+    padding: 24px 30px;
+    margin-bottom: 20px;
+}
+
+.grand-total {
+    margin-bottom: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.grand-total span {
+    font-size: 28px;
+    font-weight: 600;
+    background: linear-gradient(90deg, #a992ff, #7ce5ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.grand-total-price {
+    font-size: 52px;
+    font-weight: 800;
+    background: linear-gradient(90deg, #7c5cff, #00d4ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 1px;
+}
+
+.submit-order-btn {
+    width: 100%;
+    max-width: 480px;
+    padding: 16px 30px;
+    background: linear-gradient(90deg, #7c5cff, #00d4ff);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 30px rgba(124,92,255,0.35);
+    margin: 0 auto;
+    display: block;
+}
+
+.submit-order-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(124,92,255,0.5);
+}
