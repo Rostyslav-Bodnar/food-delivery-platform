@@ -1,0 +1,76 @@
+﻿.app-sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: rgba(11, 15, 22, 0.96);
+    border-right: 1px solid var(--glass-border);
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(12px);
+    flex-shrink: 0;
+}
+
+.sidebar-header {
+    margin-bottom: 40px;
+}
+
+.sidebar-logo {
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text);
+}
+
+.sidebar-title {
+    font-size: 14px;
+    color: var(--muted);
+    margin-top: 6px;
+}
+
+.sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sidebar-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    color: var(--muted-2);
+    text-decoration: none;
+    font-weight: 600;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.sidebar-item:hover {
+    background: rgba(124, 92, 255, 0.12);
+    transform: translateX(4px);
+    color: var(--text);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(
+            90deg,
+            rgba(124, 92, 255, 0.2),
+            rgba(0, 212, 255, 0.1)
+    );
+    color: #fff;
+}
+
+.sidebar-badge {
+    position: absolute;
+    right: 14px;
+    font-size: 12px;
+    background: var(--accent-1);
+    color: #fff;
+    padding: 3px 8px;
+    border-radius: 20px;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 30px;
+}
