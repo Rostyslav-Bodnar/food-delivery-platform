@@ -1,0 +1,119 @@
+﻿.payment-cards {
+    margin-top: 24px;
+}
+
+.payment-title {
+    color: #fff;
+}
+
+.card-success {
+    color: #52c41a;
+    margin-bottom: 12px;
+    font-weight: 500;
+}
+
+.payment-card {
+    margin-bottom: 12px;
+    padding: 16px;
+    background: #2d2d2d;
+    border-radius: 12px;
+    border: 1px solid #434343;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.payment-card.active {
+    background: #1f3a5f;
+    border: 2px solid #1890ff;
+}
+
+.card-number {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #fff;
+}
+
+.card-meta {
+    margin: 4px 0;
+    color: #d0d0d0;
+}
+
+.card-edit-btn,
+.card-delete-btn {
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    margin-left: 12px;
+}
+
+.card-edit-btn { color: #69b1ff; }
+.card-delete-btn { color: #ff4d4f; }
+
+.card-form-wrapper {
+    padding: 16px;
+    background: #2d2d2d;
+    border-radius: 12px;
+    border: 1px solid #434343;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.card-input {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    background: #1e1e1e;
+    color: #fff;
+    border: 1px solid #434343;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+
+.card-row {
+    display: flex;
+    gap: 12px;
+}
+
+.card-input.cvv {
+    width: 100px;
+}
+
+.card-submit {
+    width: 100%;
+    padding: 14px;
+    background: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.card-cancel {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #434343;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.add-card-btn {
+    width: 100%;
+    padding: 16px;
+    background: #1890ff;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 12px;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+}

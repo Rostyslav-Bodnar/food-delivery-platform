@@ -1,20 +1,19 @@
 ﻿// src/AppRouter.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/HeaderComponent.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import LoginForm from "./pages/LoginForm.jsx";
-import RegisterForm from "./pages/RegisterForm.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import CreateAccountPage from "./pages/CreateAccountPage.jsx";
-import DishPage from "./pages/DishPage.jsx";
+import Header from "./global-components/header/HeaderComponent.jsx";
+import HomePage from "./pages/home/HomePage.jsx";
+import AuthorizationPage from "./pages/auth/AuthorationPage.jsx";
+import ProfilePage from "./pages/profile/ProfilePage.jsx";
+import CreateAccountPage from "./pages/create-account/CreateAccountPage.jsx";
+import DishPage from "./pages/dish/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
-import CartPage from "./pages/CartPage.jsx";
-import CheckoutPage from "./pages/CheckoutPage.jsx"; // ← НОВИЙ ІМПОРТ
-import RestaurantsPage from "./pages/RestaurantsPage.jsx";
-import RestaurantDetailsPage from './pages/RestaurantDetailsPage';
-import CustomerOrdersPage from "./pages/CustomerOrdersPage.jsx";
-import BusinessOrdersPage from "./pages/BusinessOrdersPage";
+import CartPage from "./pages/cart/CartPage.jsx";
+import CheckoutPage from "./pages/checkout/CheckoutPage.jsx";
+import RestaurantsPage from "./pages/restaurants/RestaurantsPage.jsx";
+import RestaurantDetailsPage from './pages/restaurant-details/RestaurantDetailsPage';
+import CustomerOrdersPage from "./pages/customer-orders/CustomerOrdersPage.jsx";
+import BusinessOrdersPage from "./pages/business-orders/BusinessOrdersPage";
 
 const AppRouter = () => {
     return (
@@ -24,11 +23,10 @@ const AppRouter = () => {
                 <main>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
-                        <Route path="/login" element={<LoginForm />} />
-                        <Route path="/register" element={<RegisterForm />} />
+                        <Route path="/auth" element={<AuthorizationPage />} />
                         <Route path="/dish/:id" element={<DishPage />} />
                         <Route path="/cart" element={<CartPage />} />
-                        <Route path="/checkout" element={<CheckoutPage />} /> {/* ← НОВИЙ МАРШРУТ */}
+                        <Route path="/checkout" element={<CheckoutPage />} />
                         <Route path="/restaurants" element={<RestaurantsPage />} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
                         <Route path="/customer/orders" element={<CustomerOrdersPage />} />

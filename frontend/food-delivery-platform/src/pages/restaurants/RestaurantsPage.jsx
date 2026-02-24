@@ -1,0 +1,83 @@
+﻿// Assuming this is src/pages/RestaurantsPage.js
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Store } from 'lucide-react';
+import './styles/RestaurantsPage.css';
+import CustomerSidebar from "../sidebars/CustomerSidebar.jsx";
+import RestaurantCard from "./components/RestaurantCard.jsx";
+import RestaurantsFilter from "./components/RestaurantsFilter.jsx";
+import useFetchRestaurants from "./hooks/useFetchRestaurants";
+import useRestaurantFilters from "./hooks/useRestaurantFilters";
+import useFilteredRestaurants from "./hooks/useFilteredRestaurants";
+
+const RestaurantsPage = () => {
+    const { restaurants } = useFetchRestaurants();
+    const { searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, sortBy, setSortBy } = useRestaurantFilters();
+    const filteredAndSorted = useFilteredRestaurants(restaurants, searchQuery, selectedCategory, sortBy);
+
+    return (
+        <div className="app-wrapper">
+            <CustomerSidebar />
+            <div className="main-content">
+                <div className="particles">
+                    {[...Array(8)].map((_, i) => (
+                        <motion.div
+                            key={i}
+                            className="particle"
+                            initial={{ y: -100 }}
+                            animate={{ y: window.innerHeight + 100 }}
+                            transition={{
+                                duration: 15 + Math.random() * 15,
+                                repeat: Infinity,
+                                ease: "linear",
+                                delay: Math.random() * 5
+                            }}
+                        />
+                    ))}
+                </div>
+                <div className="restaurants-container">
+                    <motion.div
+                        initial={{ opacity: 0, y: -30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="controls-header"
+                    >
+                        <h1 className="page-title">
+                            <Store size={40} /> All establishments
+                        </h1>
+                        <RestaurantsFilter
+                            searchQuery={searchQuery}
+                            onSearchChange={setSearchQuery}
+                            onClearSearch={() => setSearchQuery("")}
+                            selectedCategory={selectedCategory}
+                            onCategoryChange={setSelectedCategory}
+                            sortBy={sortBy}
+                            onSortChange={setSortBy}
+                        />
+                    </motion.div>
+                    <AnimatePresence mode="wait">
+                        {filteredAndSorted.length === 0 ? (
+                            <motion.div
+                                key="no-results"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="no-results"
+                            >
+                                <p>Nothing was found</p>
+                            </motion.div>
+                        ) : (
+                            <motion.div className="restaurants-grid">
+                                {filteredAndSorted.map((restaurant) => (
+                                    <RestaurantCard
+                                        key={restaurant.id}
+                                        restaurant={restaurant}
+                                    />
+                                ))}
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+            </div>
+        </div>
+    );
+};
+export default RestaurantsPage;
