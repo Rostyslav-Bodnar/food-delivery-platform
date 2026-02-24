@@ -2,7 +2,7 @@
 import React from "react";
 import "../styles/BusinessHomePage.css";
 import BusinessSidebar from "../../sidebars/BusinessSidebar.jsx";
-import DishComponent from "./components/DishComponent";
+import DishComponent from "./components/dish/DishComponent";
 import BusinessHeader from "./components/BusinessHeader.jsx";
 import DishesContent from "./components/DishesContent.jsx";
 import BusinessFooter from "./components/BusinessFooter.jsx";

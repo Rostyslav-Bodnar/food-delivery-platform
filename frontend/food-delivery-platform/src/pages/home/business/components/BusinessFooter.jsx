@@ -4,7 +4,7 @@ import React from "react";
 const BusinessFooter = ({ filteredLength, dishesLength }) => {
     return (
         <footer className="bh-footer">
-            <div>Показано: {filteredLength} з {dishesLength}</div>
+            <div>Showing: {filteredLength} of {dishesLength}</div>
         </footer>
     );
 };
