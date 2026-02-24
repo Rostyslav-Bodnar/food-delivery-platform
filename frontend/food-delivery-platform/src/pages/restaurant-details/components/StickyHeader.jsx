@@ -1,5 +1,5 @@
 ﻿import { Search, X } from "lucide-react";
-import "./styles/StickyHeader.css";
+import "../styles/StickyHeader.css";
 
 const StickyHeader = ({
                           restaurantName,
