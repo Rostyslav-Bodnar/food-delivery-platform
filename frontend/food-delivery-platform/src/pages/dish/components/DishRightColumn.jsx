@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { motion } from "framer-motion";
 import { Star, Clock, MapPin, Plus, Minus } from "lucide-react";
-import "./styles/DishRightColumn.css";
+import "../styles/DishRightColumn.css";
 
 const DishRightColumn = ({ dish, quantity, setQuantity, handleAddToCart }) => {
     return (

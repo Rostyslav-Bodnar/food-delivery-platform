@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { motion } from "framer-motion";
 import { Star, Zap, MessageCircle } from "lucide-react";
-import "./styles/DishLeftColumn.css";
+import "../styles/DishLeftColumn.css";
 
 const DishLeftColumn = ({ dish, reviewsList }) => {
     return (
