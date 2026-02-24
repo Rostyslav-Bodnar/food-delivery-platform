@@ -1,26 +1,26 @@
-﻿import React, { useState } from "react";
-import { createAccount } from "../../api/Account.jsx";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "../../context/UserContext";
-import usePhotoUpload from "../../hooks/usePhotoUpload";
-import "./styles/AccountForm.css";
+﻿import usePhotoUpload from "../hooks/usePhotoUpload";
+import { useAccountFormState } from "../hooks/useAccountFormState";
+import { useAccountSubmit } from "../hooks/useAccountSubmit";
+import "../styles/AccountForm.css";
 
 export default function AccountFormBase({
-    initialState,
-    buildAccountPayload,
-    endpoint,
-    submitText,
-    children
+        initialState,
+        buildAccountPayload,
+        endpoint,
+        submitText,
+        children
     }) {
-    const navigate = useNavigate();
-    const { reloadUser } = useUser();
+    const {
+        formData,
+        setFormData,
+        changeField
+    } = useAccountFormState(initialState);
 
-    const [formData, setFormData] = useState(initialState);
-
-    const changeField = (e) => {
-        const { name, value } = e.target;
-        setFormData(prev => ({ ...prev, [name]: value }));
-    };
+    const { handleSubmit } = useAccountSubmit({
+        endpoint,
+        buildAccountPayload,
+        formData
+    });
 
     const {
         dropRef,
@@ -31,39 +31,38 @@ export default function AccountFormBase({
         removePhoto
     } = usePhotoUpload(setFormData);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        const payload = buildAccountPayload(formData);
-
-        try {
-            await createAccount(endpoint, payload);
-            await reloadUser();
-            navigate("/profile");
-        } catch (err) {
-            console.error(err);
-            alert("Failed to create account");
-        }
-    };
-
     return (
         <form className="account-form" onSubmit={handleSubmit}>
             {children(formData, changeField)}
 
             <div
                 ref={dropRef}
-                className={`file-input-wrapper file-label ${formData.photoPreview ? "has-preview" : ""}`}
+                className={`file-input-wrapper file-label ${
+                    formData.photoPreview ? "has-preview" : ""
+                }`}
                 onDrop={onDrop}
                 onDragOver={onDragOver}
                 onDragLeave={onDragLeave}
-                onClick={() => dropRef.current?.querySelector('input[type="file"]')?.click()}
+                onClick={() =>
+                    dropRef.current
+                        ?.querySelector('input[type="file"]')
+                        ?.click()
+                }
                 role="button"
             >
                 {formData.photoPreview ? (
                     <>
-                        <img src={formData.photoPreview} alt="preview" className="drop-preview" />
+                        <img
+                            src={formData.photoPreview}
+                            alt="preview"
+                            className="drop-preview"
+                        />
                         <div className="preview-actions">
-                            <button type="button" className="remove-address-btn" onClick={removePhoto}>
+                            <button
+                                type="button"
+                                className="remove-address-btn"
+                                onClick={removePhoto}
+                            >
                                 Remove
                             </button>
                         </div>
