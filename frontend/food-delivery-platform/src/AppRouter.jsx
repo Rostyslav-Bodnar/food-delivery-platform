@@ -1,19 +1,19 @@
 ﻿// src/AppRouter.jsx
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./components/HeaderComponent.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import AuthorizationPage from "./pages/AuthorationPage.jsx";
-import ProfilePage from "./pages/ProfilePage.jsx";
-import CreateAccountPage from "./pages/CreateAccountPage.jsx";
-import DishPage from "./pages/DishPage.jsx";
+import Header from "./pages/HeaderComponent.jsx";
+import HomePage from "./pages/home/HomePage.jsx";
+import AuthorizationPage from "./pages/auth/AuthorationPage.jsx";
+import ProfilePage from "./pages/profile/ProfilePage.jsx";
+import CreateAccountPage from "./pages/create-account/CreateAccountPage.jsx";
+import DishPage from "./pages/dish/DishPage.jsx";
 import ProtectedRoute from "./utils/ProtectedRoute.jsx";
-import CartPage from "./pages/CartPage.jsx";
-import CheckoutPage from "./pages/CheckoutPage.jsx";
-import RestaurantsPage from "./pages/RestaurantsPage.jsx";
-import RestaurantDetailsPage from './pages/RestaurantDetailsPage';
-import CustomerOrdersPage from "./pages/CustomerOrdersPage.jsx";
-import BusinessOrdersPage from "./pages/BusinessOrdersPage";
+import CartPage from "./pages/cart/CartPage.jsx";
+import CheckoutPage from "./pages/checkout/CheckoutPage.jsx";
+import RestaurantsPage from "./pages/restaurants/RestaurantsPage.jsx";
+import RestaurantDetailsPage from './pages/restaurant-details/RestaurantDetailsPage';
+import CustomerOrdersPage from "./pages/customer-orders/CustomerOrdersPage.jsx";
+import BusinessOrdersPage from "./pages/business-orders/BusinessOrdersPage";
 
 const AppRouter = () => {
     return (
