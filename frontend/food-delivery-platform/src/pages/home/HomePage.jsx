@@ -1,12 +1,12 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getProfile } from '../api/User.jsx';
+import { getProfile } from '../../api/User.jsx';
 import './styles/HomePage.css';
 
-import UnauthenticatedHome from '../components/UnauthenticatedHome';
-import CustomerHomePage from '../components/CustomerHomePage.jsx';
-import BusinessHomePage from "../components/BusinessHomePage.jsx";
-import CourierHomePage from "../components/curier/CourierHomePage.jsx";
+import UnauthenticatedHome from './components/UnauthenticatedHome';
+import CustomerHomePage from './customer/CustomerHomePage.jsx';
+import BusinessHomePage from "./business/BusinessHomePage.jsx";
+import CourierHomePage from "./courier/CourierHomePage.jsx";
 
 const HomePage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);

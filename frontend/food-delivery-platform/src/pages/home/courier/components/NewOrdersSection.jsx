@@ -13,11 +13,11 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                 exit={{ opacity: 0, y: -20 }}
                 className="courier-section"
             >
-                <h1 className="gradient-title">Ви офлайн</h1>
+                <h1 className="gradient-title">You are offline</h1>
 
                 <div className="offline-message">
                     <Power size={48} />
-                    <p>Увімкніть статус «Онлайн», щоб отримувати замовлення</p>
+                    <p>Turn on the "Online" status to receive orders</p>
                 </div>
             </motion.section>
         );
@@ -31,13 +31,13 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
             exit={{ opacity: 0, y: -20 }}
             className="courier-section"
         >
-            <h1 className="gradient-title">Доступні замовлення</h1>
+            <h1 className="gradient-title">Available Orders</h1>
 
             {newOrders.length === 0 ? (
                 <div className="empty-state">
                     <Package size={64} strokeWidth={1} />
-                    <p>Нових замовлень немає</p>
-                    <small>Оновлюється автоматично</small>
+                    <p>No new orders</p>
+                    <small>Updates automatically</small>
                 </div>
             ) : (
                 <div className="orders-grid">
@@ -66,12 +66,12 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                 <div className="order-details">
                                     <div>
                                         <MapPin size={14} />
-                                        {order.customerAddress || "Адреса не вказана"}
+                                        {order.customerAddress || "Address not specified"}
                                     </div>
 
                                     <div>
                                         <Phone size={14} />
-                                        {order.customerPhoneNumber || "Телефон не вказаний"}
+                                        {order.customerPhoneNumber || "Phone not specified"}
                                     </div>
 
                                     <div>
@@ -91,7 +91,7 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                         className="accept-btn"
                                         onClick={() => acceptOrder(order)}
                                     >
-                                        Прийняти замовлення
+                                        Accept Order
                                     </motion.button>
 
                                     {order.customerAddress && (
@@ -103,7 +103,7 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                             rel="noopener noreferrer"
                                             className="map-btn"
                                         >
-                                            Подивитись на карті
+                                            View on Map
                                         </motion.a>
                                     )}
                                 </div>

@@ -11,15 +11,15 @@ import {
 } from "lucide-react";
 
 export default function ActiveOrderSection({
-    activeOrder,
-    setActiveOrder,
-    completeDelivery
-}) {
+                                               activeOrder,
+                                               setActiveOrder,
+                                               completeDelivery
+                                           }) {
     if (!activeOrder) {
         return (
             <div className="empty-state">
                 <Bike size={80} strokeWidth={1} />
-                <p>Немає активного замовлення</p>
+                <p>No active order</p>
             </div>
         );
     }
@@ -34,18 +34,18 @@ export default function ActiveOrderSection({
             className="px-4 pt-8 pb-12"
         >
             <div className="active-order-card">
-                {/* Header з номером замовлення та таймером */}
+                {/* Header with order number and timer */}
                 <div className="active-order-header">
-                    <h2>Замовлення #{activeOrder.id}</h2>
+                    <h2>Order #{activeOrder.id}</h2>
                     <div className="timer">
                         <Clock size={32} />
                         {activeOrder.timeLeft}
                     </div>
                 </div>
 
-                {/* Маршрут: Ресторан → Клієнт */}
+                {/* Route: Restaurant → Client */}
                 <div className="route-steps">
-                    {/* Крок 1: Ресторан */}
+                    {/* Step 1: Restaurant */}
                     <div className="step">
                         <div className="step-icon restaurant">
                             <Package size={24} />
@@ -62,7 +62,7 @@ export default function ActiveOrderSection({
                                 rel="noopener noreferrer"
                                 className="map-link"
                             >
-                                <Navigation size={16} /> Подивитись на карті
+                                <Navigation size={16} /> View on map
                             </a>
                         </div>
                         {activeOrder.status !== "waiting_pickup" && (
@@ -70,10 +70,9 @@ export default function ActiveOrderSection({
                         )}
                     </div>
 
-                    {/* Лінія-з'єднувач */}
                     <div className="step-connector" />
 
-                    {/* Крок 2: Клієнт */}
+                    {/* Step 2: Client */}
                     <div className="step">
                         <div className="step-icon client">
                             <MapPin size={24} />
@@ -90,39 +89,38 @@ export default function ActiveOrderSection({
                                 rel="noopener noreferrer"
                                 className="map-link"
                             >
-                                <Navigation size={16} /> Подивитись на карті
+                                <Navigation size={16} /> View on map
                             </a>
                         </div>
                     </div>
                 </div>
 
-                {/* Підсумок замовлення */}
+                {/* Order summary */}
                 <div className="order-summary">
                     <div>
-                        <strong>Страви:</strong>
-                        <span>{activeOrder.items} шт</span>
+                        <strong>Items:</strong>
+                        <span>{activeOrder.items} pcs</span>
                     </div>
                     <div>
-                        <strong>Вартість:</strong>
+                        <strong>Price:</strong>
                         <span>{activeOrder.price} ₴</span>
                     </div>
                     <div>
-                        <strong>Відстань:</strong>
+                        <strong>Distance:</strong>
                         <span>{activeOrder.distance}</span>
                     </div>
                     <div>
-                        <strong>Час створення:</strong>
+                        <strong>Created at:</strong>
                         <span>{activeOrder.createdAt}</span>
                     </div>
 
-                    {/* Заробіток кур'єра — виділено */}
                     <div className="earnings">
                         <DollarSign size={26} />
-                        Ваш заробіток: <strong>{activeOrder.earned} ₴</strong>
+                        Your earnings: <strong>{activeOrder.earned} ₴</strong>
                     </div>
                 </div>
 
-                {/* Кнопки дій */}
+                {/* Action buttons */}
                 <div className="active-actions">
                     {activeOrder.status === "waiting_pickup" && (
                         <motion.button
@@ -136,7 +134,7 @@ export default function ActiveOrderSection({
                                 })
                             }
                         >
-                            Забрав замовлення
+                            Picked up order
                         </motion.button>
                     )}
 
@@ -147,7 +145,7 @@ export default function ActiveOrderSection({
                             className="action-btn success"
                             onClick={completeDelivery}
                         >
-                            Доставлено клієнту
+                            Delivered to client
                         </motion.button>
                     )}
                 </div>

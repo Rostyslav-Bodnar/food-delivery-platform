@@ -1,6 +1,6 @@
 ﻿import React from 'react';
 import { Link } from 'react-router-dom';
-import '../pages/styles/HomePage.css';
+import '../styles/HomePage.css';
 
 const UnauthenticatedHome = () => {
     return (

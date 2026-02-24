@@ -1,5 +1,5 @@
 ﻿import React, { useEffect, useRef, useState } from "react";
-import {CategoryList} from "../constants/category.jsx";
+import {CategoryList} from "../../../../constants/category.jsx";
 
 export default function DishComponent({ open, onClose, onCreate, onUpdate, editing, userData }) {
     const [page, setPage] = useState(1); // 🔥 СТОРІНКА 1/2
