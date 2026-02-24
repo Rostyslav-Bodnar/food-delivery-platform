@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import "./styles/UserCard.css";
+import "../styles/UserCard.css";
 
 const UserCard = ({
     formData,

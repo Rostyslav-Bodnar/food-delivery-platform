@@ -1,5 +1,5 @@
 ﻿import React from "react";
-import "./styles/BusinessAddresses.css";
+import "../styles/BusinessAddresses.css";
 
 const BusinessAddresses = ({
                                businessAddresses,
