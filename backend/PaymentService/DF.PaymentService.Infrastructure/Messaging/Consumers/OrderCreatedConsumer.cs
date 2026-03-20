@@ -1,7 +1,7 @@
-﻿using DF.PaymentService.Application.CommandHandlers;
+﻿using DF.Contracts.EventDriven;
+using DF.PaymentService.Application.CommandHandlers;
 using DF.PaymentService.Application.Commands;
 using DF.PaymentService.Application.Common.Interfaces;
-using DF.PaymentService.Application.IntegrationEvents;
 using DF.PaymentService.Application.Repositories.Interfaces;
 using DF.PaymentService.Application.Services.Interfaces;
 using DF.PaymentService.Domain.Entities;
@@ -19,14 +19,14 @@ public class OrderCreatedConsumer(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Підпишемося один раз на старті
-        eventBus.Subscribe<OrderCreatedIntegrationEvent>(async order =>
+        eventBus.Subscribe<OrderCreatedEvent>(async order =>
         {
             using var scope = scopeFactory.CreateScope();
 
             var handler = scope.ServiceProvider.GetRequiredService<CreatePaymentCommandHandler>();
 
             var command = new CreatePaymentCommand(
-                order.OrderId, order.Amount, order.Currency,
+                order.OrderId, order.TotalPrice, order.Currency,
                 Enum.Parse<PaymentMethod>(order.PaymentMethod));
 
             await handler.Handle(command, stoppingToken);

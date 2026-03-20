@@ -1,18 +1,15 @@
 using DF.PaymentService.Application.CommandHandlers;
 using DF.PaymentService.Application.Common.Interfaces;
-using DF.PaymentService.Application.IntegrationEvents;
 using DF.PaymentService.Application.Repositories.Interfaces;
 using DF.PaymentService.Application.Services;
 using DF.PaymentService.Application.Services.Interfaces;
 using DF.PaymentService.Contracts;
-using DF.PaymentService.Domain.Entities;
 using DF.PaymentService.Infrastructure.BackgroundJobs;
 using DF.PaymentService.Infrastructure.Data;
 using DF.PaymentService.Infrastructure.Messaging;
 using DF.PaymentService.Infrastructure.Messaging.Consumers;
 using DF.PaymentService.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -37,6 +34,18 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 // Для Npgsql часом корисно явно ввімкнути legacy timestamp behavior (якщо мігруєте зі старих версій):
 // AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
+
+// CORS Policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontend", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+            .AllowAnyHeader()                     // дозволяємо всі заголовки
+            .AllowAnyMethod()                   // дозволяємо всі HTTP методи
+            .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
+    });
+});
 
 // ------------------------------------------------------------
 // 3) RabbitMQ
@@ -132,6 +141,7 @@ builder.Services.AddHostedService<StripeTaskProcessor>();
 
 // Consumer слухає події з шини; залежить лише від IEventBus (Singleton) і IServiceScopeFactory
 builder.Services.AddHostedService<OrderCreatedConsumer>();
+builder.Services.AddHostedService<OrderCancelledConsumer>();
 
 // ------------------------------------------------------------
 // 7) Build & pipeline
@@ -142,19 +152,11 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
-
+app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
 var eventBus = app.Services.GetRequiredService<IEventBus>();
-
-await eventBus.PublishAsync(new OrderCreatedIntegrationEvent
-{
-    OrderId = Guid.NewGuid(),
-    Amount = 123.45M,
-    Currency = "USD",
-    PaymentMethod = PaymentMethod.Online.ToString()
-});
 
 app.Run();
