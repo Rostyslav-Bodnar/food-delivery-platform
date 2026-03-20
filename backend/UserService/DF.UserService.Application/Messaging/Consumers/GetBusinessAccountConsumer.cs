@@ -58,7 +58,11 @@ public class GetBusinessAccountConsumer : IConsumer
                     account.Name,
                     account.Description,
                     string.Empty, //TODO: add phone number to business account
-                    new List<string>() //TODO add addresses to business account
+                    new List<string>(), //TODO add addresses to business account
+                    account.StripeChargesEnabled,
+                    account.StripePayoutsEnabled,
+                    account.StripeRequirementsDue,
+                    account.StripeAccountId
                 );
 
                 var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
