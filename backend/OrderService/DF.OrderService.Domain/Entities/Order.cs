@@ -15,4 +15,6 @@ public class Order
     
     public string OrderNumber { get; set; }
     public decimal Profit { get; set; }
+    
+    public PaymentMethod PaymentMethod { get; set; }
 }

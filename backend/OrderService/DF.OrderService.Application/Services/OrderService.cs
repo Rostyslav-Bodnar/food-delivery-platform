@@ -61,7 +61,8 @@ public class OrderService(
             OrderNumber = GenerateOrderNumber(),
             DeliverToId = null,
             DeliverFromId = null,
-            Profit = 0
+            Profit = 0,
+            PaymentMethod = request.PaymentMethod
         };
 
         var orderEntity = await orderRepository.Create(order);

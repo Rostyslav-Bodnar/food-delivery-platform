@@ -1,7 +1,4 @@
-﻿using DF.Contracts.RPC.Responses.UserService;
-using DF.OrderService.Domain.Entities;
-
-namespace DF.OrderService.Contracts.Models.Responses;
+﻿namespace DF.OrderService.Contracts.Models.Responses;
 
 public record OrderResponse(
     Guid Id,

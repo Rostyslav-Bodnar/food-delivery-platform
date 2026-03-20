@@ -54,6 +54,9 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("OrderedBy")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
+
                     b.Property<decimal>("Profit")
                         .HasColumnType("numeric");
 
