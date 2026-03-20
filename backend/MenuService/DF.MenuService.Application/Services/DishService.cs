@@ -1,7 +1,9 @@
 using DF.Contracts.RPC.Requests.UserService;
+using DF.Contracts.RPC.Responses.UserService;
 using DF.MenuService.Application.Messaging;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
+using DF.MenuService.Contracts.Exceptions;
 using DF.MenuService.Contracts.Models.Request;
 using DF.MenuService.Contracts.Models.Response;
 using DF.MenuService.Domain.Entities;
@@ -19,8 +21,17 @@ public class DishService(
     {
         // 1. Отримати бізнес-акаунт
         var accountResponse = await userServiceRpcClient.GetAccountAsync(
-            new GetAccountRequest(request.UserId));
+            new GetAccountRequest(request.UserId)) as GetBusinessAccountResponse;
 
+        if (accountResponse == null)
+            throw new Exception("Account not found");
+
+        if (!accountResponse.StripeChargesEnabled || !accountResponse.StripePayoutsEnabled)
+            throw new StripeAccountNotReadyException();
+
+        if (!string.IsNullOrWhiteSpace(accountResponse.StripeRequirementsDue))
+            throw new StripeAccountNotReadyException("Stripe requirements are not completed.");
+        
         // 2. Завантажити картинку
         string? imageUrl = null;
         if (request.Image != null)
