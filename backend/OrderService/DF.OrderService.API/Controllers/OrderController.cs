@@ -32,6 +32,12 @@ public class OrderController(IOrderService orderService) : ControllerBase
     {
         return Ok(await orderService.ChangeOrderStatus(orderId, status));
     }
+    
+    [HttpPatch("cancel")]
+    public async Task<IActionResult> CancelOrder(Guid orderId)
+    {
+        return Ok(await orderService.CancelOrderAsync(orderId));
+    }
 
     [HttpGet]
     [Route("get-order-details/{orderId}")]

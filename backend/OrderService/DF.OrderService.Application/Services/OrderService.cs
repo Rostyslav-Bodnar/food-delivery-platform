@@ -75,6 +75,8 @@ public class OrderService(
                 OrderId = orderEntity.Id
             });
         }
+
+        var account = await userServiceRpcClient.GetBusinessAccountAsync(new  GetBusinessAccountRequest(order.BusinessId));
         
         // 4️⃣ Публікуємо подію
         var evt = new OrderCreatedEvent(
@@ -88,7 +90,11 @@ public class OrderService(
             ),
             DeliverFrom: new LocationDto(
                 request.DeliverFrom.FullAddress
-            )
+            ),
+            Currency: "usd",
+            PaymentMethod: order.PaymentMethod.ToString(),
+            BusinessStripeAccountId: account.StripeId
+            
         );
 
         await eventPublisher.PublishOrderCreatedEvent(evt);
@@ -194,8 +200,7 @@ public class OrderService(
             CourierPhoneNumber: courier?.PhoneNumber
         );
     }
-
-
+    
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
     {
         var orders = (await orderRepository.GetAll())
@@ -322,7 +327,6 @@ public class OrderService(
 
         return responses;
     }
-
     
     public async Task<IEnumerable<CustomerOrderResponse>> GetAllByCustomerIdAsync(Guid customerId)
     {
@@ -607,8 +611,7 @@ public class OrderService(
 
         return responses;
     }
-
-
+    
     public async Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId)
     {
         var orders = (await orderRepository.GetOrdersByCourierIdAsync(courierId))
@@ -674,9 +677,13 @@ public class OrderService(
 
         order.OrderStatus = status;
         await orderRepository.Update(order);
-
         var business = await userServiceRpcClient.GetBusinessAccountAsync(
             new GetBusinessAccountRequest(order.BusinessId));
+        
+        if (order.OrderStatus == OrderStatus.Canceled)
+        {
+            await eventPublisher.PublishOrderCanceledEvent(new OrderCancelledEvent(orderId, order.PaymentMethod.ToString()));
+        }
 
         return new OrderResponse(
             Id: order.Id,
@@ -711,6 +718,18 @@ public class OrderService(
             OrderDate: order.OrderDate,
             TotalPrice: order.TotalPrice
             );
+    }
+
+    public async Task<bool> CancelOrderAsync(Guid orderId)
+    {
+        var order = await orderRepository.Get(orderId)
+                    ?? throw new InvalidOperationException($"Order {orderId} not found");
+
+        order.OrderStatus = OrderStatus.Canceled;
+        await orderRepository.Update(order);
+        await eventPublisher.PublishOrderCanceledEvent(new OrderCancelledEvent(orderId, order.PaymentMethod.ToString()));
+        
+        return true;
     }
     
     private static string GenerateOrderNumber()

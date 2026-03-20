@@ -17,11 +17,57 @@ public class OrderEventPublisher : IEventPublisher
 
     public async Task PublishOrderCreatedEvent(OrderCreatedEvent evt)
     {
+        var eventName = evt.GetType().Name;
+        
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
+        var msgId = Guid.NewGuid().ToString("N");
+
+        var props = new BasicProperties
+        {
+            Persistent = true,
+            ContentType = "application/json",
+            MessageId = msgId,
+            CorrelationId = msgId,
+            Headers = new Dictionary<string, object?>()
+            {
+                ["x-event-name"] = eventName,
+                ["x-retry-count"] = 0
+            }
+        };
+
         await channel.BasicPublishAsync(
-            exchange: "orders",
-            routingKey: "",
-            body: body
-        );
+            exchange: "df.events",
+            routingKey: eventName,
+            mandatory: false,
+            basicProperties: props,
+            body: body);
+    }
+
+    public async Task PublishOrderCanceledEvent(OrderCancelledEvent evt)
+    {
+        var eventName = evt.GetType().Name;
+        
+        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
+        var msgId = Guid.NewGuid().ToString("N");
+
+        var props = new BasicProperties
+        {
+            Persistent = true,
+            ContentType = "application/json",
+            MessageId = msgId,
+            CorrelationId = msgId,
+            Headers = new Dictionary<string, object?>()
+            {
+                ["x-event-name"] = eventName,
+                ["x-retry-count"] = 0
+            }
+        };
+
+        await channel.BasicPublishAsync(
+            exchange: "df.events",
+            routingKey: eventName,
+            mandatory: false,
+            basicProperties: props,
+            body: body);
     }
 }
