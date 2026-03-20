@@ -1,6 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.OrderService.API", "DF.OrderService.API\DF.OrderService.API.csproj", "{5A81B3C6-C085-450E-BE46-43F52FCF410B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F842210F-DF03-47B7-9C29-3EFF93EB9F06} = {F842210F-DF03-47B7-9C29-3EFF93EB9F06}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B4EBAF1E-A57A-4FBA-89AC-98EE2E95F38A}"
 	ProjectSection(SolutionItems) = preProject
@@ -8,6 +11,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.OrderService.Application", "DF.OrderService.Application\DF.OrderService.Application.csproj", "{565B78D1-F2FD-440D-B9F6-B2AC73B217C7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F842210F-DF03-47B7-9C29-3EFF93EB9F06} = {F842210F-DF03-47B7-9C29-3EFF93EB9F06}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DF.OrderService.Domain", "DF.OrderService.Domain\DF.OrderService.Domain.csproj", "{A77A9A40-9E5A-472A-B47B-54D16FBF5EB4}"
 EndProject
