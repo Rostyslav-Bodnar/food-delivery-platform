@@ -9,6 +9,7 @@ using DF.UserService.Application.Repositories;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -80,6 +81,9 @@ builder.Services.AddScoped<IAccountService, AccountService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
+
+builder.Services.Configure<StripeOptions>(builder.Configuration.GetSection("Stripe"));
+builder.Services.AddSingleton<IStripeConnectService, StripeConnectService>();
 
 //Builders
 builder.Services.AddScoped<IAccountFactory, AccountFactory>();

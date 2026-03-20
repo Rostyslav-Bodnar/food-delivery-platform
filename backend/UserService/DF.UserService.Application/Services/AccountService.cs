@@ -11,7 +11,9 @@ namespace DF.UserService.Application.Services;
 public class AccountService(
     IAccountRepository accountRepository, 
     IAccountFactory accountFactory,
-    ICloudinaryService cloudinaryService) : IAccountService
+    ICloudinaryService cloudinaryService,
+    IStripeConnectService stripe,
+    StripeOptions stripeOptions) : IAccountService
 {
     public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest, Guid userId)
     {
@@ -20,6 +22,23 @@ public class AccountService(
             var entity = await accountFactory.CreateAccount(accountRequest, userId);
             
             entity = await accountRepository.Create(entity);
+
+            if (entity is BusinessAccount businessAccount)
+            {
+                
+                // 1) створити Connected Account
+                var stripeAccountId = await stripe.CreateExpressAccountAsync(businessAccount.User?.Email ?? "", stripeOptions.DefaultCountry);
+                businessAccount.StripeAccountId = stripeAccountId;
+
+                // 2) витягнути статус
+                var status = await stripe.GetAccountStatusAsync(stripeAccountId);
+                businessAccount.StripeChargesEnabled = status.ChargesEnabled;
+                businessAccount.StripePayoutsEnabled = status.PayoutsEnabled;
+                businessAccount.StripeRequirementsDue = status.RequirementsDue;
+
+                await accountRepository.Update(businessAccount);
+
+            }
             
             return entity switch
             {
@@ -124,5 +143,21 @@ public class AccountService(
 
         return businessAccounts.ToList();
     }
+    
+    public async Task<string> GetOnboardingLinkAsync(Guid businessId, CancellationToken ct)
+    {
+        var entity = await accountRepository.Get(businessId) as BusinessAccount
+                     ?? throw new ApplicationException("Business not found");
+
+        if (string.IsNullOrWhiteSpace(entity.StripeAccountId))
+            throw new ApplicationException("StripeAccountId is not set");
+
+        return await stripe.CreateOnboardingLinkAsync(
+            entity.StripeAccountId,
+            stripeOptions.Dashboard.ReturnUrl,
+            stripeOptions.Dashboard.RefreshUrl,
+            ct);
+    }
+
 
 }

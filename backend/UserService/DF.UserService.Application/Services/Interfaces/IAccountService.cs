@@ -12,4 +12,5 @@ public interface IAccountService
     Task<AccountResponse?> GetAccountByUserAsync(Guid userId);
     Task<IEnumerable<AccountResponse>?> GetAccountsByUserAsync(Guid userId);
     Task<IEnumerable<AccountResponse>?> GetBusinessAccountsAsync();
+    Task<string> GetOnboardingLinkAsync(Guid businessId, CancellationToken ct);
 }
