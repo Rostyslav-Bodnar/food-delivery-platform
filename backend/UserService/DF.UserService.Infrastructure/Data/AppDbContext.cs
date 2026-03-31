@@ -5,12 +5,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace DF.UserService.Infrastructure.Data
 {
-    public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
+    public class AppDbContext(DbContextOptions<AppDbContext> options)
+        : IdentityDbContext<User, IdentityRole<Guid>, Guid>(options)
     {
         public DbSet<RefreshToken> RefreshTokens { get; set; }
         public DbSet<Account> Accounts { get; set; }
-
-        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
+        public DbSet<PayoutRecord> PayoutRecords { get; set; }
+        public DbSet<ProcessedWebhook> ProcessedWebhooks => Set<ProcessedWebhook>();
         
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -141,6 +142,58 @@ namespace DF.UserService.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
 
                 entity.ToTable("RefreshTokens");
+            });
+            
+            // === PAYOUT RECORD ===
+            builder.Entity<PayoutRecord>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.StripeAccountId)
+                    .HasMaxLength(255)
+                    .IsRequired();
+
+                entity.Property(p => p.StripePayoutId)
+                    .HasMaxLength(255)
+                    .IsRequired();
+
+                entity.Property(p => p.Currency)
+                    .HasMaxLength(10)
+                    .IsRequired();
+
+                entity.Property(p => p.Status)
+                    .HasMaxLength(50)
+                    .IsRequired();
+
+                entity.Property(p => p.FailureCode)
+                    .HasMaxLength(100);
+
+                entity.Property(p => p.FailureMessage)
+                    .HasMaxLength(1000);
+
+                entity.Property(p => p.BalanceTransactionId)
+                    .HasMaxLength(255);
+
+                entity.Property(p => p.AmountMinor)
+                    .IsRequired();
+
+                entity.Property(p => p.CreatedAtUtc)
+                    .IsRequired();
+
+                // Business relationship (важливо)
+                entity.HasOne<BusinessAccount>()
+                    .WithMany()
+                    .HasForeignKey(p => p.BusinessId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Indexes (дуже важливо для Stripe sync)
+                entity.HasIndex(p => p.StripePayoutId).IsUnique();
+                entity.HasIndex(p => p.StripeAccountId);
+                entity.HasIndex(p => p.BusinessId);
+                entity.HasIndex(p => p.Status);
+                entity.HasIndex(p => p.CreatedAtUtc);
+
+                entity.ToTable("PayoutRecords");
             });
         }
 
