@@ -59,8 +59,8 @@ public class GetBusinessAccountConsumer : IConsumer
                     account.Description,
                     string.Empty, //TODO: add phone number to business account
                     new List<string>(), //TODO add addresses to business account
-                    account.StripeChargesEnabled,
-                    account.StripePayoutsEnabled,
+                    account.StripeChargesEnabled.Value,
+                    account.StripePayoutsEnabled.Value,
                     account.StripeRequirementsDue,
                     account.StripeAccountId
                 );

@@ -24,7 +24,7 @@ public class StripeConnectWebhookController(
         Event stripeEvent;
         try
         {
-            stripeEvent = EventUtility.ConstructEvent(json, signature, EndpointSecret);
+            stripeEvent = EventUtility.ConstructEvent(json, signature, EndpointSecret, throwOnApiVersionMismatch: false);
         }
         catch (StripeException)
         {

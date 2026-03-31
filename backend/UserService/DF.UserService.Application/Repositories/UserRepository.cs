@@ -1,7 +1,7 @@
-﻿using System.Data.Entity;
-using DF.UserService.Application.Repositories.Interfaces;
+﻿using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace DF.UserService.Application.Repositories;
 
