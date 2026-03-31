@@ -6,6 +6,7 @@ export default function Sidebar({
                                     logo,
                                     title,
                                     items = [],
+                                    disabled = false,
                                     footer = null
                                 }) {
     return (
@@ -20,10 +21,11 @@ export default function Sidebar({
                 {items.map(item => (
                     <NavLink
                         key={item.id}
-                        to={item.path}
+                        to={disabled ? "#" : item.path}
                         className={({ isActive }) =>
-                            `sidebar-item ${isActive ? "active" : ""}`
+                            `sidebar-item ${disabled ? "disabled" : isActive ? "active" : ""}`
                         }
+                        onClick={e => disabled && e.preventDefault()}
                     >
                         <item.icon size={20} />
                         <span>{item.label}</span>

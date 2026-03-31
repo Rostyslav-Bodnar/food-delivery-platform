@@ -60,6 +60,11 @@
     color: #fff;
 }
 
+.sidebar-item.disabled {
+    opacity: 0.35;
+    pointer-events: none;
+}
+
 .sidebar-badge {
     position: absolute;
     right: 14px;

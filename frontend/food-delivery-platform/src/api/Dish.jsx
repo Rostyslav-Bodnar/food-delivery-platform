@@ -62,10 +62,8 @@ export const deleteDish = async (id) => {
 export const createDish = async (dish) => {
     const formData = new FormData();
 
-    formData.append("UserId", dish.userId);
-
-    if (dish.menuId) formData.append("MenuId", dish.menuId);
-
+    formData.append("BusinessId", dish.businessId);
+    
     formData.append("Name", dish.name);
     if (dish.description) formData.append("Description", dish.description);
     formData.append("Price", dish.price);
