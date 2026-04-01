@@ -46,14 +46,25 @@ const ProfilePage = () => {
 
     const {
         businessAddresses,
-        editingAddressId,
+        loadingLocations,
+        loadError,
         addressForm,
-        startAddingAddress,
-        startEditingAddress,
-        deleteAddress,
-        handleAddressSubmit,
-        cancelAddressEdit,
-        setAddressForm,
+        searchQuery,
+        searchResults,
+        searching,
+        searchError,
+        submitting,
+        submitError,
+        submitSuccess,
+        isComposerOpen,
+        mapCenter,
+        isResolvingPoint,
+        openComposer,
+        closeComposer,
+        handleAddressFieldChange,
+        selectSuggestion,
+        selectPointOnMap,
+        handleSubmit,
     } = useBusinessAddresses();
 
     if (loading) return <>Loading profile...</>;
@@ -68,45 +79,71 @@ const ProfilePage = () => {
             <div className="user-container">
                 <h2>Profile</h2>
 
-                <UserCard
-                    formData={formData}
-                    currentAccount={currentAccount}
-                    user={user}
-                    editingField={editingField}
-                    isAvatarHovered={isAvatarHovered}
-                    setIsAvatarHovered={setIsAvatarHovered}
-                    inputRef={inputRef}
-                    handleAvatarChange={handleAvatarChange}
-                    handleInputChange={handleInputChange}
-                    handleEditToggle={handleEditToggle}
-                    handleSave={handleSave}
-                />
-
                 <div className="user-info">
-                    <div className="active-accounts">
-                        <h3>Accounts</h3>
-                        <ul>
-                            {accounts.map((account) => (
-                                <li
-                                    key={account.id}
-                                    className={account.id === currentAccountId ? "active-account" : ""}
-                                    onClick={() => handleAccountSwitch(account)}
-                                >
-                                    <div className="account-avatar">
-                                        {account.imageUrl ? (
-                                            <img src={account.imageUrl} alt={account.name} className="account-avatar-image" />
-                                        ) : (
-                                            <div className="avatar-initial">{account.name?.[0] ?? "U"}</div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        {account.name} ({account.accountType})
-                                    </div>
-                                </li>
-                            ))}
-                        </ul>
+                    <div className="user-top">
+                        <UserCard
+                            formData={formData}
+                            currentAccount={currentAccount}
+                            user={user}
+                            editingField={editingField}
+                            isAvatarHovered={isAvatarHovered}
+                            setIsAvatarHovered={setIsAvatarHovered}
+                            inputRef={inputRef}
+                            handleAvatarChange={handleAvatarChange}
+                            handleInputChange={handleInputChange}
+                            handleEditToggle={handleEditToggle}
+                            handleSave={handleSave}
+                        />
+                        <div className="active-accounts">
+                            <h3>Accounts</h3>
+                            <ul>
+                                {accounts.map((account) => (
+                                    <li
+                                        key={account.id}
+                                        className={account.id === currentAccountId ? "active-account" : ""}
+                                        onClick={() => handleAccountSwitch(account)}
+                                    >
+                                        <div className="account-avatar">
+                                            {account.imageUrl ? (
+                                                <img src={account.imageUrl} alt={account.name} className="account-avatar-image" />
+                                            ) : (
+                                                <div className="avatar-initial">{account.name?.[0] ?? "U"}</div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            {account.name} ({account.accountType})
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
                     </div>
 
+                    {isBusiness && (
+                        <BusinessAddresses
+                            businessAddresses={businessAddresses}
+                            loadingLocations={loadingLocations}
+                            loadError={loadError}
+                            addressForm={addressForm}
+                            searchQuery={searchQuery}
+                            searchResults={searchResults}
+                            searching={searching}
+                            searchError={searchError}
+                            submitting={submitting}
+                            submitError={submitError}
+                            submitSuccess={submitSuccess}
+                            isComposerOpen={isComposerOpen}
+                            mapCenter={mapCenter}
+                            isResolvingPoint={isResolvingPoint}
+                            openComposer={openComposer}
+                            closeComposer={closeComposer}
+                            handleAddressFieldChange={handleAddressFieldChange}
+                            selectSuggestion={selectSuggestion}
+                            selectPointOnMap={selectPointOnMap}
+                            handleSubmit={handleSubmit}
+                        />
+                    )}
+                    
                     {isCustomer && (
                         <PaymentCards
                             paymentCards={paymentCards}
@@ -124,20 +161,9 @@ const ProfilePage = () => {
                         />
                     )}
 
-                    {isBusiness && (
-                        <BusinessAddresses
-                            businessAddresses={businessAddresses}
-                            editingAddressId={editingAddressId}
-                            addressForm={addressForm}
-                            startAddingAddress={startAddingAddress}
-                            startEditingAddress={startEditingAddress}
-                            deleteAddress={deleteAddress}
-                            handleAddressSubmit={handleAddressSubmit}
-                            cancelAddressEdit={cancelAddressEdit}
-                            setAddressForm={setAddressForm}
-                        />
-                    )}
-
+                </div>
+                <div className="user-data">
+                    
                 </div>
             </div>
         </div>
