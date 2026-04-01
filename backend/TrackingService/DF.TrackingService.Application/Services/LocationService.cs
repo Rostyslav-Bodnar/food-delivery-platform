@@ -2,6 +2,7 @@
 using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Contracts.Models.Requests;
 using DF.TrackingService.Contracts.Models.Responses;
+using DF.TrackingService.Domain.Entities;
 using NetTopologySuite.Geometries;
 using Location = DF.TrackingService.Domain.Entities.Location;
 
@@ -9,6 +10,7 @@ namespace DF.TrackingService.Application.Services;
 
 public class LocationService(
     ILocationRepository locationRepository,
+    IBusinessLocationRepository businessLocationRepository,
     GeolocationService geolocationService
 ) : ILocationService
 {
@@ -76,6 +78,38 @@ public class LocationService(
         var success = await locationRepository.Delete(id);
         
         return success;
+    }
+
+    public async Task<LocationResponse> AddLocationAsync(AddLocationRequest request)
+    {
+        var location = new Location
+        {
+            FullAddress = request.FullAddress,
+            City = request.City,
+            Street = request.Street,
+            House = request.House,
+            GeoPoint = new Point(request.Latitude, request.Longitude)
+        };
+        
+        location = await locationRepository.Create(location);
+
+        var businessLocation = new BusinessLocation
+        {
+            BusinessId = request.BusinessId,
+            Location = location,
+            LocationId = location.Id
+        };
+        await businessLocationRepository.Create(businessLocation);
+        
+        return new LocationResponse(
+            location.Id,
+            location.FullAddress,
+            location.City,
+            location.Street,
+            location.House,
+            location.GeoPoint?.Y ?? 0, // Latitude
+            location.GeoPoint?.X ?? 0  // Longitude
+        );
     }
 
     private static LocationResponse MapToResponse(Location location)
