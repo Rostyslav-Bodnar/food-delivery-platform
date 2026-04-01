@@ -19,10 +19,12 @@ public class DishService(
 {
     public async Task<DishResponse> CreateDishAsync(CreateDishRequest request)
     {
+        //TODO: створити метод в rpc клієнті для перевірки пройденого анбоардингу
+        
         // 1. Отримати бізнес-акаунт
-        var accountResponse = await userServiceRpcClient.GetAccountAsync(
-            new GetAccountRequest(request.UserId)) as GetBusinessAccountResponse;
-
+        var accountResponse = await userServiceRpcClient.GetBusinessAccountAsync(
+            new GetBusinessAccountRequest(request.BusinessId));
+        
         if (accountResponse == null)
             throw new Exception("Account not found");
 
@@ -31,7 +33,7 @@ public class DishService(
 
         if (!string.IsNullOrWhiteSpace(accountResponse.StripeRequirementsDue))
             throw new StripeAccountNotReadyException("Stripe requirements are not completed.");
-        
+    
         // 2. Завантажити картинку
         string? imageUrl = null;
         if (request.Image != null)
@@ -43,13 +45,13 @@ public class DishService(
         // 3. Створити dish
         var dish = new Dish
         {
-            MenuId = request.MenuId,
+            MenuId = null,
             Name = request.Name,
             Description = request.Description,
             Image = imageUrl,
             Price = request.Price,
             Category = request.Category,
-            BusinessId = accountResponse.AccountId
+            BusinessId = request.BusinessId
         };
 
         // 4. Зберегти dish
