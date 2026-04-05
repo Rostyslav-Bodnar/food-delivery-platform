@@ -1,6 +1,21 @@
-﻿// src/hooks/useOrderDelivery.js
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { getOrdersByCourier } from "../../../../api/Order.jsx";
+import { buildLocation, formatLocation } from "../../../../utils/orderLocations.js";
+
+const mapCourierOrder = (order) => {
+    const businessLocation = buildLocation(order, "business");
+    const customerLocation = buildLocation(order, "customer");
+    const courierLocation = buildLocation(order, "courier");
+
+    return {
+        ...order,
+        businessLocation,
+        customerLocation,
+        courierLocation,
+        customerAddress: formatLocation(customerLocation),
+        restaurantAddress: formatLocation(businessLocation)
+    };
+};
 
 const useOrderDelivery = (userData) => {
     const [activeTab, setActiveTab] = useState("new");
@@ -13,7 +28,7 @@ const useOrderDelivery = (userData) => {
 
         try {
             const orders = await getOrdersByCourier(userData.currentAccount.id);
-            setNewOrders(orders);
+            setNewOrders(orders.map(mapCourierOrder));
         } catch (err) {
             console.error("Error while loading orders:", err);
         }
@@ -30,14 +45,14 @@ const useOrderDelivery = (userData) => {
         setActiveOrder({
             ...order,
             clientAddress: order.customerAddress,
-            clientName: order.customerFullName,
-            clientPhone: order.customerPhoneNumber,
+            clientName: "Customer",
+            clientPhone: "",
             earned: Math.round(order.totalPrice * 0.25),
             timeLeft: "20:00",
             status: "waiting_pickup"
         });
 
-        setNewOrders(prev => prev.filter(o => o.id !== order.id));
+        setNewOrders((prev) => prev.filter((o) => o.id !== order.id));
         setActiveTab("active");
     };
 
@@ -59,7 +74,7 @@ const useOrderDelivery = (userData) => {
             rating: Math.floor(Math.random() * 2) + 4
         };
 
-        setHistory(prev => [completedOrder, ...prev]);
+        setHistory((prev) => [completedOrder, ...prev]);
         alert(`Delivery completed! +${activeOrder.earned} ₴ added to balance`);
 
         setActiveOrder(null);

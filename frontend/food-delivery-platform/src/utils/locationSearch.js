@@ -91,3 +91,8 @@ export const reverseGeocodeAddress = async ({ latitude, longitude }) => {
         ...parseAddressParts(data.address)
     };
 };
+
+export const geocodeAddress = async (address) => {
+    const results = await searchAddressSuggestions(address);
+    return results[0] ?? null;
+};
