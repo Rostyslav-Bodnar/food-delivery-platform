@@ -19,10 +19,17 @@ public class RefundPaymentCommandHandler(IPaymentRepository repo, IStripeService
         // Для Online — викликаємо Stripe; домен оновиться по вебхуку (refund.succeeded / charge.refunded)
         if (payment.Method == PaymentMethod.Online)
         {
+            if (payment.FundsFlow == FundsFlow.Destination)
+            {
+                await stripe.RefundDestinationAsync(payment, cmd.Amount, ct);
+                return;
+            }
+
+            // Інакше — звичайний (SCT/standard) рефанд без reverse_transfer
             await stripe.RefundAsync(payment, cmd.Amount, ct);
-            // Не змінюємо статус тут — чекаємо Stripe webhook для ідемпотентності та істинності стану
             return;
         }
+
 
         // Для CoD — рефанд виконується поза Stripe: змінюємо домен напряму
         if (cmd.Amount.HasValue)

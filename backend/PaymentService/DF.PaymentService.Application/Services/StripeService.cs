@@ -4,6 +4,7 @@ using DF.PaymentService.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Stripe;
 using System.Net;
+using PaymentMethod = DF.PaymentService.Domain.Entities.PaymentMethod;
 
 namespace DF.PaymentService.Application.Services;
 
@@ -95,6 +96,79 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
 
         return intent;
     }
+    
+    
+    public async Task<StripePaymentIntentResult> CreateDestinationPaymentIntentAsync(
+        Payment payment,
+        string destinationStripeAccountId,
+        decimal platformFeePercent = 0.05m,
+        CancellationToken ct = default)
+    {
+        if (payment.Method != PaymentMethod.Online)
+            throw new InvalidOperationException("Destination charge applicable only for Online payments.");
+
+        // ідемпотентність: якщо PI вже створений — повертаємо його
+        if (!string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
+            return new StripePaymentIntentResult(payment.StripePaymentIntentId!, payment.StripeClientSecret!);
+
+        var amountMinor = ToMinorUnits(payment.Amount);
+
+        var scale = GetCurrencyScale(payment.Amount.Currency);
+        var feeMinor = (long)Math.Round(
+            payment.Amount.Amount * platformFeePercent * (decimal)Math.Pow(10, scale),
+            MidpointRounding.AwayFromZero);
+
+        var piService = new PaymentIntentService(_client);
+
+        var create = new PaymentIntentCreateOptions
+        {
+            Amount = amountMinor,
+            Currency = payment.Amount.Currency.ToLowerInvariant(),
+            AutomaticPaymentMethods = new PaymentIntentAutomaticPaymentMethodsOptions { Enabled = true },
+
+            // ⭐️ Destination charges
+            TransferData = new PaymentIntentTransferDataOptions { Destination = destinationStripeAccountId },
+            ApplicationFeeAmount = feeMinor,
+
+            Metadata = new Dictionary<string, string>
+            {
+                ["payment_id"] = payment.Id.ToString(),
+                ["order_id"]   = payment.OrderId.ToString(),
+                ["funds_flow"] = "destination"
+            }
+        };
+
+        var req = new RequestOptions { IdempotencyKey = $"pi_dest_{payment.Id}" };
+
+        var intent = await ExecuteWithRetryAsync(
+            () => piService.CreateAsync(create, req, ct),
+            ct);
+
+        return new StripePaymentIntentResult(intent.Id, intent.ClientSecret);
+    }
+
+    // Рефанд для Destination: reverse_transfer = true (щоб Stripe витягнув частку з акаунта ресторану)
+    public async Task<string> RefundDestinationAsync(Payment payment, decimal? amount = null, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
+            throw new InvalidOperationException("Cannot refund: StripePaymentIntentId is missing.");
+
+        var refundService = new RefundService(_client);
+
+        var options = new RefundCreateOptions
+        {
+            PaymentIntent = payment.StripePaymentIntentId,
+            Amount = amount.HasValue ? ToMinorUnits(new Money(amount.Value, payment.Amount.Currency)) : null,
+            ReverseTransfer = true // критично для Destination‑флоу
+        };
+
+        var refund = await ExecuteWithRetryAsync(
+            () => refundService.CreateAsync(options, requestOptions: null, ct),
+            ct);
+
+        return refund.Id;
+    }
+
 
     // ------------------------------
     // Helpers

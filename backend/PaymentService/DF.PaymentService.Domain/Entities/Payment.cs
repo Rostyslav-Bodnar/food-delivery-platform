@@ -10,6 +10,8 @@ public class Payment : AggregateRoot
     public Money Amount { get; private set; }
     public PaymentMethod Method { get; private set; }
     public PaymentStatus Status { get; private set; }
+    
+    public FundsFlow FundsFlow { get; private set; } = FundsFlow.Standard;
 
     // Stripe debug/trace
     public string? StripePaymentIntentId { get; private set; }
@@ -248,4 +250,6 @@ public class Payment : AggregateRoot
     /// Утиліта для встановлення TTL (використовуйте при створенні PI або при переході в RequiresAction).
     /// </summary>
     public void SetExpiration(DateTime? expiresAt) => ExpiresAt = expiresAt;
+    
+    public void MarkDestinationFlow() => FundsFlow = FundsFlow.Destination;
 }

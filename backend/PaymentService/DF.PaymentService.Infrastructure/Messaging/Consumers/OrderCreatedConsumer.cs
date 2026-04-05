@@ -19,52 +19,50 @@ public class OrderCreatedConsumer(
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         // Підпишемося один раз на старті
+        
         eventBus.Subscribe<OrderCreatedEvent>(async order =>
         {
             using var scope = scopeFactory.CreateScope();
 
-            var handler = scope.ServiceProvider.GetRequiredService<CreatePaymentCommandHandler>();
-
-            var command = new CreatePaymentCommand(
+            var createPayment = scope.ServiceProvider.GetRequiredService<CreatePaymentCommandHandler>();
+            await createPayment.Handle(new CreatePaymentCommand(
                 order.OrderId, order.TotalPrice, order.Currency,
-                Enum.Parse<PaymentMethod>(order.PaymentMethod));
-
-            await handler.Handle(command, stoppingToken);
+                Enum.Parse<PaymentMethod>(order.PaymentMethod)), stoppingToken);
 
             if (order.PaymentMethod == PaymentMethod.Online.ToString())
             {
-                var repository = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-                var stripeService = scope.ServiceProvider.GetRequiredService<IStripeService>();
-                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-                var payment = await repository.GetByOrderIdAsync(order.OrderId, stoppingToken);
+                var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
+                var stripe = scope.ServiceProvider.GetRequiredService<IStripeService>();
+                var payment = await repo.GetByOrderIdAsync(order.OrderId, stoppingToken);
                 if (payment != null && string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
                 {
-                    try
+                    // 🔽 якщо 1 ресторан — використовуємо Destination
+                    if (!string.IsNullOrWhiteSpace(order.BusinessStripeAccountId))
                     {
-                        var result = await stripeService.CreatePaymentIntentAsync(payment, stoppingToken);
+                        var result = await stripe.CreateDestinationPaymentIntentAsync(
+                            payment,
+                            order.BusinessStripeAccountId,
+                            platformFeePercent: 0.05m,
+                            ct: stoppingToken);
+
+                        payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
+                        payment.MarkDestinationFlow();            // <— позначаємо
+                        payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
+
+                        await repo.SaveChangesAsync(stoppingToken);
+                    }
+                    else
+                    {
+                        // fallback: старий шлях (звичайний PI на платформу)
+                        var result = await stripe.CreatePaymentIntentAsync(payment, stoppingToken);
                         payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
                         payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
-                        await repository.SaveChangesAsync(stoppingToken);
-                    }
-                    catch
-                    {
-                        var exists = await db.PaymentTasks
-                            .AnyAsync(t => t.PaymentId == payment.Id
-                                           && t.Type == PaymentTaskType.CreateStripePaymentIntent
-                                           && t.ProcessedOnUtc == null, stoppingToken);
-
-                        if (!exists)
-                        {
-                            await db.PaymentTasks.AddAsync(
-                                PaymentTask.Create(payment.Id, PaymentTaskType.CreateStripePaymentIntent),
-                                stoppingToken);
-                            await db.SaveChangesAsync(stoppingToken);
-                        }
+                        await repo.SaveChangesAsync(stoppingToken);
                     }
                 }
             }
         });
+
 
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }

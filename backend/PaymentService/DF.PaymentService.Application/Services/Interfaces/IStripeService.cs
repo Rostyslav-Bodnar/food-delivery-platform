@@ -18,4 +18,17 @@ public interface IStripeService
     Task<PaymentIntent> ConfirmPaymentIntentAsync(Payment payment,
         PaymentIntentConfirmOptions? options = null,
         CancellationToken ct = default);
+    
+    
+    Task<StripePaymentIntentResult> CreateDestinationPaymentIntentAsync(
+        Payment payment,
+        string destinationStripeAccountId,
+        decimal platformFeePercent = 0.05m,
+        CancellationToken ct = default);
+
+    Task<string> RefundDestinationAsync(
+        Payment payment,
+        decimal? amount = null,
+        CancellationToken ct = default);
+
 }
