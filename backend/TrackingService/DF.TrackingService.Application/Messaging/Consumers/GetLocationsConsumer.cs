@@ -61,12 +61,18 @@ public class GetLocationsConsumer(
             DeliverTo: new LocationDTO(
                 deliverTo.Id,
                 deliverTo.FullAddress,
+                deliverTo.City,
+                deliverTo.Street,
+                deliverTo.House,
                 deliverTo.GeoPoint!.Y, // latitude
                 deliverTo.GeoPoint!.X  // longitude
             ),
             DeliverFrom: new LocationDTO(
                 deliverFrom.Id,
                 deliverFrom.FullAddress,
+                deliverFrom.City,
+                deliverFrom.Street,
+                deliverFrom.House,
                 deliverFrom.GeoPoint!.Y,
                 deliverFrom.GeoPoint!.X
             )

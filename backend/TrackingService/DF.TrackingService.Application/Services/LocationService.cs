@@ -88,7 +88,7 @@ public class LocationService(
             City = request.City,
             Street = request.Street,
             House = request.House,
-            GeoPoint = new Point(request.Latitude, request.Longitude)
+            GeoPoint = new Point(request.Longitude, request.Latitude)
         };
         
         location = await locationRepository.Create(location);

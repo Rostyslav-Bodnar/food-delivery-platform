@@ -19,60 +19,110 @@ public class OrderCreatedConsumer(
     IEventPublisher eventPublisher)
     : IConsumer
 {
-    public void Start()
+    private IChannel? _channel;
+
+    public async void Start()
     {
-        var channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
-        channel.ExchangeDeclareAsync("orders", ExchangeType.Fanout, durable: true)
-            .GetAwaiter().GetResult();
+        _channel = await connection.CreateChannelAsync();
 
-        var queueOk = channel.QueueDeclareAsync("trackingservice.ordercreated", durable: true)
-            .GetAwaiter().GetResult();
+        await _channel.ExchangeDeclareAsync(
+            exchange: "df.events",
+            type: ExchangeType.Topic,
+            durable: true
+        );
 
-        channel.QueueBindAsync(queueOk.QueueName, "orders", "")
-            .GetAwaiter().GetResult();
+        var queue = await _channel.QueueDeclareAsync(
+            queue: "tracking.order-created",
+            durable: true
+        );
 
-        var consumer = new AsyncEventingBasicConsumer(channel);
+        await _channel.QueueBindAsync(
+            queue: queue.QueueName,
+            exchange: "df.events",
+            routingKey: "OrderCreatedEvent" // або "order.created"
+        );
+
+        var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.ReceivedAsync += HandleMessage;
-        channel.BasicConsumeAsync(queueOk.QueueName, autoAck: true, consumer: consumer)
-            .GetAwaiter().GetResult();
 
-        Console.WriteLine("OrderCreatedConsumer started");
+        await _channel.BasicConsumeAsync(
+            queue: queue.QueueName,
+            autoAck: false,
+            consumer: consumer
+        );
+
+        Console.WriteLine("Tracking OrderCreatedConsumer started");
     }
 
     private async Task HandleMessage(object sender, BasicDeliverEventArgs ea)
     {
-        var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-        var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
-
-        if (evt == null) return;
-
-        using var scope = scopeFactory.CreateScope();
-        var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
-
-        var deliverToGeolocation = await geolocationService.GetGeodataAsync(evt.DeliverTo.FullAddress);
-        if(deliverToGeolocation == null) return;
-        var deliverTo = await locationRepository.Create(new Location
+        try
         {
-            FullAddress = evt.DeliverTo.FullAddress,
-            GeoPoint = new Point(deliverToGeolocation.Latitude, deliverToGeolocation.Longitude)
-        });
+            var json = Encoding.UTF8.GetString(ea.Body.ToArray());
+            var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
 
-        await Task.Delay(1000);
-        
-        var deliverFromGeolocation = await geolocationService.GetGeodataAsync(evt.DeliverFrom.FullAddress);
-        if(deliverFromGeolocation == null) return;
-        
-        var deliverFrom = await locationRepository.Create(new Location
+            if (evt == null)
+            {
+                await _channel!.BasicAckAsync(ea.DeliveryTag, false);
+                return;
+            }
+
+            using var scope = scopeFactory.CreateScope();
+            var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
+
+            // 🔥 ПАРАЛЕЛЬНО
+            var toTask = geolocationService.GetGeodataAsync(evt.DeliverTo.FullAddress);
+            var fromTask = geolocationService.GetGeodataAsync(evt.DeliverFrom.FullAddress);
+
+            await Task.WhenAll(toTask, fromTask);
+
+            var deliverToGeo = await toTask;
+            var deliverFromGeo = await fromTask;
+
+            if (deliverToGeo == null || deliverFromGeo == null)
+            {
+                await _channel!.BasicAckAsync(ea.DeliveryTag, false);
+                return;
+            }
+
+            // 🔥 ВАЖЛИВО: X=Lon, Y=Lat
+            var deliverTo = await locationRepository.Create(new Location
+            {
+                FullAddress = evt.DeliverTo.FullAddress,
+                GeoPoint = new Point(
+                    deliverToGeo.Longitude,
+                    deliverToGeo.Latitude
+                )
+            });
+
+            var deliverFrom = await locationRepository.Create(new Location
+            {
+                FullAddress = evt.DeliverFrom.FullAddress,
+                GeoPoint = new Point(
+                    deliverFromGeo.Longitude,
+                    deliverFromGeo.Latitude
+                )
+            });
+
+            await eventPublisher.PublishLocationsCreatedForOrder(
+                new LocationsCreatedForOrder(
+                    evt.OrderId,
+                    new LocationDTO(deliverTo.Id, deliverToGeo.Latitude, deliverToGeo.Longitude),
+                    new LocationDTO(deliverFrom.Id, deliverFromGeo.Latitude, deliverFromGeo.Longitude)
+                )
+            );
+
+            await _channel!.BasicAckAsync(ea.DeliveryTag, false);
+        }
+        catch (Exception ex)
         {
-            FullAddress = evt.DeliverFrom.FullAddress,
-            GeoPoint = new Point(deliverFromGeolocation.Latitude, deliverFromGeolocation.Longitude)
-        });
+            Console.WriteLine($"❌ Error: {ex.Message}");
 
-        await eventPublisher.PublishLocationsCreatedForOrder(
-            new LocationsCreatedForOrder(
-                evt.OrderId, 
-                new LocationDTO(deliverTo.Id, deliverToGeolocation.Latitude, deliverToGeolocation.Longitude),
-                new LocationDTO(deliverFrom.Id, deliverFromGeolocation.Latitude, deliverFromGeolocation.Longitude))
-        );
+            await _channel!.BasicNackAsync(
+                ea.DeliveryTag,
+                multiple: false,
+                requeue: true
+            );
+        }
     }
 }
