@@ -7,7 +7,6 @@ import "../styles/RestaurantSection.css";
 import OrderItem from "./OrderItem.jsx";
 import DeliveryPaymentGrid from "./DeliveryPaymentGrid.jsx";
 import DeliveryAddress from "./DeliveryAddress.jsx";
-import CardForm from "./CardForm.jsx";
 import SummaryBlock from "./SummaryBlock.jsx";
 
 const RestaurantSection = ({
@@ -50,10 +49,6 @@ const RestaurantSection = ({
                     setMapPosition={setMapPosition}
                     mapAddress={mapAddress}
                 />
-            )}
-
-            {settings.paymentType === 'card' && (
-                <CardForm settings={settings} handleCardChange={handleCardChange} />
             )}
 
             <SummaryBlock
