@@ -10,7 +10,7 @@ services:
     command: []
     entrypoint:
     - "dotnet"
-    - "/app/bin/Debug/net9.0/DF.MenuService.API.dll"
+    - "/app/bin/Debug/net10.0/DF.MenuService.API.dll"
     environment:
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
     image: "df.menuservice.api:dev"
