@@ -40,7 +40,17 @@ public class TrackingServiceRpcClient : IDisposable
                 {
                     case TaskCompletionSource<GetLocationsResponse> tcs:
                         var response1 = JsonSerializer.Deserialize<GetLocationsResponse>(json);
-                        if (response1 != null) tcs.SetResult(response1);
+                        if (response1 != null)
+                            tcs.SetResult(response1);
+                        else
+                            tcs.SetException(new InvalidOperationException("Failed to deserialize GetLocationsResponse."));
+                        break;
+                    case TaskCompletionSource<GetBusinessLocationsResponse> tcs:
+                        var response2 = JsonSerializer.Deserialize<GetBusinessLocationsResponse>(json);
+                        if (response2 != null)
+                            tcs.SetResult(response2);
+                        else
+                            tcs.SetException(new InvalidOperationException("Failed to deserialize GetBusinessLocationsResponse."));
                         break;
                 }
             }
@@ -75,6 +85,37 @@ public class TrackingServiceRpcClient : IDisposable
 
         return tcs.Task;
     }
+    
+    public async Task<GetBusinessLocationsResponse> GetBusinessLocationsAsync(GetBusinessLocationsRequest request)
+    {
+        var correlationId = Guid.NewGuid().ToString();
+        var props = new BasicProperties
+        {
+            CorrelationId = correlationId,
+            ReplyTo = replyQueueName
+        };
+
+        var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
+        var tcs = new TaskCompletionSource<GetBusinessLocationsResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        callbackMapper[correlationId] = tcs;
+
+        await channel.BasicPublishAsync(
+            exchange: "",
+            routingKey: "tracking.getbusinesslocations",
+            mandatory: false,
+            basicProperties: props,
+            body: messageBytes);
+        
+        var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
+        if (completedTask != tcs.Task)
+        {
+            callbackMapper.TryRemove(correlationId, out _);
+            throw new TimeoutException("RPC call timed out");
+        }
+
+        return await tcs.Task;
+    }
+
     
     public void Dispose()
     {

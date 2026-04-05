@@ -84,7 +84,7 @@ public class LocationsCreatedConsumer(
         var profit = ProfitService.Calculate(order.TotalPrice, distanceKm);
 
         // ✅ Зберігаємо location IDs
-        order.DeliverFromId = evt.DeliverTo.Id;
+        order.DeliverFromId = evt.DeliverFromId.Id;
         order.DeliverToId = evt.DeliverTo.Id;
         order.Profit = profit;
 
