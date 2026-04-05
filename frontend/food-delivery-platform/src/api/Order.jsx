@@ -39,6 +39,12 @@ export const changeOrderStatus = async (orderId, status) => {
     return res.data;
 };
 
+// Скасувати замовлення
+export const cancelOrder = async (orderId) => {
+    const res = await orderApi.patch(`/order/cancel`, null, { params: { orderId } });
+    return res.data;
+};
+
 // Отримати деталі замовлення
 export const getOrderDetails = async (orderId) => {
     const res = await orderApi.get(`/order/get-order-details/${orderId}`);
