@@ -22,12 +22,13 @@ public record CreateBusinessLocationResponse(
 );
 
 public record GetBusinessLocationsResponse (
+    Guid BusinessId,
     IEnumerable<GetBusinessLocationResponse> BusinessLocations
         );
 
 public record GetBusinessLocationResponse(
-    Guid BusinessId,
     Guid BusinessLocationId,
+    Guid LocationId,
     string FullAddress,
     string City,
     string Street,
