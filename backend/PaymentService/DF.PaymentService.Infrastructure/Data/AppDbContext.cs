@@ -7,6 +7,9 @@ namespace DF.PaymentService.Infrastructure.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<CourierBalance> CourierBalances => Set<CourierBalance>();
+    public DbSet<CourierEarning> CourierEarnings => Set<CourierEarning>();
+    public DbSet<CourierPayout> CourierPayouts => Set<CourierPayout>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
     public DbSet<OutboxDeadMessage>  OutboxDeadMessages => Set<OutboxDeadMessage>();
     public DbSet<PaymentTask> PaymentTasks => Set<PaymentTask>();

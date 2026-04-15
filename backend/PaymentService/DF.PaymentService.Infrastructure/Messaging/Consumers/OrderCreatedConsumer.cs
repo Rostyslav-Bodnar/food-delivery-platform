@@ -5,8 +5,6 @@ using DF.PaymentService.Application.Common.Interfaces;
 using DF.PaymentService.Application.Repositories.Interfaces;
 using DF.PaymentService.Application.Services.Interfaces;
 using DF.PaymentService.Domain.Entities;
-using DF.PaymentService.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -36,29 +34,10 @@ public class OrderCreatedConsumer(
                 var payment = await repo.GetByOrderIdAsync(order.OrderId, stoppingToken);
                 if (payment != null && string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
                 {
-                    // 🔽 якщо 1 ресторан — використовуємо Destination
-                    if (!string.IsNullOrWhiteSpace(order.BusinessStripeAccountId))
-                    {
-                        var result = await stripe.CreateDestinationPaymentIntentAsync(
-                            payment,
-                            order.BusinessStripeAccountId,
-                            platformFeePercent: 0.05m,
-                            ct: stoppingToken);
-
-                        payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
-                        payment.MarkDestinationFlow();            // <— позначаємо
-                        payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
-
-                        await repo.SaveChangesAsync(stoppingToken);
-                    }
-                    else
-                    {
-                        // fallback: старий шлях (звичайний PI на платформу)
-                        var result = await stripe.CreatePaymentIntentAsync(payment, stoppingToken);
-                        payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
-                        payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
-                        await repo.SaveChangesAsync(stoppingToken);
-                    }
+                    var result = await stripe.CreatePaymentIntentAsync(payment, stoppingToken);
+                    payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
+                    payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
+                    await repo.SaveChangesAsync(stoppingToken);
                 }
             }
         });

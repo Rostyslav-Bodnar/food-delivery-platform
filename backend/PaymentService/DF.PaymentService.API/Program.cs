@@ -9,6 +9,7 @@ using DF.PaymentService.Infrastructure.Data;
 using DF.PaymentService.Infrastructure.Messaging;
 using DF.PaymentService.Infrastructure.Messaging.Consumers;
 using DF.PaymentService.Infrastructure.Repositories;
+using DF.PaymentService.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
 
@@ -56,9 +57,9 @@ builder.Services.AddSingleton<IConnection>(sp =>
     var config = builder.Configuration.GetSection("RabbitMQ");
     var factory = new ConnectionFactory
     {
-        HostName = config["HostName"],
-        UserName = config["UserName"],
-        Password = config["Password"],
+        HostName = config["HostName"]!,
+        UserName = config["UserName"]!,
+        Password = config["Password"]!,
         Port = int.Parse(config["Port"] ?? "5672")
     };
     // Створення асинхронного конекшена (чекаємо до готовності)
@@ -84,6 +85,7 @@ builder.Services.AddSingleton<IEventBus>(sp =>
 // 4) Domain/Application infrastructure (Scoped)
 // ------------------------------------------------------------
 builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+builder.Services.AddScoped<ICourierPayoutService, CourierPayoutService>();
 
 // Command handlers (Scoped)
 builder.Services.AddScoped<CreatePaymentCommandHandler>();
@@ -139,9 +141,16 @@ builder.Services.AddSingleton(new StripeTaskProcessorOptions
 });
 builder.Services.AddHostedService<StripeTaskProcessor>();
 
+var courierPayoutSettings = builder.Configuration.GetSection("CourierPayouts").Get<CourierPayoutOptions>()
+                           ?? new CourierPayoutOptions();
+builder.Services.AddSingleton(courierPayoutSettings);
+builder.Services.AddHostedService<CourierPayoutWorker>();
+
 // Consumer слухає події з шини; залежить лише від IEventBus (Singleton) і IServiceScopeFactory
 builder.Services.AddHostedService<OrderCreatedConsumer>();
 builder.Services.AddHostedService<OrderCancelledConsumer>();
+builder.Services.AddHostedService<OrderDeliveredConsumer>();
+builder.Services.AddHostedService<PaymentSucceededConsumer>();
 
 // ------------------------------------------------------------
 // 7) Build & pipeline
@@ -156,7 +165,5 @@ app.UseCors("AllowFrontend");
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
-
-var eventBus = app.Services.GetRequiredService<IEventBus>();
 
 app.Run();

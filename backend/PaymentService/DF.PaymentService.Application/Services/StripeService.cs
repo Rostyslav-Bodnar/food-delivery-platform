@@ -169,6 +169,41 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
         return refund.Id;
     }
 
+    public async Task<string> TransferToConnectedAccountAsync(
+        Guid payoutId,
+        Guid courierId,
+        string destinationStripeAccountId,
+        Money amount,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(destinationStripeAccountId))
+            throw new ArgumentException("Destination Stripe account id is required.", nameof(destinationStripeAccountId));
+
+        var transferService = new TransferService(_client);
+
+        var transfer = await ExecuteWithRetryAsync(
+            () => transferService.CreateAsync(
+                new TransferCreateOptions
+                {
+                    Amount = ToMinorUnits(amount),
+                    Currency = amount.Currency.ToLowerInvariant(),
+                    Destination = destinationStripeAccountId,
+                    Metadata = new Dictionary<string, string>
+                    {
+                        ["payout_id"] = payoutId.ToString(),
+                        ["courier_id"] = courierId.ToString()
+                    }
+                },
+                new RequestOptions
+                {
+                    IdempotencyKey = $"courier_payout_{payoutId}"
+                },
+                ct),
+            ct);
+
+        return transfer.Id;
+    }
+
 
     // ------------------------------
     // Helpers

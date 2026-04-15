@@ -31,4 +31,11 @@ public interface IStripeService
         decimal? amount = null,
         CancellationToken ct = default);
 
+    Task<string> TransferToConnectedAccountAsync(
+        Guid payoutId,
+        Guid courierId,
+        string destinationStripeAccountId,
+        Money amount,
+        CancellationToken ct = default);
+
 }

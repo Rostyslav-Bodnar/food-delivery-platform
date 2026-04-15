@@ -3,6 +3,7 @@ using DF.PaymentService.Application.CommandHandlers;
 using DF.PaymentService.Application.Commands;
 using DF.PaymentService.Application.Common.Interfaces;
 using DF.PaymentService.Application.Repositories.Interfaces;
+using DF.PaymentService.Application.Services.Interfaces;
 using DF.PaymentService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -23,10 +24,13 @@ public class OrderCancelledConsumer(
             var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
             var cancelHandler = scope.ServiceProvider.GetRequiredService<CancelPaymentCommandHandler>();
             var refundHandler = scope.ServiceProvider.GetRequiredService<RefundPaymentCommandHandler>();
+            var courierPayoutService = scope.ServiceProvider.GetRequiredService<ICourierPayoutService>();
             var log = scope.ServiceProvider.GetRequiredService<ILogger<OrderCancelledConsumer>>();
 
             try
             {
+                await courierPayoutService.VoidOrderEarningAsync(evt.OrderId, stoppingToken);
+
                 var payment = await repo.GetByOrderIdAsync(evt.OrderId, stoppingToken);
                 if (payment is null)
                 {

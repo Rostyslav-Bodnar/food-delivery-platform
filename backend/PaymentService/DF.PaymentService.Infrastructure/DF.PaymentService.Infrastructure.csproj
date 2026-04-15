@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="DF.Contracts" Version="1.0.0-pre-release4" />
+      <PackageReference Include="DF.Contracts" Version="1.0.0-pre-release9" />
       <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Abstractions" Version="9.0.4" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">

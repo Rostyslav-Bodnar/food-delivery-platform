@@ -66,3 +66,21 @@ public sealed class PaymentRefundedEvent(
     public decimal OriginalAmount { get; } = originalAmount;
     public string Currency { get; } = currency;
 }
+
+public sealed class CourierPayoutCompletedEvent(
+    Guid orderId,
+    Guid courierId,
+    decimal amount,
+    string currency,
+    Guid payoutId,
+    string? stripeTransferId,
+    DateTime paidAtUtc) : DomainEvent
+{
+    public Guid OrderId { get; } = orderId;
+    public Guid CourierId { get; } = courierId;
+    public decimal Amount { get; } = amount;
+    public string Currency { get; } = currency;
+    public Guid PayoutId { get; } = payoutId;
+    public string? StripeTransferId { get; } = stripeTransferId;
+    public DateTime PaidAtUtc { get; } = paidAtUtc;
+}
