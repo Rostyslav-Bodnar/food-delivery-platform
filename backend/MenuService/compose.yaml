@@ -34,19 +34,8 @@ services:
     networks:
       - df-network
 
-  df.redis:
-    image: redis:7
-    container_name: df.redis
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - df-network
-
 volumes:
   menu_service_data:
-  redis_data:
 
 networks:
   df-network:
