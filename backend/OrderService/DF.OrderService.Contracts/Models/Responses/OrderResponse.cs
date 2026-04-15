@@ -6,7 +6,10 @@ public record OrderResponse(
     string BusinessName,
     Guid OrderedBy,
     DateTime OrderDate,
-    decimal TotalPrice
+    decimal TotalPrice,
+    decimal DeliveryFee,
+    decimal CourierFee,
+    bool CourierPaid
     );
 
 public record CustomerOrderResponse(
@@ -19,11 +22,14 @@ public record CustomerOrderResponse(
     Guid OrderedBy,
     DateTime OrderDate,
     decimal TotalPrice,
+    decimal DeliveryFee,
+    decimal CourierFee,
+    bool CourierPaid,
     Guid DeliveredBy,
     string CourierName,
     string OrderStatus,
     List<DishResponse> dishes
-) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
+) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record BusinessOrderResponse(
     Guid Id,
@@ -35,11 +41,14 @@ public record BusinessOrderResponse(
     LocationResponse CourierLocation,
     DateTime OrderDate,
     decimal TotalPrice,
+    decimal DeliveryFee,
+    decimal CourierFee,
+    bool CourierPaid,
     Guid DeliveredBy,
     string CourierName,
     string OrderStatus,
     List<DishResponse> dishes
-) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
+) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record CourierOrderResponse(
     Guid Id,
@@ -51,9 +60,12 @@ public record CourierOrderResponse(
     LocationResponse CourierLocation,
     DateTime OrderDate,
     decimal TotalPrice,
+    decimal DeliveryFee,
+    decimal CourierFee,
+    bool CourierPaid,
     string OrderStatus,
     decimal Profit
-) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice);
+) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record OrderDetailsResponse(
     Guid Id,
@@ -65,6 +77,9 @@ public record OrderDetailsResponse(
     string CustomerPhoneNumber,
     DateTime OrderDate,
     decimal TotalPrice,
+    decimal DeliveryFee,
+    decimal CourierFee,
+    bool CourierPaid,
     string OrderStatus,
     decimal Profit,
     List<DishResponse> dishes,
