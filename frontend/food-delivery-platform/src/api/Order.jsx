@@ -33,6 +33,16 @@ export const getOrdersByCourier = async (courierId) => {
     return res.data;
 };
 
+export const getAvailableCourierOrders = async (courierId) => {
+    const res = await orderApi.get(`/order/courier`, { params: { courierId } });
+    return res.data;
+};
+
+export const getActiveCourierOrders = async (courierId) => {
+    const res = await orderApi.get(`/order/courier/active`, { params: { courierId } });
+    return res.data;
+};
+
 // Змінити статус замовлення
 export const changeOrderStatus = async (orderId, status) => {
     const res = await orderApi.patch(`/order/status`, null, { params: { orderId, status } });
@@ -64,8 +74,8 @@ export const getCustomerOrderHistory = async (customerId) => {
 };
 
 // Отримати історію замовлень курʼєра
-export const getCourierOrderHistory = async (customerId) => {
-    const res = await orderApi.get(`/order/get-courier-history`, { params: { customerId } });
+export const getCourierOrderHistory = async (courierId) => {
+    const res = await orderApi.get(`/order/get-courier-history`, { params: { customerId: courierId } });
     return res.data;
 };
 
