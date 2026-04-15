@@ -26,7 +26,12 @@ const CheckoutPage = () => {
     const { groupedItems, removeItem } = useCart();
     const { formData, handleInputChange } = useCheckoutForm();
     const { getSettingsFor, updateSettingsFor, handleCardChange } = useRestaurantSettings();
-    const { mapPosition, setMapPosition, mapAddress } = useLocationPicker();
+    const {
+        mapPosition,
+        setMapPosition,
+        mapAddress,
+        location
+    } = useLocationPicker();
     const {
         getRestaurantSubtotal,
         getDeliveryCost,
@@ -35,7 +40,7 @@ const CheckoutPage = () => {
     } = useOrderCalculations(groupedItems, getSettingsFor);
 
     const { handleSubmit, paymentState, markPaid } =
-        useOrderSubmit(formData, groupedItems, getSettingsFor, mapAddress, getRestaurantTotal);
+        useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal);
 
     // Яка модалка відкрита (ключ — назва ресторану)
     const [openForRestaurant, setOpenForRestaurant] = React.useState(null);

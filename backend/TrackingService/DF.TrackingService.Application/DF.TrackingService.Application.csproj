@@ -7,7 +7,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="DF.Contracts" Version="1.0.0-pre-release7" />
+        <PackageReference Include="DF.Contracts" Version="1.0.0-pre-release8" />
         <PackageReference Include="MongoDB.EntityFrameworkCore" Version="10.0.1" />
         <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     </ItemGroup>

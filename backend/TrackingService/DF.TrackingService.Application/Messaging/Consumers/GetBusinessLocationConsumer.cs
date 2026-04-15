@@ -57,9 +57,10 @@ public class GetBusinessLocationConsumer(
             return;
 
         var response = new GetBusinessLocationsResponse(
+            request.BusinessId,
             businessLocations.Select(x => new GetBusinessLocationResponse(
-                x.BusinessId,
                 x.Id,
+                x.LocationId,
                 x.Location.FullAddress,
                 x.Location.City,
                 x.Location.Street,

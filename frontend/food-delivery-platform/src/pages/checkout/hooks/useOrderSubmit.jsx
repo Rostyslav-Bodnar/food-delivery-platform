@@ -1,11 +1,14 @@
 ﻿// src/hooks/useOrderSubmit.js
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+
 import { createOrders, getCustomerOrders } from "../../../api/Order.jsx";
 import { getBusinessLocationsByBusinessId } from "../../../api/Tracking.jsx";
-import { clearCart } from '../../../utils/CartStorage.jsx';
-import { useState } from 'react';
+import { clearCart } from "../../../utils/CartStorage.jsx";
 
 const PAYMENT_API_BASE = "http://localhost:5003/api";
+
+/* -------------------- helpers -------------------- */
 
 const toNumberOrNull = (value) => {
     const parsed = Number(value);
@@ -13,203 +16,273 @@ const toNumberOrNull = (value) => {
 };
 
 const normalizeLocation = (location) => {
-    if (!location) {
-        return null;
-    }
+    if (!location) return null;
 
     const source = location.location ?? location;
-    const fullAddress = source.fullAddress ?? source.address ?? null;
-
-    if (!fullAddress) {
-        return null;
-    }
+    const fullAddress = source.fullAddress ?? source.address ?? source ?? null;
+    if (!fullAddress) return null;
 
     return {
         fullAddress,
         address: fullAddress,
-        city: source.city ?? '',
-        street: source.street ?? '',
-        house: source.house ?? '',
+        city: source.city ?? "",
+        street: source.street ?? "",
+        house: source.house ?? "",
         latitude: toNumberOrNull(source.latitude ?? source.lat),
         longitude: toNumberOrNull(source.longitude ?? source.lng)
     };
 };
 
-const useOrderSubmit = (formData, groupedItems, getSettingsFor, mapAddress, getRestaurantTotal) => {
+const haversineKm = (a, b) => {
+    if (!a || !b || !a.latitude || !a.longitude || !b.latitude || !b.longitude) {
+        return Infinity;
+    }
+
+    const toRad = (x) => (x * Math.PI) / 180;
+    const R = 6371;
+
+    const dLat = toRad(b.latitude - a.latitude);
+    const dLon = toRad(b.longitude - a.longitude);
+
+    const lat1 = toRad(a.latitude);
+    const lat2 = toRad(b.latitude);
+
+    const h =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLon / 2) ** 2;
+
+    return 2 * R * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+};
+
+/* -------------------- hook -------------------- */
+
+const useOrderSubmit = (
+    formData,
+    groupedItems,
+    getSettingsFor,
+    mapAddress,
+    getRestaurantTotal
+) => {
     const navigate = useNavigate();
-    const [paymentState, setPaymentState] = useState({}); // { [restaurant]: { orderId, clientSecret, status: 'awaiting'|'paid' } }
+    const [paymentState, setPaymentState] = useState({});
+
+    /* -------- Stripe -------- */
 
     const fetchClientSecret = async (orderId) => {
         const res = await fetch(`${PAYMENT_API_BASE}/payments/${orderId}`, {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Accept': 'application/json' }
+            method: "GET",
+            credentials: "include",
+            headers: { Accept: "application/json" }
         });
+
         if (!res.ok) throw new Error("Client secret not ready");
-        const json = await res.json(); // { clientSecret: "..." }
+
+        const json = await res.json();
         return json.clientSecret;
     };
 
     const markPaid = (restaurant) => {
-        setPaymentState(prev => {
-            const next = { ...prev, [restaurant]: { ...prev[restaurant], status: 'paid' } };
-            // якщо всі онлайн-ресторани вже "paid" → чистимо кошик і переходимо на /orders
-            const onlineRestaurants = Object.keys(next).filter(r => !!next[r]?.clientSecret);
-            const allPaid = onlineRestaurants.length > 0 && onlineRestaurants.every(r => next[r].status === 'paid');
+        setPaymentState((prev) => {
+            const next = {
+                ...prev,
+                [restaurant]: { ...prev[restaurant], status: "paid" }
+            };
+
+            const online = Object.keys(next).filter(
+                (r) => !!next[r]?.clientSecret
+            );
+
+            const allPaid =
+                online.length > 0 &&
+                online.every((r) => next[r].status === "paid");
+
             if (allPaid) {
                 clearCart();
                 setTimeout(() => navigate("/orders"), 400);
             }
+
             return next;
         });
     };
 
+    /* -------- submit -------- */
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // мінімальна валідація форми
         if (!formData.name || !formData.phone) {
-            alert('Будь ласка, заповніть імʼя та телефон');
+            alert("Будь ласка, заповніть імʼя та телефон");
             return;
         }
 
-        // обовʼязково валідний GUID
         const orderedByRaw = localStorage.getItem("currentAccountId");
         if (!orderedByRaw) {
-            alert("Не знайдено ідентифікатор користувача (orderedBy). Увійдіть ще раз.");
+            alert("Не знайдено ідентифікатор користувача");
             return;
         }
-        // якщо значення збереглося із лапками — видалимо їх
-        const orderedBy = orderedByRaw.replace(/^"+|"+$/g, "");
 
+        const orderedBy = orderedByRaw.replace(/^"+|"+$/g, "");
         const now = new Date().toISOString();
 
         try {
             const businessLocationCache = {};
 
-            const resolveBusinessLocation = async (businessId, restaurant, items) => {
+            const resolveBusinessLocation = async (
+                businessId,
+                restaurant,
+                customerLocation
+            ) => {
                 if (businessLocationCache[businessId]) {
                     return businessLocationCache[businessId];
                 }
 
-                const locationFromCart = items
-                    .map(item => normalizeLocation(item.businessLocation ?? item))
-                    .find(Boolean);
-
-                if (locationFromCart) {
-                    businessLocationCache[businessId] = locationFromCart;
-                    return locationFromCart;
+                if (!customerLocation?.latitude || !customerLocation?.longitude) {
+                    throw new Error(
+                        `Адреса клієнта не має координат (restaurant=${restaurant})`
+                    );
                 }
 
                 const locations = await getBusinessLocationsByBusinessId(businessId);
-                const resolvedLocation = (locations ?? [])
+                const normalized = (locations ?? [])
                     .map(normalizeLocation)
-                    .find(Boolean);
+                    .filter(
+                        (l) => l?.latitude != null && l?.longitude != null
+                    );
 
-                if (!resolvedLocation) {
-                    throw new Error(`Не знайдено адресу закладу для ${restaurant}`);
+                if (normalized.length === 0) {
+                    throw new Error(`У закладу ${restaurant} немає валідних локацій`);
                 }
 
-                businessLocationCache[businessId] = resolvedLocation;
-                return resolvedLocation;
+                let best = normalized[0];
+                let bestDist = haversineKm(customerLocation, best);
+
+                for (const loc of normalized.slice(1)) {
+                    const d = haversineKm(customerLocation, loc);
+                    if (d < bestDist) {
+                        bestDist = d;
+                        best = loc;
+                    }
+                }
+
+                businessLocationCache[businessId] = best;
+                return best;
             };
 
-            // 1) Формуємо МАСИВ замовлень (саме масив потрібен контролеру)
-            const ordersPayload = await Promise.all(Object.entries(groupedItems).map(async ([restaurant, items]) => {
-                const settings = getSettingsFor(restaurant);
-                const finalAddress = settings.address || mapAddress;
-                const businessLocation = await resolveBusinessLocation(items[0].businessId, restaurant, items);
+            /* -------- build orders payload -------- */
 
-                if (settings.deliveryType === 'delivery' && !finalAddress) {
-                    throw new Error(`Адреса не вказана для ${restaurant}`);
-                }
+            const ordersPayload = await Promise.all(
+                Object.entries(groupedItems).map(async ([restaurant, items]) => {
+                    const settings = getSettingsFor(restaurant);
 
-                // int enum: 0=Online, 1=CashOnDelivery
-                const paymentMethod = settings.paymentType === 'card' ? 0 : 1;
+                    debugger;
+                    // ✅ КРИТИЧНО: беремо координати ТІЛЬКИ з mapAddress
+                    const customerLocation = normalizeLocation(mapAddress);
+                    if (settings.deliveryType === "delivery" && !customerLocation) {
+                        throw new Error(`Адреса доставки не вибрана для ${restaurant}`);
+                    }
 
-                // допоміжний конструктор локації — кладемо і fullAddress, і address
-                const toLocation = (addr) => ({
-                    fullAddress: addr,
-                    address: addr
-                });
+                    const businessLocation = await resolveBusinessLocation(
+                        items[0].businessId,
+                        restaurant,
+                        customerLocation
+                    );
 
-                return {
-                    businessId: items[0].businessId,
-                    orderedBy,                 // GUID
-                    orderDate: now,            // ISO-string
-                    totalPrice: getRestaurantTotal(restaurant),
-                    deliveredBy: null,         // nullable Guid
-                    deliverFrom: businessLocation,
-                    deliverTo: toLocation(finalAddress),
-                    paymentMethod,             // 0|1 — під DF.OrderService.Domain.Entities.PaymentMethod
-                    dishes: items.map(i => ({
-                        orderId: "00000000-0000-0000-0000-000000000000",
-                        dishId: i.id
-                    }))
-                };
-            }));
+                    const paymentMethod =
+                        settings.paymentType === "card" ? 0 : 1;
 
-            // ДЕБАГ: переконайся, що це масив
-            // console.log("ORDERS PAYLOAD ->", ordersPayload);
+                    const toLocation = (loc) => ({
+                        fullAddress: loc.fullAddress,
+                        address: loc.fullAddress,
+                        city: loc.city,
+                        street: loc.street,
+                        house: loc.house,
+                        latitude: loc.latitude,
+                        longitude: loc.longitude
+                    });
 
-            // 2) Відправляємо масив у /order/create-orders
-            //    createOrders робить POST body = ordersPayload, Content-Type = application/json
+                    return {
+                        businessId: items[0].businessId,
+                        orderedBy,
+                        orderDate: now,
+                        totalPrice: getRestaurantTotal(restaurant),
+                        deliveredBy: null,
+                        deliverFrom: toLocation(businessLocation),
+                        deliverTo: toLocation(customerLocation),
+                        paymentMethod,
+                        dishes: items.map((i) => ({
+                            orderId: "00000000-0000-0000-0000-000000000000",
+                            dishId: i.id
+                        }))
+                    };
+                })
+            );
+
+            /* -------- create orders -------- */
+
             const createdOk = await createOrders(ordersPayload);
-            if (!createdOk) throw new Error("Створення замовлень повернуло помилку");
+            if (!createdOk) throw new Error("Помилка створення замовлення");
 
-            // 3) Дістаємо всі замовлення клієнта й підбираємо щойно створені (за BusinessId+TotalPrice, найсвіжіші)
-            const allCustomerOrders = await getCustomerOrders(orderedBy);
+            /* -------- fetch fresh orders -------- */
 
-            const freshOrdersByRestaurant = {};
+            const allOrders = await getCustomerOrders(orderedBy);
+            const freshOrders = {};
+
             for (const [restaurant, items] of Object.entries(groupedItems)) {
-                const targetBusinessId = items[0].businessId;
-                const expectedTotal = getRestaurantTotal(restaurant);
+                const bid = items[0].businessId;
+                const total = getRestaurantTotal(restaurant);
 
-                const candidates = (allCustomerOrders || [])
-                    .filter(o => o.businessId === targetBusinessId && Number(o.totalPrice) === Number(expectedTotal))
-                    .sort((a, b) => new Date(b.orderDate) - new Date(a.orderDate));
-                if (candidates.length > 0) {
-                    freshOrdersByRestaurant[restaurant] = candidates[0];
+                const found = (allOrders ?? [])
+                    .filter(
+                        (o) =>
+                            o.businessId === bid &&
+                            Number(o.totalPrice) === Number(total)
+                    )
+                    .sort(
+                        (a, b) =>
+                            new Date(b.orderDate) - new Date(a.orderDate)
+                    )[0];
+
+                if (found) {
+                    freshOrders[restaurant] = found;
                 }
             }
 
-            // 4) Для онлайн‑замовлень отримуємо client_secret з PaymentService
+            /* -------- stripe payment -------- */
+
             const nextPaymentState = {};
-            for (const [restaurant, orderObj] of Object.entries(freshOrdersByRestaurant)) {
+
+            for (const [restaurant, order] of Object.entries(freshOrders)) {
                 const settings = getSettingsFor(restaurant);
-                const isOnline = settings?.paymentType === 'card';
-                if (!isOnline) continue;
+                if (settings.paymentType !== "card") continue;
 
                 let clientSecret = null;
+
                 for (let i = 0; i < 5 && !clientSecret; i++) {
                     try {
-                        clientSecret = await fetchClientSecret(orderObj.id);
+                        clientSecret = await fetchClientSecret(order.id);
                     } catch {
-                        await new Promise(r => setTimeout(r, 1200)); // невеликий полінг, поки PaymentService створює PI
+                        await new Promise((r) => setTimeout(r, 1200));
                     }
                 }
 
                 nextPaymentState[restaurant] = {
-                    orderId: orderObj.id,
-                    clientSecret: clientSecret || null,
-                    status: 'awaiting'
+                    orderId: order.id,
+                    clientSecret,
+                    status: "awaiting"
                 };
             }
 
-            // 5) Якщо онлайн‑замовлень немає — як і раніше: очищаємо кошик та переходимо
-            const onlineRestaurants = Object.keys(nextPaymentState);
-            if (onlineRestaurants.length === 0) {
+            if (Object.keys(nextPaymentState).length === 0) {
                 clearCart();
                 alert("Замовлення успішно створені 🎉");
                 navigate("/orders");
                 return;
             }
 
-            // 6) Інакше показуємо Stripe Payment Element(и)
             setPaymentState(nextPaymentState);
         } catch (err) {
             console.error(err);
-            alert("Помилка при оформленні замовлення");
+            alert(err.message || "Помилка при оформленні замовлення");
         }
     };
 

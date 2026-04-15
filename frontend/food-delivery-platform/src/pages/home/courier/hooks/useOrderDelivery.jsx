@@ -1,95 +1,83 @@
-import { useEffect, useState } from "react";
-import { getOrdersByCourier } from "../../../../api/Order.jsx";
-import { buildLocation, formatLocation } from "../../../../utils/orderLocations.js";
-
-const mapCourierOrder = (order) => {
-    const businessLocation = buildLocation(order, "business");
-    const customerLocation = buildLocation(order, "customer");
-    const courierLocation = buildLocation(order, "courier");
-
-    return {
-        ...order,
-        businessLocation,
-        customerLocation,
-        courierLocation,
-        customerAddress: formatLocation(customerLocation),
-        restaurantAddress: formatLocation(businessLocation)
-    };
-};
+import { useEffect, useMemo, useState } from "react";
+import {
+    getActiveCourierOrders,
+    getAvailableCourierOrders,
+    getCourierOrderHistory
+} from "../../../../api/Order.jsx";
+import { getCourierDeliveryStage, mapCourierOrder } from "../../../courier-orders/courierOrderUtils.js";
 
 const useOrderDelivery = (userData) => {
-    const [activeTab, setActiveTab] = useState("new");
-    const [activeOrder, setActiveOrder] = useState(null);
-    const [newOrders, setNewOrders] = useState([]);
+    const [availableOrders, setAvailableOrders] = useState([]);
+    const [activeOrders, setActiveOrders] = useState([]);
     const [history, setHistory] = useState([]);
-
-    const fetchNewOrders = async () => {
-        if (!userData?.currentAccount?.id) return;
-
-        try {
-            const orders = await getOrdersByCourier(userData.currentAccount.id);
-            setNewOrders(orders.map(mapCourierOrder));
-        } catch (err) {
-            console.error("Error while loading orders:", err);
-        }
-    };
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetchNewOrders();
+        const courierId = userData?.currentAccount?.id;
 
-        const interval = setInterval(fetchNewOrders, 30000);
-        return () => clearInterval(interval);
-    }, [userData]);
+        if (!courierId) {
+            setLoading(false);
+            return undefined;
+        }
 
-    const acceptOrder = (order) => {
-        setActiveOrder({
-            ...order,
-            clientAddress: order.customerAddress,
-            clientName: "Customer",
-            clientPhone: "",
-            earned: Math.round(order.totalPrice * 0.25),
-            timeLeft: "20:00",
-            status: "waiting_pickup"
-        });
+        let isMounted = true;
 
-        setNewOrders((prev) => prev.filter((o) => o.id !== order.id));
-        setActiveTab("active");
-    };
+        const load = async () => {
+            try {
+                const [available, active, historyData] = await Promise.all([
+                    getAvailableCourierOrders(courierId),
+                    getActiveCourierOrders(courierId),
+                    getCourierOrderHistory(courierId)
+                ]);
 
-    const completeDelivery = () => {
-        if (!activeOrder) return;
+                if (!isMounted) {
+                    return;
+                }
 
-        const completedOrder = {
-            id: activeOrder.id,
-            restaurant: activeOrder.businessName,
-            clientName: activeOrder.clientName,
-            earned: activeOrder.earned,
-            price: activeOrder.totalPrice,
-            date:
-                "Today, " +
-                new Date().toLocaleTimeString("uk-UA", {
-                    hour: "2-digit",
-                    minute: "2-digit"
-                }),
-            rating: Math.floor(Math.random() * 2) + 4
+                setAvailableOrders(available.map(mapCourierOrder));
+                setActiveOrders(active.map(mapCourierOrder));
+                setHistory(historyData.map(mapCourierOrder));
+            } catch (error) {
+                console.error("Error while loading courier dashboard:", error);
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
+            }
         };
 
-        setHistory((prev) => [completedOrder, ...prev]);
-        alert(`Delivery completed! +${activeOrder.earned} ₴ added to balance`);
+        load();
+        const intervalId = window.setInterval(load, 30000);
 
-        setActiveOrder(null);
-        setActiveTab("new");
-    };
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+        };
+    }, [userData]);
+
+    const activeOrder = activeOrders[0] ?? null;
+
+    const stats = useMemo(() => {
+        const totalRevenue = history.reduce((sum, order) => sum + Number(order.profit ?? 0), 0);
+
+        return {
+            availableCount: availableOrders.length,
+            activeCount: activeOrders.length,
+            deliveredCount: history.length,
+            totalRevenue
+        };
+    }, [availableOrders, activeOrders, history]);
 
     return {
-        activeTab,
-        setActiveTab,
+        loading,
+        availableOrders,
+        activeOrders,
         activeOrder,
-        setActiveOrder,
-        newOrders,
         history,
-        acceptOrder,
-        completeDelivery
+        stats,
+        activeStage: activeOrder
+            ? getCourierDeliveryStage(activeOrder.id, activeOrder.orderStatus)
+            : "pickup"
     };
 };
 

@@ -39,7 +39,7 @@ public class OrderCreatedConsumer(
         await _channel.QueueBindAsync(
             queue: queue.QueueName,
             exchange: "df.events",
-            routingKey: "OrderCreatedEvent" // або "order.created"
+            routingKey: nameof(OrderCreatedEvent)
         );
 
         var consumer = new AsyncEventingBasicConsumer(_channel);
@@ -51,7 +51,7 @@ public class OrderCreatedConsumer(
             consumer: consumer
         );
 
-        Console.WriteLine("Tracking OrderCreatedConsumer started");
+        Console.WriteLine("✅ Tracking OrderCreatedConsumer started");
     }
 
     private async Task HandleMessage(object sender, BasicDeliverEventArgs ea)
@@ -61,54 +61,77 @@ public class OrderCreatedConsumer(
             var json = Encoding.UTF8.GetString(ea.Body.ToArray());
             var evt = JsonSerializer.Deserialize<OrderCreatedEvent>(json);
 
-            if (evt == null)
+            if (evt is null)
             {
                 await _channel!.BasicAckAsync(ea.DeliveryTag, false);
                 return;
             }
 
             using var scope = scopeFactory.CreateScope();
-            var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
 
-            // 🔥 ПАРАЛЕЛЬНО
-            var toTask = geolocationService.GetGeodataAsync(evt.DeliverTo.FullAddress);
-            var fromTask = geolocationService.GetGeodataAsync(evt.DeliverFrom.FullAddress);
+            var locationRepository =
+                scope.ServiceProvider.GetRequiredService<ILocationRepository>();
 
-            await Task.WhenAll(toTask, fromTask);
+            var businessLocationRepository =
+                scope.ServiceProvider.GetRequiredService<IBusinessLocationRepository>();
 
-            var deliverToGeo = await toTask;
-            var deliverFromGeo = await fromTask;
-
-            if (deliverToGeo == null || deliverFromGeo == null)
+            // ✅ 1. Геокодуємо ЛИШЕ клієнта
+            var toGeo = await geolocationService.GetGeodataAsync(evt.DeliverTo.FullAddress);
+            if (toGeo is null)
             {
+                Console.WriteLine($"❌ Cannot geocode DeliverTo for order {evt.OrderId}");
                 await _channel!.BasicAckAsync(ea.DeliveryTag, false);
                 return;
             }
 
-            // 🔥 ВАЖЛИВО: X=Lon, Y=Lat
+            // ✅ 2. Створюємо Location ТІЛЬКИ для клієнта
             var deliverTo = await locationRepository.Create(new Location
             {
                 FullAddress = evt.DeliverTo.FullAddress,
-                GeoPoint = new Point(
-                    deliverToGeo.Longitude,
-                    deliverToGeo.Latitude
-                )
+                GeoPoint = new Point(toGeo.Longitude, toGeo.Latitude) // X=Lon, Y=Lat
             });
 
-            var deliverFrom = await locationRepository.Create(new Location
+            // ✅ 3. Отримуємо ВСІ бізнес-локації
+            var businessLocations =
+                (await businessLocationRepository.GetByBusinessIdAsync(evt.BusinessId))
+                .ToList();
+
+            if (!businessLocations.Any())
             {
-                FullAddress = evt.DeliverFrom.FullAddress,
-                GeoPoint = new Point(
-                    deliverFromGeo.Longitude,
-                    deliverFromGeo.Latitude
-                )
-            });
+                throw new InvalidOperationException(
+                    $"Business {evt.BusinessId} has no registered locations");
+            }
 
+            // ✅ 4. Обираємо НАЙБЛИЖЧУ локацію бізнесу
+            var nearest = businessLocations
+                .Select(bl => new
+                {
+                    bl.LocationId,
+                    bl.Location,
+                    DistanceKm = HaversineKm(
+                        toGeo.Latitude,
+                        toGeo.Longitude,
+                        bl.Location.GeoPoint.Y, // lat
+                        bl.Location.GeoPoint.X  // lon
+                    )
+                })
+                .OrderBy(x => x.DistanceKm)
+                .First();
+
+            // ✅ 5. Публікуємо подію (БЕЗ створення нової Location для бізнесу)
             await eventPublisher.PublishLocationsCreatedForOrder(
                 new LocationsCreatedForOrder(
                     evt.OrderId,
-                    new LocationDTO(deliverTo.Id, deliverToGeo.Latitude, deliverToGeo.Longitude),
-                    new LocationDTO(deliverFrom.Id, deliverFromGeo.Latitude, deliverFromGeo.Longitude)
+                    new LocationDTO(
+                        deliverTo.Id,
+                        toGeo.Latitude,
+                        toGeo.Longitude
+                    ),
+                    new LocationDTO(
+                        nearest.LocationId,
+                        nearest.Location.GeoPoint.Y,
+                        nearest.Location.GeoPoint.X
+                    )
                 )
             );
 
@@ -116,7 +139,7 @@ public class OrderCreatedConsumer(
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"❌ Error: {ex.Message}");
+            Console.WriteLine($"❌ Tracking OrderCreatedConsumer error: {ex}");
 
             await _channel!.BasicNackAsync(
                 ea.DeliveryTag,
@@ -125,4 +148,26 @@ public class OrderCreatedConsumer(
             );
         }
     }
+
+    // ✅ Простий та надійний Haversine
+    private static double HaversineKm(
+        double lat1, double lon1,
+        double lat2, double lon2)
+    {
+        const double R = 6371;
+
+        double dLat = DegreesToRadians(lat2 - lat1);
+        double dLon = DegreesToRadians(lon2 - lon1);
+
+        double a =
+            Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+            Math.Cos(DegreesToRadians(lat1)) *
+            Math.Cos(DegreesToRadians(lat2)) *
+            Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+        return 2 * R * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+    }
+
+    private static double DegreesToRadians(double deg)
+        => deg * Math.PI / 180.0;
 }

@@ -29,6 +29,9 @@ const HomePage = () => {
                 setIsAuthenticated(true);
                 setUserData(userProfile);
                 setAccountType(userProfile.currentAccount?.accountType);
+                if (userProfile.currentAccount?.name) {
+                    localStorage.setItem("currentAccountName", userProfile.currentAccount.name);
+                }
                 console.log(userProfile);
             } catch (error) {
                 console.log('Token invalid or expired, logging out...');
