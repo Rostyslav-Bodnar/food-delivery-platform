@@ -1,6 +1,7 @@
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Consumers;
 using DF.OrderService.Application.Messaging.Publishers;
+using DF.OrderService.Application.Options;
 using DF.OrderService.Application.Repositories;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services;
@@ -56,12 +57,15 @@ builder.Services.AddSingleton<IConnection>(sp =>
 builder.Services.AddSingleton<UserServiceRpcClient>();
 builder.Services.AddSingleton<MenuServiceRpcClient>();
 builder.Services.AddSingleton<TrackingServiceRpcClient>();
+builder.Services.Configure<CourierCompensationOptions>(
+    builder.Configuration.GetSection("CourierCompensation"));
 
 //EventPublishers
 builder.Services.AddSingleton<IEventPublisher, OrderEventPublisher>();
 
 //Consumers
 builder.Services.AddSingleton<IConsumer, LocationsCreatedConsumer>();
+builder.Services.AddSingleton<IConsumer, CourierPayoutCompletedConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
@@ -72,7 +76,7 @@ builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
 
 //Services
 builder.Services.AddScoped<IOrderService, OrderService>();
-
+builder.Services.AddSingleton<ITrackingTokenService, TrackingTokenService>();
 builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
 

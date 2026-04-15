@@ -1,10 +1,12 @@
 ﻿using System.Text;
 using System.Text.Json;
 using DF.Contracts.EventDriven;
+using DF.OrderService.Application.Options;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services;
 using DF.OrderService.Application.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -12,7 +14,8 @@ namespace DF.OrderService.Application.Messaging.Consumers;
 
 public class LocationsCreatedConsumer(
     IConnection connection,
-    IServiceScopeFactory scopeFactory
+    IServiceScopeFactory scopeFactory,
+    IOptions<CourierCompensationOptions> courierCompensationOptions
 ) : IConsumer
 {
     private const string ExchangeName = "trackingservice";
@@ -81,12 +84,19 @@ public class LocationsCreatedConsumer(
         if (order == null)
             return;
 
-        var profit = ProfitService.Calculate(order.TotalPrice, distanceKm);
+        var deliveryFee = decimal.Round(
+            ProfitService.Calculate(order.TotalPrice, distanceKm),
+            2,
+            MidpointRounding.AwayFromZero);
+        var courierSharePercent = Math.Clamp(courierCompensationOptions.Value.CourierSharePercent, 0m, 1m);
+        var courierFee = decimal.Round(deliveryFee * courierSharePercent, 2, MidpointRounding.AwayFromZero);
 
         // ✅ Зберігаємо location IDs
         order.DeliverFromId = evt.DeliverFromId.Id;
         order.DeliverToId = evt.DeliverTo.Id;
-        order.Profit = profit;
+        order.DeliveryFee = deliveryFee;
+        order.CourierFee = courierFee;
+        order.Profit = deliveryFee;
 
         await orderRepository.Update(order);
     }

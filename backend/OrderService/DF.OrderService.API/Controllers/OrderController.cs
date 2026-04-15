@@ -27,6 +27,12 @@ public class OrderController(IOrderService orderService) : ControllerBase
         return Ok(await orderService.GetAllByCourierIdAsync(courierId));
     }
 
+    [HttpGet("courier/active")]
+    public async Task<IActionResult> GetActiveByCourier(Guid courierId)
+    {
+        return Ok(await orderService.GetActiveByCourierIdAsync(courierId));
+    }
+
     [HttpPatch("status")]
     public async Task<IActionResult> ChangeStatus(Guid orderId, OrderStatus status)
     {
