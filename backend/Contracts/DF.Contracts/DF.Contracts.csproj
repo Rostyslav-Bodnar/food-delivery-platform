@@ -19,7 +19,6 @@
 
 
     <ItemGroup>
-      <Folder Include="Gateway\Requests\" />
       <Folder Include="RPC\" />
         <Folder Include="RPC\Requests" />
         <Folder Include="RPC\Responses" />
@@ -29,6 +28,11 @@
         <Folder Include="RPC\Responses\MenuService" />
         <Folder Include="RPC\Responses\TrackingService" />
         <Folder Include="RPC\Responses\UserService" />
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
     </ItemGroup>
     
 </Project>
