@@ -32,8 +32,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasColumnType("decimal(10,2)")
                 .IsRequired();
 
+            entity.Property(o => o.DeliveryFee)
+                .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
+            entity.Property(o => o.CourierFee)
+                .HasColumnType("decimal(10,2)")
+                .IsRequired();
+
             entity.Property(o => o.OrderStatus)
                 .HasConversion<int>()
+                .IsRequired();
+
+            entity.Property(o => o.CourierPaid)
                 .IsRequired();
 
             entity.Property(o => o.OrderNumber)

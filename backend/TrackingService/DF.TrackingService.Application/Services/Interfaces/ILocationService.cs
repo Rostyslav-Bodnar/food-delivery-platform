@@ -10,4 +10,6 @@ public interface ILocationService
     Task<LocationResponse> CreateLocation(CreateLocationRequest request);
     Task<LocationResponse> UpdateLocation(UpdateLocationRequest request);
     Task<bool> DeleteLocation(Guid id);
+    Task<LocationResponse> AddLocationAsync(AddLocationRequest request);
+
 }

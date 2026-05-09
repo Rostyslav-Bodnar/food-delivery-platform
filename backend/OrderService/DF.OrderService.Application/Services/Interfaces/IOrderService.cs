@@ -13,8 +13,11 @@ public interface IOrderService
     Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId);
     Task<IEnumerable<CustomerOrderResponse>> GetAllByCustomerIdAsync(Guid customerId);
     Task<IEnumerable<CourierOrderResponse>> GetAllByCourierIdAsync(Guid courierId);
+    Task<IEnumerable<CourierOrderResponse>> GetActiveByCourierIdAsync(Guid courierId);
     Task<IEnumerable<CustomerOrderResponse>> GetCustomerOrderHistoryAsync(Guid customerId);
     Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId);
     Task<OrderResponse> ChangeOrderStatus(Guid orderId,  OrderStatus status);
     Task<OrderResponse> DeliverOrderAsync(Guid orderId, Guid courierId);
+    
+    Task<bool> CancelOrderAsync(Guid orderId);
 }

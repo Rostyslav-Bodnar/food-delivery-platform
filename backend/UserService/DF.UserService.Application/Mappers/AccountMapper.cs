@@ -38,7 +38,12 @@ public static class AccountMapper
                 business.AccountType.ToString(),
                 business.ImageUrl,
                 business.Name,
-                business.Description
+                business.Description,
+                business.StripeAccountId,
+                business.StripeChargesEnabled,
+                business.StripePayoutsEnabled,
+                business.StripeRequirementsDue,
+                business.StripeOnboardedAt
             ),
             _ => throw new ArgumentException($"Unknown account type: {account.GetType().Name}")
         };

@@ -123,4 +123,15 @@ public class AccountController(IAccountService accountService) : ControllerBase
         return NoContent();
     }
 
+    [HttpGet("onboarding/{businessId:guid}")]
+    public async Task<IActionResult> GetOnboardingLink(Guid businessId)
+    {
+        var result = await accountService.GetOnboardingLinkAsync(businessId, CancellationToken.None);
+        
+        if(result == null)
+            return NotFound($"Onboarding link for user {User.Identity?.Name} not found.");
+        
+        return Ok(result);
+    }
+
 }

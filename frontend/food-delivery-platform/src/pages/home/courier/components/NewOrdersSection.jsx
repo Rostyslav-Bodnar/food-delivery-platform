@@ -1,9 +1,8 @@
-﻿import React from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Clock, MapPin, Package, Phone, Power } from "lucide-react";
 
 export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
-
     if (!isOnline) {
         return (
             <motion.section
@@ -41,7 +40,7 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                 </div>
             ) : (
                 <div className="orders-grid">
-                    {newOrders.map(order => {
+                    {newOrders.map((order) => {
                         const earned = Math.round(order.totalPrice * 0.25);
 
                         return (
@@ -54,7 +53,6 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                 }}
                                 className="order-card new-order"
                             >
-                                {/* HEADER */}
                                 <div className="order-header">
                                     <h3>{order.businessName}</h3>
                                     <div className="order-price">
@@ -62,7 +60,6 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                     </div>
                                 </div>
 
-                                {/* DETAILS */}
                                 <div className="order-details">
                                     <div>
                                         <MapPin size={14} />
@@ -83,7 +80,6 @@ export default function NewOrderSection({ isOnline, newOrders, acceptOrder }) {
                                     </div>
                                 </div>
 
-                                {/* ACTIONS */}
                                 <div className="order-actions">
                                     <motion.button
                                         whileHover={{ scale: 1.05 }}

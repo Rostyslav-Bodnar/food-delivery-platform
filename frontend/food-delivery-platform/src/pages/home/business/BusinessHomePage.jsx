@@ -13,6 +13,7 @@ import useDishFilters from "./hooks/useDishFilters";
 import useFilteredDishes from "./hooks/useFilteredDishes";
 import useDishModal from "./hooks/useDishModal";
 import useDeleteConfirm from "./hooks/useDeleteConfirm";
+import useOnboardingRedirect from "./handlers/handleOnboardingRedirect.jsx";
 
 export default function BusinessHomePage({ userData }) {
     const { dishes, loading, error } = useFetchDishes(userData);
@@ -21,53 +22,80 @@ export default function BusinessHomePage({ userData }) {
     const { filtered } = useFilteredDishes(dishes, q, category, onlyPopular, sortBy);
     const { isModalOpen, setIsModalOpen, editing, openCreate, openEdit } = useDishModal();
     const { showDeleteConfirm, toDelete, setShowDeleteConfirm, setToDelete } = useDeleteConfirm();
+    const { handleOnboardingRedirect, loadingOnboarding } = useOnboardingRedirect();
+
+    const isNotOnboarded = !userData?.currentAccount?.stripeOnboardedAt;
 
     return (
         <div className="bh-page">
-            <BusinessSidebar userData={userData} />
-            {/* MAIN */}
+
+            {/* ✅ Sidebar отримує disabled */}
+            <BusinessSidebar userData={userData} disabled={isNotOnboarded} />
+
             <main className="bh-main">
-                <BusinessHeader
-                    q={q}
-                    setQ={setQ}
-                    category={category}
-                    setCategory={setCategory}
-                    sortBy={sortBy}
-                    setSortBy={setSortBy}
-                    onlyPopular={onlyPopular}
-                    setOnlyPopular={setOnlyPopular}
-                    openCreate={openCreate}
-                />
-                <DishesContent
-                    loading={loading}
-                    error={error}
-                    filtered={filtered}
-                    openEdit={openEdit}
-                    setToDelete={setToDelete}
-                    setShowDeleteConfirm={setShowDeleteConfirm}
-                />
-                <BusinessFooter
-                    filteredLength={filtered.length}
-                    dishesLength={dishes.length}
-                />
+
+                {/* ✅ Якщо юзер не пройшов onboarding — показуємо лише це */}
+                {isNotOnboarded ? (
+                    <div className="onboarding-box">
+                        <h3>Your business account is not fully set up.</h3>
+                        <p>Please complete onboarding to access your business dashboard.</p>
+
+                        <button
+                            className="onboarding-button"
+                            onClick={() => handleOnboardingRedirect(userData.currentAccount.id)}
+                            disabled={loadingOnboarding}
+                        >
+                            {loadingOnboarding ? "Redirecting..." : "Complete Onboarding"}
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <BusinessHeader
+                            q={q}
+                            setQ={setQ}
+                            category={category}
+                            setCategory={setCategory}
+                            sortBy={sortBy}
+                            setSortBy={setSortBy}
+                            onlyPopular={onlyPopular}
+                            setOnlyPopular={setOnlyPopular}
+                            openCreate={openCreate}
+                        />
+
+                        <DishesContent
+                            loading={loading}
+                            error={error}
+                            filtered={filtered}
+                            openEdit={openEdit}
+                            setToDelete={setToDelete}
+                            setShowDeleteConfirm={setShowDeleteConfirm}
+                        />
+
+                        <BusinessFooter
+                            filteredLength={filtered.length}
+                            dishesLength={dishes.length}
+                        />
+
+                        <DishComponent
+                            open={isModalOpen}
+                            onClose={() => setIsModalOpen(false)}
+                            onCreate={handleCreate}
+                            onUpdate={handleUpdate}
+                            editing={editing}
+                            userData={userData}
+                        />
+
+                        {showDeleteConfirm && toDelete && (
+                            <DeleteConfirm
+                                toDelete={toDelete}
+                                setShowDeleteConfirm={setShowDeleteConfirm}
+                                handleDelete={handleDelete}
+                            />
+                        )}
+                    </>
+                )}
+
             </main>
-            {/* MODAL */}
-            <DishComponent
-                open={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                onCreate={handleCreate}
-                onUpdate={handleUpdate}
-                editing={editing}
-                userData={userData}
-            />
-            {/* DELETE CONFIRM */}
-            {showDeleteConfirm && toDelete && (
-                <DeleteConfirm
-                    toDelete={toDelete}
-                    setShowDeleteConfirm={setShowDeleteConfirm}
-                    handleDelete={handleDelete}
-                />
-            )}
         </div>
     );
 }

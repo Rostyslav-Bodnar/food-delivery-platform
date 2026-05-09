@@ -60,4 +60,9 @@ export const deleteAccount = async (id) => {
     return true;
 };
 
+export const getOnboardingLink = async (businessId) => {
+    const response = await accountApi.get(`onboarding/${businessId}`);
+    return response.data;
+};
+
 export default accountApi;

@@ -1,7 +1,7 @@
 ﻿import axios from "axios";
 import {CategoryMap} from "../constants/category.jsx";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5110/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5004/api";
 
 const dishApi = axios.create({
     baseURL: API_BASE,
@@ -62,10 +62,8 @@ export const deleteDish = async (id) => {
 export const createDish = async (dish) => {
     const formData = new FormData();
 
-    formData.append("UserId", dish.userId);
-
-    if (dish.menuId) formData.append("MenuId", dish.menuId);
-
+    formData.append("BusinessId", dish.businessId);
+    
     formData.append("Name", dish.name);
     if (dish.description) formData.append("Description", dish.description);
     formData.append("Price", dish.price);

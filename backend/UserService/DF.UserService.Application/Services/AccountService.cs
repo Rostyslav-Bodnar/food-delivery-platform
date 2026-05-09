@@ -5,21 +5,49 @@ using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Domain.Entities;
+using Microsoft.Extensions.Options;
 
 namespace DF.UserService.Application.Services;
 
 public class AccountService(
-    IAccountRepository accountRepository, 
+    IAccountRepository accountRepository,
+    IUserRepository userRepository,
     IAccountFactory accountFactory,
-    ICloudinaryService cloudinaryService) : IAccountService
+    ICloudinaryService cloudinaryService,
+    IStripeConnectService stripe,
+    IOptions<StripeOptions> stripeOptions)
+    : IAccountService
 {
+    private readonly StripeOptions stripeOptions = stripeOptions.Value;
+
+
     public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest, Guid userId)
     {
         try
         {
             var entity = await accountFactory.CreateAccount(accountRequest, userId);
+            var user = await userRepository.Get(userId);
+            if (user == null)
+                throw new NullReferenceException("User not found.");
             
             entity = await accountRepository.Create(entity);
+
+            if (entity is BusinessAccount businessAccount)
+            {
+                
+                // 1) створити Connected Account
+                var stripeAccountId = await stripe.CreateExpressAccountAsync(user.Email ?? "", stripeOptions.DefaultCountry);
+                businessAccount.StripeAccountId = stripeAccountId;
+
+                // 2) витягнути статус
+                var status = await stripe.GetAccountStatusAsync(stripeAccountId);
+                businessAccount.StripeChargesEnabled = status.ChargesEnabled;
+                businessAccount.StripePayoutsEnabled = status.PayoutsEnabled;
+                businessAccount.StripeRequirementsDue = status.RequirementsDue;
+
+                await accountRepository.Update(businessAccount);
+
+            }
             
             return entity switch
             {
@@ -124,5 +152,21 @@ public class AccountService(
 
         return businessAccounts.ToList();
     }
+    
+    public async Task<string> GetOnboardingLinkAsync(Guid businessId, CancellationToken ct)
+    {
+        var entity = await accountRepository.Get(businessId) as BusinessAccount
+                     ?? throw new ApplicationException("Business not found");
+
+        if (string.IsNullOrWhiteSpace(entity.StripeAccountId))
+            throw new ApplicationException("StripeAccountId is not set");
+
+        return await stripe.CreateOnboardingLinkAsync(
+            entity.StripeAccountId,
+            stripeOptions.Dashboard.ReturnUrl,
+            stripeOptions.Dashboard.RefreshUrl,
+            ct);
+    }
+
 
 }

@@ -56,4 +56,11 @@ public class LocationController(ILocationService locationService) : ControllerBa
 
         return NoContent();
     }
+    
+    [HttpPost("add")]
+    public async Task<IActionResult> AddBusinessLocation([FromBody] AddLocationRequest request)
+    {
+        var result = await locationService.AddLocationAsync(request);
+        return Ok(result);
+    }
 }

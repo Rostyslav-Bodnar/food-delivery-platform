@@ -27,10 +27,22 @@ public class OrderController(IOrderService orderService) : ControllerBase
         return Ok(await orderService.GetAllByCourierIdAsync(courierId));
     }
 
+    [HttpGet("courier/active")]
+    public async Task<IActionResult> GetActiveByCourier(Guid courierId)
+    {
+        return Ok(await orderService.GetActiveByCourierIdAsync(courierId));
+    }
+
     [HttpPatch("status")]
     public async Task<IActionResult> ChangeStatus(Guid orderId, OrderStatus status)
     {
         return Ok(await orderService.ChangeOrderStatus(orderId, status));
+    }
+    
+    [HttpPatch("cancel")]
+    public async Task<IActionResult> CancelOrder(Guid orderId)
+    {
+        return Ok(await orderService.CancelOrderAsync(orderId));
     }
 
     [HttpGet]
@@ -59,9 +71,9 @@ public class OrderController(IOrderService orderService) : ControllerBase
     
     [HttpGet]
     [Route("get-courier-history")]
-    public async Task<IActionResult> GetCourierOrderHistory(Guid customerId)
+    public async Task<IActionResult> GetCourierOrderHistory(Guid courierId)
     {
-        var result = await orderService.GetCourierOrderHistoryAsync(customerId);
+        var result = await orderService.GetCourierOrderHistoryAsync(courierId);
         return Ok(result);
     }
     

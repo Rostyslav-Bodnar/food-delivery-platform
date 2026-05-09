@@ -1,3 +1,4 @@
+using DF.TrackingService.API.Hubs;
 using DF.TrackingService.Application.Messaging.Consumers;
 using DF.TrackingService.Application.Messaging.Publishers;
 using DF.TrackingService.Application.Repositories;
@@ -7,6 +8,12 @@ using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
+using StackExchange.Redis;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using DF.TrackingService.API.Hubs.Filters;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,8 +47,6 @@ builder.Services.AddDbContext<SqlDbContext>(options =>
 
 builder.Services.AddDbContext<MongoDbContext>(options =>
     options.UseMongoDB(builder.Configuration.GetConnectionString("MongoDdConnection"), "TrackingDb"));
-
-
 
 // RabbitMQ connection
 builder.Services.AddSingleton<IConnection>(sp =>
@@ -84,8 +89,79 @@ builder.Services.AddSingleton<IEventPublisher, TrackingEventPublisher>();
 //Consumers
 builder.Services.AddSingleton<IConsumer, OrderCreatedConsumer>();
 builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessLocationConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
+            ValidIssuer = "df.orderservice",
+            ValidAudience = "df.tracking",
+
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(
+                    builder.Configuration["Jwt:Key"]!
+                )
+            ),
+
+            ClockSkew = TimeSpan.FromSeconds(30)
+        };
+
+        // 🔥 КРИТИЧНО ДЛЯ SIGNALR (token через query)
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                var path = context.HttpContext.Request.Path;
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/courier-tracking"))
+                {
+                    context.Token = accessToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = false;
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+})
+.AddHubOptions<CourierTrackingHub>(options =>
+{
+    options.AddFilter<RateLimitHubFilter>();
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = ConfigurationOptions.Parse(
+        builder.Configuration["Redis:ConnectionString"]!
+    );
+
+    configuration.AbortOnConnectFail = false;
+    configuration.ConnectRetry = 3;
+    configuration.ReconnectRetryPolicy = new ExponentialRetry(5000);
+
+    return ConnectionMultiplexer.Connect(configuration);
+});
 
 
 
@@ -104,6 +180,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.MapHub<CourierTrackingHub>("/hubs/courier-tracking");
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -112,6 +192,9 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseCors("AllowFrontend");
+
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

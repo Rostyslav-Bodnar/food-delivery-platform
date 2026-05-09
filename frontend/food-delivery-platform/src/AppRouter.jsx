@@ -14,6 +14,7 @@ import RestaurantsPage from "./pages/restaurants/RestaurantsPage.jsx";
 import RestaurantDetailsPage from './pages/restaurant-details/RestaurantDetailsPage';
 import CustomerOrdersPage from "./pages/customer-orders/CustomerOrdersPage.jsx";
 import BusinessOrdersPage from "./pages/business-orders/BusinessOrdersPage";
+import CourierOrdersPage from "./pages/courier-orders/CourierOrdersPage.jsx";
 
 const AppRouter = () => {
     return (
@@ -31,6 +32,14 @@ const AppRouter = () => {
                         <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
                         <Route path="/customer/orders" element={<CustomerOrdersPage />} />
                         <Route path="/business/orders" element={<BusinessOrdersPage />} />
+                        <Route
+                            path="/courier/orders"
+                            element={
+                                <ProtectedRoute>
+                                    <CourierOrdersPage />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route
                             path="/profile"
                             element={

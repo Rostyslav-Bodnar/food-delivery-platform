@@ -55,8 +55,10 @@ public class BusinessLocationRepository(SqlDbContext dbContext) : IBusinessLocat
 
     public async Task<IEnumerable<BusinessLocation>> GetByBusinessIdAsync(Guid businessId)
     {
-        var result = await dbContext.BusinessLocations.Where(
-            bl => bl.BusinessId == businessId).ToListAsync();
+        var result = await dbContext.BusinessLocations
+            .Where(bl => bl.BusinessId == businessId)
+            .Include(bl => bl.Location)
+            .ToListAsync();
         return result;
     }
 }

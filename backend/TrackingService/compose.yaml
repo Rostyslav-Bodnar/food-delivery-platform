@@ -11,10 +11,12 @@ services:
       - "5006:8100"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      Redis__ConnectionString: df.redis:6379
       ConnectionStrings__DefaultConnection: Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
     depends_on:
       - df.trackingservice.db
       - df.trackingservice.mongo
+      - df.redis
     networks:
       - df-network
 
@@ -42,9 +44,20 @@ services:
     networks:
       - df-network
 
+  df.redis:
+    image: redis:7.2-alpine
+    container_name: df.redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - df-network
+
 volumes:
   tracking_service_data:
   tracking_service_mongo_data:
+  redis_data:
 
 networks:
   df-network:

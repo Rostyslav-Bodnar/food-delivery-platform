@@ -68,4 +68,12 @@ public class AccountRepository(AppDbContext dbContext) : IAccountRepository
             .Select(u => u.CurrentAccount)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<BusinessAccount?> GetBusinessByStripeIdAsync(string stripeId, CancellationToken cancellationToken)
+    {
+        return await dbContext.Accounts
+            .OfType<BusinessAccount>()
+            .Include(a => a.User)
+            .FirstOrDefaultAsync(b => b.StripeAccountId == stripeId, cancellationToken);
+    }
 }

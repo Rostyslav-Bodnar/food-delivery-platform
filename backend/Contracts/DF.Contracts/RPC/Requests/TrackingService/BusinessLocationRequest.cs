@@ -18,3 +18,7 @@ public record CreateBusinessLocationRequest(
     string Street,
     string House
 );
+
+public record GetBusinessLocationsRequest(
+    Guid BusinessId
+    );

@@ -30,6 +30,7 @@ export const UserProvider = ({ children }) => {
             if (currentAcc) {
                 localStorage.setItem("currentAccountType", currentAcc.accountType);
                 localStorage.setItem("currentAccountId", data.currentAccount.id);
+                localStorage.setItem("currentAccountName", currentAcc.name ?? "");
             }
         } catch (err) {
             console.error("Load user error:", err);

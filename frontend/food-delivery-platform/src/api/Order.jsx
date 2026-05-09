@@ -1,9 +1,8 @@
-﻿import axios from "axios";
-
-const API_BASE = "http://localhost:5229/api";
+import axios from "axios";
+import { ORDER_API_BASE } from "../config/api.js";
 
 const orderApi = axios.create({
-    baseURL: API_BASE,
+    baseURL: ORDER_API_BASE,
     withCredentials: true
 });
 
@@ -12,71 +11,83 @@ orderApi.interceptors.request.use((config) => {
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
 });
 
-// Отримати всі замовлення
 export const getAllOrders = async () => {
-    const res = await orderApi.get(`/order/all`);
+    const res = await orderApi.get("/order/all");
     return res.data;
 };
 
-// Отримати замовлення по бізнесу
 export const getOrdersByBusiness = async (businessId) => {
-    const res = await orderApi.get(`/order/business`, { params: { businessId } });
+    const res = await orderApi.get("/order/business", { params: { businessId } });
     return res.data;
 };
 
-// Отримати замовлення по курʼєру
 export const getOrdersByCourier = async (courierId) => {
-    const res = await orderApi.get(`/order/courier`, { params: { courierId } });
+    const res = await orderApi.get("/order/courier", { params: { courierId } });
     return res.data;
 };
 
-// Змінити статус замовлення
+export const getAvailableCourierOrders = async (courierId) => {
+    const res = await orderApi.get("/order/courier", { params: { courierId } });
+    return res.data;
+};
+
+export const getActiveCourierOrders = async (courierId) => {
+    const res = await orderApi.get("/order/courier/active", { params: { courierId } });
+    return res.data;
+};
+
 export const changeOrderStatus = async (orderId, status) => {
-    const res = await orderApi.patch(`/order/status`, null, { params: { orderId, status } });
+    const res = await orderApi.patch("/order/status", null, { params: { orderId, status } });
     return res.data;
 };
 
-// Отримати деталі замовлення
+export const cancelOrder = async (orderId) => {
+    const res = await orderApi.patch("/order/cancel", null, { params: { orderId } });
+    return res.data;
+};
+
 export const getOrderDetails = async (orderId) => {
     const res = await orderApi.get(`/order/get-order-details/${orderId}`);
     return res.data;
 };
 
-// Отримати всі замовлення клієнта
+export const getTrackingAccessToken = async (orderId) => {
+    const res = await orderApi.post(`/orders/${orderId}/tracking-token`);
+    return res.data;
+};
+
 export const getCustomerOrders = async (customerId) => {
-    const res = await orderApi.get(`/order/get-customer-orders`, { params: { customerId } });
+    const res = await orderApi.get("/order/get-customer-orders", { params: { customerId } });
     return res.data;
 };
 
-// Отримати історію замовлень клієнта
 export const getCustomerOrderHistory = async (customerId) => {
-    const res = await orderApi.get(`/order/get-customer-history`, { params: { customerId } });
+    const res = await orderApi.get("/order/get-customer-history", { params: { customerId } });
     return res.data;
 };
 
-// Отримати історію замовлень курʼєра
-export const getCourierOrderHistory = async (customerId) => {
-    const res = await orderApi.get(`/order/get-courier-history`, { params: { customerId } });
+export const getCourierOrderHistory = async (courierId) => {
+    const res = await orderApi.get("/order/get-courier-history", { params: { courierId } });
     return res.data;
 };
 
-// Створити замовлення
 export const createOrder = async (order) => {
-    const res = await orderApi.post(`/order/create-order`, order);
+    const res = await orderApi.post("/order/create-order", order);
     return res.data;
 };
 
-// Створити кілька замовлень
 export const createOrders = async (orders) => {
-    const res = await orderApi.post(`/order/create-orders`, orders);
+    const res = await orderApi.post("/order/create-orders", orders);
     return res.data;
 };
 
-// Курʼєр приймає замовлення на доставку
 export const deliverOrder = async (orderId, courierId) => {
-    const res = await orderApi.post(`/order/courier/deliver`, null, { params: { orderId, courierId } });
+    const res = await orderApi.post("/order/courier/deliver", null, { params: { orderId, courierId } });
     return res.data;
 };
+
+export default orderApi;
