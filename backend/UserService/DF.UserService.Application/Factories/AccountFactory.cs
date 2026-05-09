@@ -1,7 +1,6 @@
-﻿using DF.UserService.Application.Factories.Interfaces;
+﻿using DF.Contracts.Gateway.Requests.Accounts;
+using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
-using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 

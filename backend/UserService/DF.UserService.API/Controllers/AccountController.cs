@@ -1,7 +1,9 @@
 ﻿using System.Security.Claims;
+using DF.Contracts.Gateway.Requests.Accounts;
+using DF.Contracts.Gateway.Responses;
+using DF.UserService.API.Helpers;
 using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
-using DF.UserService.Contracts.Models.Request;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -41,9 +43,9 @@ public class AccountController(IAccountService accountService) : ControllerBase
     public async Task<IActionResult> GetAllBusinessAccounts()
     {
         var result = await accountService.GetBusinessAccountsAsync();
-        
+        var userId = HttpContext.GetUserId();
         if(result == null)
-            return NotFound($"Business accounts for user {User.Identity.Name} not found.");
+            return NotFound($"Business accounts for user {userId} not found.");
         
         return Ok(result);
     }
@@ -51,35 +53,35 @@ public class AccountController(IAccountService accountService) : ControllerBase
     [HttpPost("courier")]
     public async Task<ActionResult<AccountResponse>> CreateCourierAccount([FromForm] CreateCourierAccountRequest request)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
             return Unauthorized("User ID not found in token");
         
-        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
+        var created = await accountService.CreateAccountAsync(request, userId);
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 
     [HttpPost("customer")]
     public async Task<ActionResult<AccountResponse>> CreateCustomerAccount([FromForm] CreateCustomerAccountRequest request)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
             return Unauthorized("User ID not found in token");
 
 
-        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
+        var created = await accountService.CreateAccountAsync(request, userId);
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 
     [HttpPost("business")]
     public async Task<ActionResult<AccountResponse>> CreateBusinessAccount([FromForm] CreateBusinessAccountRequest request)
     {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-        if (userIdClaim == null)
+        var userId = HttpContext.GetUserId();
+        if (userId == null)
             return Unauthorized("User ID not found in token");
 
 
-        var created = await accountService.CreateAccountAsync(request, Guid.Parse(userIdClaim.Value));
+        var created = await accountService.CreateAccountAsync(request, userId);
         return CreatedAtAction(nameof(GetAccount), new { userId = created.UserId }, created);
     }
 

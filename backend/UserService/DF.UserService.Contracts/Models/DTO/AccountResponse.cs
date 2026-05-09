@@ -53,8 +53,4 @@ namespace DF.UserService.Contracts.Models.DTO
         string? Address,
         string? Description
     ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
-
-
-
-    //TODO: create DTO for accounts
 }

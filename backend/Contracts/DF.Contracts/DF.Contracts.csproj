@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
 
         <PackageId>DF.Contracts</PackageId>
-        <Version>1.0.0-pre-release10</Version>
+        <Version>1.0.1-pre-release1</Version>
         <Authors>Rostyslav</Authors>
         <PackageDescription>Shared contracts for DF microservices</PackageDescription>
 
@@ -29,7 +29,12 @@
         <Folder Include="RPC\Responses\TrackingService" />
         <Folder Include="RPC\Responses\UserService" />
     </ItemGroup>
-
+    <ItemGroup>
+        <Folder Include="Gateway\" />
+        <Folder Include="Gateway\Requests" />
+        <Folder Include="Gateway\Responses" />
+        <Folder Include="RPC\Requests\Accounts" />
+    </ItemGroup>
 
     <ItemGroup>
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />

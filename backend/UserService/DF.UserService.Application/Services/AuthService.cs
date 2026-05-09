@@ -3,6 +3,7 @@ using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using CreateCustomerAccountRequest = DF.Contracts.Gateway.Requests.Accounts.CreateCustomerAccountRequest;
 
 namespace DF.UserService.Application.Services;
 

@@ -1,11 +1,12 @@
-﻿using DF.UserService.Application.Factories.Interfaces;
+﻿using DF.Contracts.Gateway.Requests.Accounts;
+using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
-using DF.UserService.Contracts.Models.Request;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.Options;
+using AccountResponse = DF.Contracts.Gateway.Responses.AccountResponse;
 
 namespace DF.UserService.Application.Services;
 
