@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
 
         <PackageId>DF.Contracts</PackageId>
-        <Version>1.0.0-pre-release9</Version>
+        <Version>1.0.0-pre-release10</Version>
         <Authors>Rostyslav</Authors>
         <PackageDescription>Shared contracts for DF microservices</PackageDescription>
 
@@ -19,6 +19,7 @@
 
 
     <ItemGroup>
+      <Folder Include="Gateway\Requests\" />
       <Folder Include="RPC\" />
         <Folder Include="RPC\Requests" />
         <Folder Include="RPC\Responses" />
