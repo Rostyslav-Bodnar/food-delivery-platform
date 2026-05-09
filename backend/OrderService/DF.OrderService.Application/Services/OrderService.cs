@@ -200,10 +200,8 @@ public class OrderService(
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
     {
-        var orders = (await orderRepository.GetAll())
-            .Where(o => o.DeliveredById == null
-                        && o.DeliverToId.HasValue
-                        && o.DeliverFromId.HasValue)
+        var orders = (await orderRepository.GetOrdersByBusinessIdAsync(businessId))
+            .Where(o => o.DeliverToId.HasValue && o.DeliverFromId.HasValue)
             .ToList();
 
         if (!orders.Any())
@@ -289,7 +287,7 @@ public class OrderService(
 
     public async Task<IEnumerable<CustomerOrderResponse>> GetAllByCustomerIdAsync(Guid customerId)
     {
-        var orders = (await orderRepository.GetAll())
+        var orders = (await orderRepository.GetOrdersByCustomerIdAsync(customerId))
             .Where(o => o.OrderStatus != OrderStatus.Canceled && o.OrderStatus != OrderStatus.Delivered)
             .ToList();
 
@@ -349,7 +347,7 @@ public class OrderService(
         foreach (var order in orders)
         {
             var business = businesses[order.BusinessId];
-            var businessLocation = businessLocations.GetValueOrDefault(order.BusinessId);
+            var businessLocation = businessLocations.GetValueOrDefault(order.Id);
             var location = locations.GetValueOrDefault(order.Id);
             var courier = order.DeliveredById != null
                 ? couriers.GetValueOrDefault(order.DeliveredById.Value)
@@ -576,7 +574,7 @@ public class OrderService(
         foreach (var order in orders)
         {
             var business = businesses[order.BusinessId];
-            var businessLocation = businessLocations.GetValueOrDefault(order.BusinessId);
+            var businessLocation = businessLocations.GetValueOrDefault(order.Id);
             var location = locations.GetValueOrDefault(order.Id);
             var courier = order.DeliveredById != null
                 ? couriers.GetValueOrDefault(order.DeliveredById.Value)

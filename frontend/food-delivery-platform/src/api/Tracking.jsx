@@ -1,9 +1,8 @@
 import axios from "axios";
-
-const API_BASE = "http://localhost:5185/api";
+import { TRACKING_API_BASE } from "../config/api.js";
 
 const trackingApi = axios.create({
-    baseURL: API_BASE,
+    baseURL: TRACKING_API_BASE,
     withCredentials: true
 });
 

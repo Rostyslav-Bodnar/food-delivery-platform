@@ -1,29 +1,30 @@
-﻿import React from "react";
+import React from "react";
 import {
-    Package,
-    Clock,
+    Bike,
     CheckCircle,
+    Clock,
+    Package,
     XCircle
 } from "lucide-react";
 
 import "./styles/BusinessOrdersPage.css";
 import BusinessSidebar from "../../pages/sidebars/BusinessSidebar.jsx";
 import OrderDetailsComponent from "../order-details-modal/OrderDetailsComponent.jsx";
-
 import OrdersHeader from "./components/OrdersHeader";
 import OrdersContent from "./components/OrdersContent";
-
 import { useBusinessOrders } from "./hooks/useBusinessOrders";
 import { useOrderFilter } from "./hooks/useOrderFilter";
 import { useOrderSelection } from "./hooks/useOrderSelection";
 import { useOrderStatus } from "./hooks/useOrderStatus";
+import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
 
 const STATUS_MAP = {
     pending: { label: "New", color: "#7c5cff", icon: Package },
     preparing: { label: "Preparing", color: "#ffb86b", icon: Clock },
     ready: { label: "Ready", color: "#00d4ff", icon: CheckCircle },
+    "on-the-way": { label: "On the way", color: "#00d4ff", icon: Bike },
     delivered: { label: "Delivered", color: "#50fa7b", icon: CheckCircle },
-    cancelled: { label: "Cancelled", color: "#ff6b6b", icon: XCircle },
+    cancelled: { label: "Cancelled", color: "#ff6b6b", icon: XCircle }
 };
 
 export default function BusinessOrdersPage({ userData }) {
@@ -33,6 +34,7 @@ export default function BusinessOrdersPage({ userData }) {
     const { filter, setFilter, filteredOrders } = useOrderFilter(orders);
     const { selectedOrder, openOrder, closeOrder } = useOrderSelection();
     const { handleStatusChange } = useOrderStatus(setOrders);
+    const [trackingOrder, setTrackingOrder] = React.useState(null);
 
     return (
         <div className="bh-page">
@@ -48,6 +50,7 @@ export default function BusinessOrdersPage({ userData }) {
                         statusMap={STATUS_MAP}
                         onStatusChange={handleStatusChange}
                         onOpenDetails={openOrder}
+                        onTrackOrder={setTrackingOrder}
                     />
                 </section>
             </main>
@@ -57,6 +60,13 @@ export default function BusinessOrdersPage({ userData }) {
                     order={selectedOrder}
                     statusMap={STATUS_MAP}
                     onClose={closeOrder}
+                />
+            )}
+
+            {trackingOrder && (
+                <LiveOrderTrackingModal
+                    order={trackingOrder}
+                    onClose={() => setTrackingOrder(null)}
                 />
             )}
         </div>

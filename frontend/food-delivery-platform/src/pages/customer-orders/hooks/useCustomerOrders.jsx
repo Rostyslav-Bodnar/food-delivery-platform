@@ -1,18 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
 import {
     cancelOrder,
-    getCustomerOrders,
-    getOrderDetails
+    getCustomerOrders
 } from "../../../api/Order.jsx";
 import { buildLocation, formatLocation, hasCoordinates } from "../../../utils/orderLocations.js";
 
 const mapStatus = (status) => {
     switch (status) {
+        case "Ready":
         case "Preparing":
             return "preparing";
         case "OnTheWay":
+        case "OutForDelivery":
             return "on-the-way";
         case "Cancelled":
+        case "Canceled":
             return "cancelled";
         case "Delivered":
             return "delivered";
@@ -107,29 +109,12 @@ export function useCustomerOrders(customerId) {
         }
     };
 
-    const getTrackingDetails = async (orderId) => {
-        const details = await getOrderDetails(orderId);
-
-        return {
-            id: details.id,
-            customerAddress: details.customerAddress,
-            customerPhoneNumber: details.customerPhoneNumber,
-            customerFullName: details.customerFullName,
-            courierName: details.courierName,
-            courierPhoneNumber: details.courierPhoneNumber,
-            deliveredById: details.deliveredById,
-            orderStatus: mapStatus(details.orderStatus),
-            rawStatus: details.orderStatus
-        };
-    };
-
     return {
         orders,
         loading,
         error,
         cancellingOrderId,
         reloadOrders: loadOrders,
-        cancelCustomerOrder,
-        getTrackingDetails
+        cancelCustomerOrder
     };
 }

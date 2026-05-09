@@ -1,18 +1,50 @@
-﻿import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
+import { getTrackingAccessToken } from "../api/Order.jsx";
+import { TRACKING_HUB_URL } from "../config/api.js";
 
-const HUB_URL = "http://localhost:5006/hubs/courier-tracking";
+const normalizeLocation = (dto) => {
+    if (!dto) {
+        return null;
+    }
 
-export default function useCourierTracking(orderId) {
-    const [location, setLocation] = useState(null);
+    return {
+        orderId: dto.orderId ?? dto.OrderId,
+        courierId: dto.courierId ?? dto.CourierId,
+        latitude: Number(dto.latitude ?? dto.Latitude ?? 0),
+        longitude: Number(dto.longitude ?? dto.Longitude ?? 0),
+        speed: dto.speed ?? dto.Speed ?? null,
+        heading: dto.heading ?? dto.Heading ?? null,
+        timestampUtc: dto.timestampUtc ?? dto.TimestampUtc ?? new Date().toISOString()
+    };
+};
+
+const normalizeSnapshot = (snapshot) => {
+    if (!snapshot) {
+        return null;
+    }
+
+    return {
+        orderId: snapshot.orderId ?? snapshot.OrderId,
+        courierId: snapshot.courierId ?? snapshot.CourierId ?? null,
+        stage: snapshot.stage ?? snapshot.Stage ?? "awaiting-courier",
+        courierLocation: normalizeLocation(snapshot.courierLocation ?? snapshot.CourierLocation),
+        updatedAtUtc: snapshot.updatedAtUtc ?? snapshot.UpdatedAtUtc ?? new Date().toISOString()
+    };
+};
+
+export default function useCourierTracking(orderId, { enabled = true } = {}) {
+    const [snapshot, setSnapshot] = useState(null);
     const [status, setStatus] = useState("idle");
-    // idle | connecting | connected | offline | error
 
     const connectionRef = useRef(null);
-    const offlineTimerRef = useRef(null);
 
     useEffect(() => {
-        if (!orderId) return;
+        if (!enabled || !orderId) {
+            setSnapshot(null);
+            setStatus("idle");
+            return undefined;
+        }
 
         let cancelled = false;
 
@@ -20,40 +52,36 @@ export default function useCourierTracking(orderId) {
             try {
                 setStatus("connecting");
 
-                const accessToken = localStorage.getItem("accessToken");
-                if (!accessToken) throw new Error("No access token");
-
-                const res = await fetch(`/api/orders/${orderId}/tracking-token`, {
-                    method: "POST",
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`
-                    }
-                });
-
-                if (!res.ok) throw new Error("Failed to fetch tracking token");
-
-                const { token } = await res.json();
-                if (cancelled) return;
+                const { token } = await getTrackingAccessToken(orderId);
+                if (cancelled) {
+                    return;
+                }
 
                 const connection = new signalR.HubConnectionBuilder()
-                    .withUrl(HUB_URL, {
+                    .withUrl(TRACKING_HUB_URL, {
                         accessTokenFactory: () => token
                     })
                     .withAutomaticReconnect([0, 2000, 5000, 10000])
                     .configureLogging(signalR.LogLevel.Warning)
                     .build();
 
-                connection.on("CourierLocationUpdated", (dto) => {
-                    setLocation(dto);
+                connection.on("TrackingSnapshotUpdated", (nextSnapshot) => {
+                    setSnapshot(normalizeSnapshot(nextSnapshot));
                     setStatus("connected");
+                });
 
-                    if (offlineTimerRef.current) {
-                        clearTimeout(offlineTimerRef.current);
-                    }
+                connection.on("CourierLocationUpdated", (dto) => {
+                    const location = normalizeLocation(dto);
 
-                    offlineTimerRef.current = setTimeout(() => {
-                        setStatus("offline");
-                    }, 60000);
+                    setSnapshot((current) => ({
+                        orderId,
+                        courierId: location?.courierId ?? current?.courierId ?? null,
+                        stage: current?.stage ?? "awaiting-courier",
+                        courierLocation: location,
+                        updatedAtUtc: location?.timestampUtc ?? new Date().toISOString()
+                    }));
+
+                    setStatus("connected");
                 });
 
                 connection.onreconnecting(() => setStatus("connecting"));
@@ -61,14 +89,17 @@ export default function useCourierTracking(orderId) {
                 connection.onclose(() => setStatus("offline"));
 
                 await connection.start();
-                if (cancelled) return;
+                if (cancelled) {
+                    await connection.stop();
+                    return;
+                }
 
                 await connection.invoke("SubscribeToOrder", orderId);
 
                 connectionRef.current = connection;
                 setStatus("connected");
-            } catch (err) {
-                console.error("Tracking error:", err);
+            } catch (error) {
+                console.error("Tracking subscription failed", error);
                 setStatus("error");
             }
         };
@@ -78,16 +109,15 @@ export default function useCourierTracking(orderId) {
         return () => {
             cancelled = true;
 
-            if (offlineTimerRef.current) {
-                clearTimeout(offlineTimerRef.current);
-            }
+            const connection = connectionRef.current;
+            connectionRef.current = null;
 
-            if (connectionRef.current) {
-                connectionRef.current.stop();
-                connectionRef.current = null;
+            if (connection) {
+                connection.invoke("UnsubscribeFromOrder", orderId).catch(() => {});
+                connection.stop().catch(() => {});
             }
         };
-    }, [orderId]);
+    }, [enabled, orderId]);
 
-    return { location, status };
+    return { snapshot, status };
 }

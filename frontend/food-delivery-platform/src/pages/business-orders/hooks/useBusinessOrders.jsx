@@ -5,7 +5,7 @@ import { buildLocation, formatLocation } from "../../../utils/orderLocations.js"
 const BACKEND_STATUS_MAP = {
     Preparing: "preparing",
     Ready: "ready",
-    OutForDelivery: "ready",
+    OutForDelivery: "on-the-way",
     Delivered: "delivered",
     Canceled: "cancelled"
 };
@@ -28,6 +28,8 @@ export function useBusinessOrders(businessId) {
 
                     return {
                         id: o.id,
+                        businessName: o.businessName,
+                        restaurant: o.businessName,
                         createdAt: new Date(o.orderDate).toLocaleTimeString([], {
                             hour: "2-digit",
                             minute: "2-digit"
@@ -37,8 +39,11 @@ export function useBusinessOrders(businessId) {
                         businessLocation,
                         customerLocation,
                         courierLocation,
+                        businessAddress: formatLocation(businessLocation),
+                        customerAddress: formatLocation(customerLocation),
                         total: o.totalPrice,
                         status: BACKEND_STATUS_MAP[o.orderStatus] ?? "pending",
+                        rawStatus: o.orderStatus,
                         courier: o.courierName ? { name: o.courierName } : null,
                         items: o.dishes.map((d) => ({
                             name: d.dishName,

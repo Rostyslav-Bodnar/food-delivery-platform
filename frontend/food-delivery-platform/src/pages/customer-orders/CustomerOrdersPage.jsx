@@ -1,20 +1,22 @@
 import React from "react";
+import {
+    Bike,
+    CheckCircle2,
+    Clock3,
+    Package,
+    XCircle
+} from "lucide-react";
 
 import "./styles/CustomerOrdersPage.css";
 import CustomerSidebar from "../sidebars/CustomerSidebar";
 import OrderDetailsComponent from "../order-details-modal/OrderDetailsComponent.jsx";
-
 import CustomerOrdersHeader from "./components/CustomerOrdersHeader";
 import CustomerOrdersContent from "./components/CustomerOrdersContent";
 import CancelOrderModal from "./components/CancelOrderModal.jsx";
-import OrderTrackingModal from "./components/OrderTrackingModal.jsx";
-
 import { useCustomerOrders } from "./hooks/useCustomerOrders";
 import { useCustomerOrderSelection } from "./hooks/useCustomerOrderSelection";
 import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
-import { geocodeAddress } from "../../utils/locationSearch.js";
-import { formatLocation } from "../../utils/orderLocations.js";
-import { getRoadRoute } from "../../utils/roadRouting.js";
+import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
 
 const CustomerOrdersPage = () => {
     const customerId = localStorage.getItem("currentAccountId");
@@ -24,8 +26,7 @@ const CustomerOrdersPage = () => {
         loading,
         error,
         cancellingOrderId,
-        cancelCustomerOrder,
-        getTrackingDetails
+        cancelCustomerOrder
     } = useCustomerOrders(customerId);
     const {
         selectedOrder,
@@ -35,69 +36,7 @@ const CustomerOrdersPage = () => {
     const { getStatusMeta } = useCustomerOrderStatusMeta();
 
     const [orderToCancel, setOrderToCancel] = React.useState(null);
-    const [trackingState, setTrackingState] = React.useState({
-        loading: false,
-        error: "",
-        order: null,
-        tracking: null
-    });
-
-    const handleTrackOrder = async (order) => {
-        setTrackingState({
-            loading: true,
-            error: "",
-            order,
-            tracking: null
-        });
-
-        try {
-            const details = await getTrackingDetails(order.id);
-            const [restaurantCoords, customerCoords] = await Promise.all([
-                order.businessCoords
-                    ? Promise.resolve(order.businessCoords)
-                    : geocodeAddress(order.address),
-                order.customerCoords
-                    ? Promise.resolve(order.customerCoords)
-                    : details.customerAddress
-                        ? geocodeAddress(details.customerAddress)
-                        : Promise.resolve(null)
-            ]);
-
-            const route = restaurantCoords && customerCoords
-                ? await getRoadRoute(restaurantCoords, customerCoords)
-                : null;
-
-            setTrackingState({
-                loading: false,
-                error: "",
-                order,
-                tracking: {
-                    restaurantAddress: formatLocation(order.businessLocation) || order.address,
-                    customerAddress: formatLocation(order.customerLocation) || details.customerAddress || "Address not available",
-                    restaurantCoords,
-                    customerCoords,
-                    route
-                }
-            });
-        } catch (trackError) {
-            console.error(trackError);
-            setTrackingState({
-                loading: false,
-                error: "Could not build the tracking map for this order.",
-                order,
-                tracking: null
-            });
-        }
-    };
-
-    const closeTrackingModal = () => {
-        setTrackingState({
-            loading: false,
-            error: "",
-            order: null,
-            tracking: null
-        });
-    };
+    const [trackingOrder, setTrackingOrder] = React.useState(null);
 
     const confirmCancelOrder = async () => {
         if (!orderToCancel) {
@@ -109,8 +48,8 @@ const CustomerOrdersPage = () => {
             if (selectedOrder?.id === orderToCancel.id) {
                 closeOrderDetails();
             }
-            if (trackingState.order?.id === orderToCancel.id) {
-                closeTrackingModal();
+            if (trackingOrder?.id === orderToCancel.id) {
+                setTrackingOrder(null);
             }
             setOrderToCancel(null);
         } catch (cancelError) {
@@ -125,27 +64,13 @@ const CustomerOrdersPage = () => {
             <main className="auth-homepage customer-orders-page">
                 <CustomerOrdersHeader />
 
-                {trackingState.loading && (
-                    <div className="orders-feedback-card">
-                        <h3>Building tracking map</h3>
-                        <p>We are locating the restaurant and delivery destination.</p>
-                    </div>
-                )}
-
-                {trackingState.error && (
-                    <div className="orders-feedback-card orders-feedback-card--error">
-                        <h3>Tracking unavailable</h3>
-                        <p>{trackingState.error}</p>
-                    </div>
-                )}
-
                 <CustomerOrdersContent
                     loading={loading}
                     error={error}
                     orders={orders}
                     getStatusMeta={getStatusMeta}
                     onOpenDetails={openOrderDetails}
-                    onTrackOrder={handleTrackOrder}
+                    onTrackOrder={setTrackingOrder}
                     onRequestCancel={setOrderToCancel}
                     cancellingOrderId={cancellingOrderId}
                 />
@@ -155,11 +80,11 @@ const CustomerOrdersPage = () => {
                 <OrderDetailsComponent
                     order={selectedOrder}
                     statusMap={{
-                        preparing: { label: "Preparing", icon: () => <span>рџЌі</span> },
-                        "on-the-way": { label: "On the way", icon: () => <span>рџЏЌпёЏ</span> },
-                        new: { label: "New", icon: () => <span>рџ“¦</span> },
-                        cancelled: { label: "Cancelled", icon: () => <span>вњ•</span> },
-                        delivered: { label: "Delivered", icon: () => <span>вњ…</span> }
+                        preparing: { label: "Preparing", icon: Clock3 },
+                        "on-the-way": { label: "On the way", icon: Bike },
+                        new: { label: "New", icon: Package },
+                        cancelled: { label: "Cancelled", icon: XCircle },
+                        delivered: { label: "Delivered", icon: CheckCircle2 }
                     }}
                     onClose={closeOrderDetails}
                 />
@@ -174,11 +99,10 @@ const CustomerOrdersPage = () => {
                 />
             )}
 
-            {trackingState.order && trackingState.tracking && (
-                <OrderTrackingModal
-                    order={trackingState.order}
-                    tracking={trackingState.tracking}
-                    onClose={closeTrackingModal}
+            {trackingOrder && (
+                <LiveOrderTrackingModal
+                    order={trackingOrder}
+                    onClose={() => setTrackingOrder(null)}
                 />
             )}
         </div>

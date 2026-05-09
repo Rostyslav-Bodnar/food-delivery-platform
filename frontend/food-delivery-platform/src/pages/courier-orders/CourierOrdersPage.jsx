@@ -20,6 +20,7 @@ import {
 } from "../../api/Order.jsx";
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
+import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
 import CourierRouteMap from "./components/CourierRouteMap.jsx";
 import {
     calculateDistanceKm,
@@ -32,11 +33,6 @@ import {
     setCourierDeliveryStage
 } from "./courierOrderUtils.js";
 import "./styles/CourierOrdersPage.css";
-
-const STAGE_TO_STATUS = {
-    pickup: "Ready",
-    dropoff: "OutForDelivery"
-};
 
 const markerPalette = {
     courier: { fillColor: "#7c5cff", strokeColor: "#d9d2ff" },
@@ -62,6 +58,19 @@ export default function CourierOrdersPage() {
     const deliveryStage = activeOrder
         ? getCourierDeliveryStage(activeOrder.id, activeOrder.orderStatus)
         : "pickup";
+    const trackingStage = activeOrder
+        ? deliveryStage === "pickup"
+            ? "to-restaurant"
+            : "to-customer"
+        : null;
+
+    const { connectionStatus: trackingConnectionStatus, publishStage } = useCourierLocationSender({
+        orderId: activeOrder?.id,
+        courierId,
+        position: courierPosition,
+        stage: trackingStage,
+        enabled: Boolean(isOnline && activeOrder)
+    });
 
     useEffect(() => {
         if (!navigator.geolocation) {
@@ -93,7 +102,7 @@ export default function CourierOrdersPage() {
     useEffect(() => {
         if (!courierId) {
             setLoading(false);
-            return;
+            return undefined;
         }
 
         let isMounted = true;
@@ -240,7 +249,7 @@ export default function CourierOrdersPage() {
             setCourierDeliveryStage(order.id, "pickup");
 
             setAvailableOrders((current) => current.filter((item) => item.id !== order.id));
-            setActiveOrders([order]);
+            setActiveOrders([{ ...order, orderStatus: "outfordelivery" }]);
         } catch (error) {
             console.error("Failed to accept order", error);
         } finally {
@@ -249,27 +258,15 @@ export default function CourierOrdersPage() {
     };
 
     const handlePickedUp = async () => {
-        if (!activeOrder) return;
+        if (!activeOrder) {
+            return;
+        }
 
         try {
             setActionLoading(activeOrder.id);
-
-            await changeOrderStatus(activeOrder.id, STAGE_TO_STATUS.dropoff);
-
-            // ✅ перемикаємо deliveryStage
             setCourierDeliveryStage(activeOrder.id, "dropoff");
-
-            // ✅ очищаємо попередній маршрут – це критично
+            await publishStage("to-customer");
             setRoute(null);
-
-            // ✅ оновлюємо activeOrder
-            setActiveOrders((current) =>
-                current.map((order) =>
-                    order.id === activeOrder.id
-                        ? { ...order, orderStatus: "outfordelivery" }
-                        : order
-                )
-            );
         } catch (error) {
             console.error("Failed to update pickup status", error);
         } finally {
@@ -285,6 +282,7 @@ export default function CourierOrdersPage() {
         try {
             setActionLoading(activeOrder.id);
             await changeOrderStatus(activeOrder.id, "Delivered");
+            await publishStage("delivered");
             clearCourierDeliveryStage(activeOrder.id);
             setHistory((current) => [{ ...activeOrder, orderStatus: "delivered" }, ...current]);
             setActiveOrders([]);
@@ -299,6 +297,16 @@ export default function CourierOrdersPage() {
     const routeSummary = route
         ? `${formatRouteDistance(route.distanceMeters)} | ${formatRouteDuration(route.durationSeconds)}`
         : "Route will appear once coordinates are available";
+
+    const trackingStatusLabel = activeOrder
+        ? trackingConnectionStatus === "connected"
+            ? "Live tracking broadcasting"
+            : trackingConnectionStatus === "connecting"
+                ? "Connecting live tracking"
+                : trackingConnectionStatus === "error"
+                    ? "Live tracking unavailable"
+                    : "Live tracking paused"
+        : "Location synced";
 
     return (
         <div className="courier-orders-shell">
@@ -332,7 +340,7 @@ export default function CourierOrdersPage() {
                         </div>
                         <div className="courier-chip">
                             <LocateFixed size={16} />
-                            {locationError || "Location synced"}
+                            {locationError || trackingStatusLabel}
                         </div>
                     </div>
                 </section>

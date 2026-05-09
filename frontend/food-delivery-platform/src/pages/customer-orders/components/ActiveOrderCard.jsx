@@ -1,5 +1,12 @@
 import React from "react";
-import { Clock3, MapPin, Wallet } from "lucide-react";
+import { Bike, Clock3, MapPin, Wallet } from "lucide-react";
+
+const formatCurrency = (value) =>
+    new Intl.NumberFormat("uk-UA", {
+        style: "currency",
+        currency: "UAH",
+        maximumFractionDigits: 0
+    }).format(Number(value ?? 0));
 
 export default function ActiveOrderCard({
     order,
@@ -9,16 +16,14 @@ export default function ActiveOrderCard({
     onRequestCancel,
     cancelling
 }) {
-    
-    console.log("ActiveOrderCard", order);
-    
     return (
         <div className="active-order-card">
             <div className="active-order-header">
                 <div className="order-id">#{order.id.slice(0, 8)}</div>
 
                 <div className="live-status" style={{ color: statusMeta.color }}>
-                    {statusMeta.icon} {statusMeta.text}
+                    {statusMeta.icon}
+                    {statusMeta.text}
                 </div>
             </div>
 
@@ -36,7 +41,7 @@ export default function ActiveOrderCard({
                     </div>
                     <div className="order-meta-pill">
                         <Wallet size={14} />
-                        {order.total} ₴ total
+                        {formatCurrency(order.total)}
                     </div>
                 </div>
 
@@ -45,29 +50,31 @@ export default function ActiveOrderCard({
                         <div key={item.id} className="order-item">
                             <span className="item-name">{item.name}</span>
                             <span className="item-details">
-                                {item.quantity} × {item.price} ₴
+                                {item.quantity} x {formatCurrency(item.price)}
                             </span>
                         </div>
                     ))}
                 </div>
 
-                {order.status === "on-the-way" && order.courier && (
+                {order.courier?.name && (
                     <div className="courier-info">
-                        <div className="courier-avatar">👤</div>
+                        <div className="courier-avatar">
+                            <Bike size={16} />
+                        </div>
                         <div className="courier-name">{order.courier.name}</div>
                     </div>
                 )}
 
-                <div className="order-total">Total: {order.total} ₴</div>
+                <div className="order-total">Total: {formatCurrency(order.total)}</div>
             </div>
 
             <div className="active-order-footer">
                 <button className="track-btn" onClick={() => onTrackOrder(order)}>
-                    Track on Map
+                    Track live
                 </button>
 
                 <button className="details-btn" onClick={() => onOpenDetails(order)}>
-                    Order Details
+                    Order details
                 </button>
 
                 {order.canCancel && (

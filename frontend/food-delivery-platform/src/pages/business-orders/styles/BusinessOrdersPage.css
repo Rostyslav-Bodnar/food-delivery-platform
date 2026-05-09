@@ -1,4 +1,4 @@
-.orders-grid {
+п»ї.orders-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
     gap: 18px;
@@ -13,10 +13,10 @@
     transition: var(--transition);
 }
 
-    .order-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 50px rgba(2,6,23,0.65);
-    }
+.order-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 50px rgba(2,6,23,0.65);
+}
 
 .order-header {
     padding: 14px 18px;
@@ -91,21 +91,38 @@
     justify-content: center;
 }
 
-    .status-actions button {
-        padding: 8px 14px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 13px;
-        border: none;
-        cursor: pointer;
-        background: rgba(124,92,255,0.15);
-        color: var(--text);
-    }
+.status-actions button {
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    border: none;
+    cursor: pointer;
+    background: rgba(124,92,255,0.15);
+    color: var(--text);
+}
 
-        .status-actions button.danger {
-            background: rgba(255,107,107,0.15);
-            color: #ff6b6b;
-        }
+.status-actions button.danger {
+    background: rgba(255,107,107,0.15);
+    color: #ff6b6b;
+}
+
+.order-footer__actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.track-order-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 1px solid rgba(0, 212, 255, 0.18);
+    border-radius: 10px;
+    background: rgba(0, 212, 255, 0.08);
+    color: var(--text);
+}
 
 .details-btn {
     display: flex;
@@ -118,7 +135,6 @@
     cursor: pointer;
 }
 
-/* Адаптивність */
 @media (max-width: 768px) {
     .order-footer {
         flex-direction: column;
@@ -128,9 +144,15 @@
     .status-actions {
         order: -1;
         justify-content: stretch;
+        width: 100%;
     }
 
-        .status-actions button {
-            flex: 1;
-        }
+    .status-actions button {
+        flex: 1;
+    }
+
+    .order-footer__actions {
+        width: 100%;
+        justify-content: space-between;
+    }
 }

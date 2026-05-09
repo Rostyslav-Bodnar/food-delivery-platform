@@ -1,0 +1,226 @@
+.tracking-live-modal__overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+        radial-gradient(circle at top left, rgba(124, 92, 255, 0.18), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.12), transparent 28%),
+        rgba(5, 10, 16, 0.82);
+    backdrop-filter: blur(16px);
+}
+
+.tracking-live-modal {
+    position: relative;
+    width: min(1120px, 100%);
+    max-height: min(88vh, 920px);
+    overflow: auto;
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    background: linear-gradient(180deg, rgba(11, 15, 20, 0.98), rgba(7, 16, 20, 0.98));
+    color: var(--text);
+    box-shadow: 0 28px 80px rgba(2, 6, 23, 0.72);
+}
+
+.tracking-live-modal__close {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    z-index: 2;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border-radius: 12px;
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+}
+
+.tracking-live-modal__header {
+    display: flex;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 28px 28px 12px;
+}
+
+.tracking-live-modal__header h3 {
+    margin: 10px 0 8px;
+    font-size: 30px;
+    line-height: 1.1;
+}
+
+.tracking-live-modal__header p {
+    margin: 0;
+    color: var(--muted-2);
+    max-width: 640px;
+}
+
+.tracking-live-modal__eyebrow,
+.tracking-live-modal__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent-3);
+}
+
+.tracking-live-modal__header-chips {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 10px;
+    padding-right: 56px;
+}
+
+.tracking-live-modal__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, rgba(124, 92, 255, 0.18), rgba(0, 212, 255, 0.16));
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.tracking-live-modal__chip--muted {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--muted-2);
+}
+
+.tracking-live-modal__layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
+    gap: 20px;
+    padding: 16px 28px 28px;
+}
+
+.tracking-live-modal__map-shell,
+.tracking-live-modal__card {
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
+    box-shadow: 0 18px 50px rgba(2, 6, 23, 0.36);
+}
+
+.tracking-live-modal__map-shell {
+    overflow: hidden;
+}
+
+.tracking-live-modal__map {
+    width: 100%;
+    min-height: 520px;
+}
+
+.tracking-live-modal__sidebar {
+    display: grid;
+    gap: 14px;
+    align-content: start;
+}
+
+.tracking-live-modal__card {
+    padding: 18px;
+}
+
+.tracking-live-modal__card strong {
+    display: block;
+    margin-top: 10px;
+    font-size: 17px;
+    line-height: 1.35;
+}
+
+.tracking-live-modal__card p {
+    margin: 8px 0 0;
+    color: var(--muted-2);
+    font-size: 14px;
+}
+
+.tracking-live-modal__steps {
+    display: grid;
+    gap: 10px;
+    padding: 0;
+    margin: 14px 0 0;
+    list-style: none;
+}
+
+.tracking-live-modal__steps li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--muted-2);
+    font-size: 14px;
+}
+
+.tracking-live-modal__steps li::before {
+    content: "";
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.tracking-live-modal__steps li.is-active {
+    color: var(--text);
+}
+
+.tracking-live-modal__steps li.is-active::before {
+    background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
+    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.12);
+}
+
+@media (max-width: 960px) {
+    .tracking-live-modal__header,
+    .tracking-live-modal__layout {
+        grid-template-columns: 1fr;
+        display: grid;
+    }
+
+    .tracking-live-modal__header {
+        gap: 16px;
+    }
+
+    .tracking-live-modal__header h3 {
+        font-size: 24px;
+    }
+
+    .tracking-live-modal__header-chips {
+        justify-content: flex-start;
+        padding-right: 0;
+    }
+
+    .tracking-live-modal__map {
+        min-height: 420px;
+    }
+}
+
+@media (max-width: 640px) {
+    .tracking-live-modal__overlay {
+        padding: 12px;
+    }
+
+    .tracking-live-modal__header,
+    .tracking-live-modal__layout {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .tracking-live-modal__header {
+        padding-top: 20px;
+    }
+
+    .tracking-live-modal__layout {
+        padding-bottom: 16px;
+    }
+
+    .tracking-live-modal__map {
+        min-height: 340px;
+    }
+}

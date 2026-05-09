@@ -1,59 +1,125 @@
-﻿import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-
-const HUB_URL = "http://localhost:5006/hubs/courier-tracking";
+import { getTrackingAccessToken } from "../api/Order.jsx";
+import { TRACKING_HUB_URL } from "../config/api.js";
 
 export default function useCourierLocationSender({
-                                                     orderId,
-                                                     courierId,
-                                                     position,
-                                                     enabled = true
-                                                 }) {
+    orderId,
+    courierId,
+    position,
+    stage,
+    enabled = true
+}) {
+    const [connectionStatus, setConnectionStatus] = useState("idle");
+
     const connectionRef = useRef(null);
     const intervalRef = useRef(null);
+    const latestRef = useRef({
+        orderId,
+        courierId,
+        position,
+        stage
+    });
 
     useEffect(() => {
-        if (!enabled || !orderId || !courierId || !position) return;
+        latestRef.current = {
+            orderId,
+            courierId,
+            position,
+            stage
+        };
+    }, [courierId, orderId, position, stage]);
+
+    const publishStage = useCallback(async (nextStage) => {
+        const connection = connectionRef.current;
+        const currentOrderId = latestRef.current.orderId;
+
+        if (!connection || connection.state !== signalR.HubConnectionState.Connected || !currentOrderId || !nextStage) {
+            return;
+        }
+
+        await connection.invoke("UpdateTrackingStage", currentOrderId, nextStage);
+    }, []);
+
+    useEffect(() => {
+        if (!enabled || !orderId || !courierId) {
+            setConnectionStatus("idle");
+            return undefined;
+        }
 
         let cancelled = false;
 
-        const start = async () => {
-            const accessToken = localStorage.getItem("accessToken");
-            if (!accessToken) return;
+        const sendLocation = async () => {
+            const connection = connectionRef.current;
+            const current = latestRef.current;
 
-            const res = await fetch(`/api/orders/${orderId}/tracking-token`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${accessToken}`
-                }
+            if (
+                !connection ||
+                connection.state !== signalR.HubConnectionState.Connected ||
+                !current.orderId ||
+                !current.courierId ||
+                !current.position
+            ) {
+                return;
+            }
+
+            await connection.invoke("SendLocation", {
+                orderId: current.orderId,
+                courierId: current.courierId,
+                latitude: current.position.latitude,
+                longitude: current.position.longitude,
+                speed: null,
+                heading: null,
+                timestampUtc: new Date().toISOString()
             });
+        };
 
-            if (!res.ok) return;
+        const start = async () => {
+            try {
+                setConnectionStatus("connecting");
 
-            const { token } = await res.json();
-            if (cancelled) return;
+                const { token } = await getTrackingAccessToken(orderId);
+                if (cancelled) {
+                    return;
+                }
 
-            const connection = new signalR.HubConnectionBuilder()
-                .withUrl(HUB_URL, {
-                    accessTokenFactory: () => token
-                })
-                .withAutomaticReconnect()
-                .build();
+                const connection = new signalR.HubConnectionBuilder()
+                    .withUrl(TRACKING_HUB_URL, {
+                        accessTokenFactory: () => token
+                    })
+                    .withAutomaticReconnect([0, 2000, 5000, 10000])
+                    .configureLogging(signalR.LogLevel.Warning)
+                    .build();
 
-            await connection.start();
-            connectionRef.current = connection;
+                connection.onreconnecting(() => setConnectionStatus("connecting"));
+                connection.onreconnected(() => {
+                    setConnectionStatus("connected");
+                    publishStage(latestRef.current.stage).catch(() => {});
+                });
+                connection.onclose(() => setConnectionStatus("offline"));
 
-            intervalRef.current = setInterval(() => {
-                connection.invoke("SendLocation", {
-                    orderId,
-                    courierId,
-                    latitude: position.latitude,
-                    longitude: position.longitude,
-                    speed: null,
-                    heading: null,
-                    timestampUtc: new Date().toISOString()
-                }).catch(() => {});
-            }, 5000);
+                await connection.start();
+                if (cancelled) {
+                    await connection.stop();
+                    return;
+                }
+
+                connectionRef.current = connection;
+                setConnectionStatus("connected");
+
+                if (latestRef.current.stage) {
+                    await publishStage(latestRef.current.stage);
+                }
+
+                await sendLocation();
+
+                intervalRef.current = window.setInterval(() => {
+                    sendLocation().catch(() => {});
+                }, 5000);
+            } catch (error) {
+                console.error("Failed to start courier tracking publisher", error);
+                setConnectionStatus("error");
+            }
         };
 
         start();
@@ -62,14 +128,29 @@ export default function useCourierLocationSender({
             cancelled = true;
 
             if (intervalRef.current) {
-                clearInterval(intervalRef.current);
+                window.clearInterval(intervalRef.current);
                 intervalRef.current = null;
             }
 
-            if (connectionRef.current) {
-                connectionRef.current.stop();
-                connectionRef.current = null;
+            const connection = connectionRef.current;
+            connectionRef.current = null;
+
+            if (connection) {
+                connection.stop().catch(() => {});
             }
         };
-    }, [orderId, courierId, position, enabled]);
+    }, [courierId, enabled, orderId, publishStage]);
+
+    useEffect(() => {
+        if (!stage) {
+            return;
+        }
+
+        publishStage(stage).catch(() => {});
+    }, [publishStage, stage]);
+
+    return {
+        connectionStatus,
+        publishStage
+    };
 }

@@ -1,7 +1,7 @@
 ﻿import axios from "axios";
 import {CategoryMap} from "../constants/category.jsx";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5110/api";
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5004/api";
 
 const dishApi = axios.create({
     baseURL: API_BASE,
