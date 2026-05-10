@@ -45,7 +45,6 @@ public class DishService(
         // 3. Створити dish
         var dish = new Dish
         {
-            MenuId = null,
             Name = request.Name,
             Description = request.Description,
             Image = imageUrl,
@@ -70,7 +69,6 @@ public class DishService(
         // 7. Повернути DTO
         return new DishResponse(
             dish.Id,
-            dish.MenuId,
             dish.Name,
             dish.Description,
             dish.Image,
@@ -93,7 +91,6 @@ public class DishService(
 
             result.Add(new DishResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
@@ -114,7 +111,6 @@ public class DishService(
 
         return new DishResponse(
             d.Id,
-            d.MenuId,
             d.Name,
             d.Description,
             d.Image,
@@ -136,7 +132,6 @@ public class DishService(
 
             result.Add(new DishResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
@@ -180,7 +175,6 @@ public class DishService(
 
         return new DishResponse(
             existing.Id,
-            existing.MenuId,
             existing.Name,
             existing.Description,
             existing.Image,
@@ -202,7 +196,6 @@ public class DishService(
         
         return new DishForCustomerResponse(
             d.Id,
-            d.MenuId,
             d.Name,
             d.Description,
             d.Image,
@@ -253,7 +246,6 @@ public class DishService(
 
             result.Add(new DishForCustomerResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
@@ -282,7 +274,6 @@ public class DishService(
 
             result.Add(new DishForCustomerResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,

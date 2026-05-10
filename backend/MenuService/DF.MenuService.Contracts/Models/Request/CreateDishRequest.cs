@@ -15,7 +15,6 @@ public record CreateDishRequest(
     
 public record UpdateDishRequest(
     Guid DishId,
-    Guid? MenuId, 
     string Name, 
     string? Description, 
     decimal Price, 

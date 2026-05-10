@@ -100,12 +100,10 @@ builder.Services.AddSingleton<UserServiceRpcClient>();
 //Services
 builder.Services.AddScoped<IDishService, DishService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
-builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IIngredientService, IngredientService>();
 
 //Repositories
 builder.Services.AddScoped<IDishRepository, DishRepository>();
-builder.Services.AddScoped<IMenuRepository, MenuRepository>();
 builder.Services.AddScoped<IIngredientRepository, IngredientRepository>();
 
 // Build the app
