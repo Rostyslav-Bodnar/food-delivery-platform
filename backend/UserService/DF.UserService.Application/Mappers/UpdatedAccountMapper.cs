@@ -1,4 +1,4 @@
-﻿using DF.UserService.Contracts.Models.Request;
+﻿using DF.Contracts.Gateway.Requests.Accounts;
 using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Mappers;
@@ -7,7 +7,6 @@ public static class UpdatedAccountMapper
 {
     public static Account ToEntity(UpdateAccountRequest request, Account existingAccount, string? imageUrl = null)
     {
-        // Беремо існуючу сутність як основу, оновлюємо тільки те, що є у DTO
         switch (request)
         {
             case UpdateCustomerAccountRequest customer:

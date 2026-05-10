@@ -1,42 +1,77 @@
-﻿using DF.UserService.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+﻿using DF.Contracts.Gateway.Responses;
+using DF.UserService.API.Middlewares;
+using DF.UserService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, IUserContext userContext) : ControllerBase
 {
+    // =========================
+    // GET CURRENT USER PROFILE
+    // =========================
     [HttpGet("profile")]
-    [Authorize]
-    public async Task<IActionResult> Me()
+    public async Task<ActionResult<UserDto>> Me()
     {
-        // Отримуємо клейм NameIdentifier
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userId = userContext.UserId;
 
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized("Invalid token or user id");
+        if (userId == null)
+        {
+            return Unauthorized(new ServiceErrorResponse(
+                Code: "UNAUTHORIZED",
+                Message: "User is not authenticated"
+            ));
+        }
 
-        var result = await userService.GetUserAsync(userId);
-        if (result == null)
-            return NotFound("User not found");
-
-        return Ok(result);
-    }
-
-    [HttpGet("user")]
-    public async Task<IActionResult> GetUser([FromQuery] Guid userId)
-    {
         var user = await userService.GetUserAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new ServiceErrorResponse(
+                Code: "USER_NOT_FOUND",
+                Message: "User not found"
+            ));
+        }
+
         return Ok(user);
     }
 
+    // =========================
+    // GET USER BY ID
+    // =========================
+    [HttpGet("user")]
+    public async Task<ActionResult<UserDto>> GetUser([FromQuery] Guid userId)
+    {
+        var user = await userService.GetUserAsync(userId);
+
+        if (user == null)
+        {
+            return NotFound(new ServiceErrorResponse(
+                Code: "USER_NOT_FOUND",
+                Message: "User not found"
+            ));
+        }
+
+        return Ok(user);
+    }
+
+    // =========================
+    // GET ALL USERS
+    // =========================
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var users = await userService.GetAllUsers();
+
+        if (users == null || !users.Any())
+        {
+            return NotFound(new ServiceErrorResponse(
+                Code: "USERS_NOT_FOUND",
+                Message: "No users found"
+            ));
+        }
+
         return Ok(users);
     }
 }

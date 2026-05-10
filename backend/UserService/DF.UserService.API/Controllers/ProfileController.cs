@@ -1,65 +1,91 @@
-﻿using System.Security.Claims;
+﻿using DF.Contracts.Gateway.Responses;
+using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace DF.UserService.API.Controllers
+namespace DF.UserService.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ProfileController(
+    IAccountService accountService,
+    IUserService userService,
+    IUserContext userContext) : ControllerBase
 {
-    [Authorize]
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ProfileController(IAccountService accountService, IUserService userService) : ControllerBase
+    // =========================
+    // GET PROFILE
+    // =========================
+    [HttpGet]
+    public async Task<ActionResult<ProfileResponse>> GetProfile()
     {
-
-        /// <summary>
-        /// Get full profile info (user + active account + all accounts)
-        /// </summary>
-        [HttpGet]
-        public async Task<ActionResult<ProfileDTO>> GetProfile()
+        var userId = userContext.UserId;
+        if (userId == null)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                return Unauthorized("Invalid token or user id");
-
-            var user = await userService.GetUserAsync(userId);
-            var accounts = await accountService.GetAccountsByUserAsync(userId) ?? [];
-
-            var currentAccount = accounts.FirstOrDefault(a => a.Id == user.CurrentAccount.Id)
-                                 ?? accounts.FirstOrDefault();
-
-            var profile = new
-            {
-                user,
-                currentAccount,
-                accounts
-            };
-            return Ok(profile);
+            return Unauthorized(new ServiceErrorResponse(
+                Code: "UNAUTHORIZED",
+                Message: "User is not authenticated"
+            ));
         }
 
-        /// <summary>
-        /// Switch active account
-        /// </summary>
-        [HttpPut("switch/{accountId:guid}")]
-        public async Task<IActionResult> SwitchAccount(Guid accountId)
+        var user = await userService.GetUserAsync(userId);
+        if (user == null)
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-                return Unauthorized("Invalid token or user id");
-
-            var user = await userService.GetUserEntityAsync(userId);
-            if (user == null)
-                return NotFound("User not found");
-
-            var accounts = await accountService.GetAccountsByUserAsync(userId);
-            if (accounts == null || !accounts.Any(a => a.Id == accountId.ToString()))
-                return NotFound("Account not found or not owned by user");
-
-            user.AccountId = accountId;
-            await userService.UpdateUserAsync(user);
-
-            return Ok(new { message = "Active account switched successfully", newAccountId = accountId });
+            return NotFound(new ServiceErrorResponse(
+                Code: "USER_NOT_FOUND",
+                Message: "User not found"
+            ));
         }
-        
+
+        var accounts = await accountService.GetAccountsByUserAsync(userId) ?? [];
+
+        var currentAccount =
+            accounts.FirstOrDefault(a => a.Id == user.CurrentAccount.Id)
+            ?? accounts.FirstOrDefault();
+
+        var profile = new ProfileResponse(user, currentAccount, accounts);
+        return Ok(profile);
+    }
+
+    // =========================
+    // SWITCH ACCOUNT
+    // =========================
+    [HttpPut("switch/{accountId:guid}")]
+    public async Task<IActionResult> SwitchAccount(Guid accountId)
+    {
+        var userId = userContext.UserId;
+        if (userId == null)
+        {
+            return Unauthorized(new ServiceErrorResponse(
+                Code: "UNAUTHORIZED",
+                Message: "User is not authenticated"
+            ));
+        }
+
+        var user = await userService.GetUserEntityAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new ServiceErrorResponse(
+                Code: "USER_NOT_FOUND",
+                Message: "User not found"
+            ));
+        }
+
+        var accounts = await accountService.GetAccountsByUserAsync(userId);
+        if (accounts == null || !accounts.Any(a => a.Id == accountId.ToString()))
+        {
+            return NotFound(new ServiceErrorResponse(
+                Code: "ACCOUNT_NOT_FOUND",
+                Message: "Account not found or not owned by user"
+            ));
+        }
+
+        user.AccountId = accountId;
+        await userService.UpdateUserAsync(user);
+
+        return Ok(new
+        {
+            message = "Active account switched successfully",
+            newAccountId = accountId
+        });
     }
 }

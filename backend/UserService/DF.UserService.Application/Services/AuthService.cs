@@ -1,8 +1,9 @@
-﻿using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.Request;
-using DF.UserService.Contracts.Models.Response;
+﻿using DF.Contracts.Gateway.Requests.Auth;
+using DF.Contracts.Gateway.Responses;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
+using CreateCustomerAccountRequest = DF.Contracts.Gateway.Requests.Accounts.CreateCustomerAccountRequest;
 
 namespace DF.UserService.Application.Services;
 
@@ -50,11 +51,11 @@ public class AuthService(
     {
         var user = await userManager.FindByEmailAsync(request.Email);
         if (user == null)
-            throw new Exception("User not found");
+            throw new Exception("Invalid email or password");
 
         var isPasswordValid = await userManager.CheckPasswordAsync(user, request.Password);
         if (!isPasswordValid)
-            throw new Exception("Invalid password");
+            throw new Exception("Invalid email or password");
 
         return await tokenService.GenerateTokensAsync(user);
     }

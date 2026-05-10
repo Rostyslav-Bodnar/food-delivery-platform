@@ -1,4 +1,4 @@
 ﻿namespace DF.UserService.Contracts.Models.DTO
 {
-    public record UserDto(Guid Id, string Email, string Name, string Surname, string UserRole, AccountResponse CurrentAccount);
+    public record UserDto(Guid Id, string Email, string Name, string Surname, string UserRole, DF.Contracts.Gateway.Responses.AccountResponse CurrentAccount);
 }

@@ -1,6 +1,6 @@
-﻿using DF.UserService.Application.Mappers;
+﻿using DF.Contracts.Gateway.Responses;
+using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;

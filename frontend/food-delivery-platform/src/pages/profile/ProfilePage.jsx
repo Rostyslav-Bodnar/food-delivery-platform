@@ -1,21 +1,24 @@
-﻿// src/pages/ProfilePage.js (or wherever the original is)
-import React from "react";
+﻿import React from "react";
 import { useUser } from "../../context/UserContext";
 import useProfileForm from "./hooks/useProfileForm";
 import useAccountSwitch from "./hooks/useAccountSwitch";
 import usePaymentCards from "./hooks/usePaymentCards";
 import useBusinessAddresses from "./hooks/useBusinessAddresses";
+
 import UserCard from "./components/UserCard";
 import PaymentCards from "./components/PaymentCards";
 import BusinessAddresses from "./components/BusinessAddresses";
 
 import "./styles/ProfilePage.css";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const ProfilePage = () => {
     const { accounts, currentAccountId, loading, user } = useUser();
-
+    const { addToast } = useToast();
+    
     const {
         error,
+        clearError,
         editingField,
         formData,
         isAvatarHovered,
@@ -67,8 +70,17 @@ const ProfilePage = () => {
         handleSubmit,
     } = useBusinessAddresses();
 
+    React.useEffect(() => {
+        if (error) {
+            addToast({
+                message: error
+            });
+
+            clearError();
+        }
+    }, [error]);
+    
     if (loading) return <>Loading profile...</>;
-    if (error) return <>Error: {error}</>;
 
     const currentAccount = accounts.find(a => a.id === currentAccountId);
     const isCustomer = currentAccount?.accountType === "Customer";
@@ -76,11 +88,13 @@ const ProfilePage = () => {
 
     return (
         <div className="page-wrapper">
+            
             <div className="user-container">
                 <h2>Profile</h2>
 
                 <div className="user-info">
                     <div className="user-top">
+
                         <UserCard
                             formData={formData}
                             currentAccount={currentAccount}
@@ -94,22 +108,34 @@ const ProfilePage = () => {
                             handleEditToggle={handleEditToggle}
                             handleSave={handleSave}
                         />
+
                         <div className="active-accounts">
                             <h3>Accounts</h3>
                             <ul>
                                 {accounts.map((account) => (
                                     <li
                                         key={account.id}
-                                        className={account.id === currentAccountId ? "active-account" : ""}
+                                        className={
+                                            account.id === currentAccountId
+                                                ? "active-account"
+                                                : ""
+                                        }
                                         onClick={() => handleAccountSwitch(account)}
                                     >
                                         <div className="account-avatar">
                                             {account.imageUrl ? (
-                                                <img src={account.imageUrl} alt={account.name} className="account-avatar-image" />
+                                                <img
+                                                    src={account.imageUrl}
+                                                    alt={account.name}
+                                                    className="account-avatar-image"
+                                                />
                                             ) : (
-                                                <div className="avatar-initial">{account.name?.[0] ?? "U"}</div>
+                                                <div className="avatar-initial">
+                                                    {account.name?.[0] ?? "U"}
+                                                </div>
                                             )}
                                         </div>
+
                                         <div>
                                             {account.name} ({account.accountType})
                                         </div>
@@ -119,6 +145,7 @@ const ProfilePage = () => {
                         </div>
                     </div>
 
+                    {/* ✅ BUSINESS */}
                     {isBusiness && (
                         <BusinessAddresses
                             businessAddresses={businessAddresses}
@@ -143,7 +170,8 @@ const ProfilePage = () => {
                             handleSubmit={handleSubmit}
                         />
                     )}
-                    
+
+                    {/* ✅ CUSTOMER */}
                     {isCustomer && (
                         <PaymentCards
                             paymentCards={paymentCards}
@@ -160,11 +188,9 @@ const ProfilePage = () => {
                             startAddingCard={startAddingCard}
                         />
                     )}
+                </div>
 
-                </div>
-                <div className="user-data">
-                    
-                </div>
+                <div className="user-data" />
             </div>
         </div>
     );

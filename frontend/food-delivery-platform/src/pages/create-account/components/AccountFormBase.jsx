@@ -1,26 +1,35 @@
-﻿import usePhotoUpload from "../hooks/usePhotoUpload";
-import { useAccountFormState } from "../hooks/useAccountFormState";
-import { useAccountSubmit } from "../hooks/useAccountSubmit";
-import "../styles/AccountForm.css";
+﻿import usePhotoUpload from "../hooks/usePhotoUpload"
+import { useAccountFormState } from "../hooks/useAccountFormState"
+import { useAccountSubmit } from "../hooks/useAccountSubmit"
+import { useToast } from "../../../global-components/toast/ToastContext";
+import "../styles/AccountForm.css"
+import {useEffect} from "react";
 
 export default function AccountFormBase({
-        initialState,
-        buildAccountPayload,
-        endpoint,
-        submitText,
-        children
-    }) {
+                                            initialState,
+                                            buildAccountPayload,
+                                            endpoint,
+                                            submitText,
+                                            children
+                                        }) {
+    const toast = useToast();
+
     const {
         formData,
         setFormData,
         changeField
-    } = useAccountFormState(initialState);
+    } = useAccountFormState(initialState)
 
-    const { handleSubmit } = useAccountSubmit({
+    const {
+        handleSubmit,
+        submitting,
+        error,
+        clearError
+    } = useAccountSubmit({
         endpoint,
         buildAccountPayload,
         formData
-    });
+    })
 
     const {
         dropRef,
@@ -29,7 +38,17 @@ export default function AccountFormBase({
         onDragLeave,
         onFileChange,
         removePhoto
-    } = usePhotoUpload(setFormData);
+    } = usePhotoUpload(setFormData)
+
+    useEffect(() => {
+        if (!error) return;
+
+        toast.addToast({
+            message: error
+        });
+
+        clearError();
+    }, [error, toast, clearError]);
 
     return (
         <form className="account-form" onSubmit={handleSubmit}>
@@ -86,7 +105,9 @@ export default function AccountFormBase({
                 />
             </div>
 
-            <button type="submit">{submitText}</button>
+            <button type="submit" disabled={submitting}>
+                {submitting ? "Submitting..." : submitText}
+            </button>
         </form>
-    );
+    )
 }
