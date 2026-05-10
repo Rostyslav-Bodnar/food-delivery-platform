@@ -1,4 +1,4 @@
-﻿export const CategoryMap = {
+﻿export const CategoryMap: Record<number, string> = {
     0: "Drink",
     1: "Soup",
     2: "Salad",
@@ -14,9 +14,11 @@
     12: "Vegan",
     13: "KidsMenu",
     14: "SpecialOffer",
-};
+}
 
 export const CategoryList = Object.entries(CategoryMap).map(([id, name]) => ({
     id: Number(id),
     name
 }));
+
+export type Category = number
