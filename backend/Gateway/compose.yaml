@@ -1,0 +1,7 @@
+﻿services:
+  df.gateway.api:
+    image: df.gateway.api
+    build:
+      context: .
+      dockerfile: DF.Gateway.API/Dockerfile
+

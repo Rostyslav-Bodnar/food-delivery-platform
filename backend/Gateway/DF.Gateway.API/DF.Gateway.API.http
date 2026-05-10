@@ -1,0 +1,6 @@
+@DF.Gateway.API_HostAddress = http://localhost:5229
+
+GET {{DF.Gateway.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
