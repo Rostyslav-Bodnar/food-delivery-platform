@@ -1,9 +1,9 @@
 ﻿using System.Security.Claims;
 using System.Text;
 using DF.OrderService.Application.Services.Interfaces;
-using DF.OrderService.Contracts.Models.Responses;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
+using DF.Contracts.Gateway.Responses.Order;
 using Microsoft.IdentityModel.Tokens;
 
 namespace DF.OrderService.Application.Services;

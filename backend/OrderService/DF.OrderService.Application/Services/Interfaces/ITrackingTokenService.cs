@@ -1,4 +1,4 @@
-﻿using DF.OrderService.Contracts.Models.Responses;
+﻿using DF.Contracts.Gateway.Responses.Order;
 
 namespace DF.OrderService.Application.Services.Interfaces;
 

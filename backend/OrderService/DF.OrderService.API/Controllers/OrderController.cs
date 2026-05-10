@@ -1,5 +1,5 @@
-﻿using DF.OrderService.Application.Services.Interfaces;
-using DF.OrderService.Contracts.Models.Requests;
+﻿using DF.Contracts.Gateway.Requests.Order;
+using DF.OrderService.Application.Services.Interfaces;
 using DF.OrderService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 

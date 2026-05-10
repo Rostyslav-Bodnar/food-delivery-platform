@@ -1,6 +1,6 @@
-﻿using DF.OrderService.Application.Repositories.Interfaces;
+﻿using DF.Contracts.Gateway.Responses.Order;
+using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services.Interfaces;
-using DF.OrderService.Contracts.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
