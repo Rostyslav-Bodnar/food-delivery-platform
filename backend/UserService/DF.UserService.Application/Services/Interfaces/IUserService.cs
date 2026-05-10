@@ -1,4 +1,4 @@
-﻿using DF.UserService.Contracts.Models.DTO;
+﻿using DF.Contracts.Gateway.Responses;
 using DF.UserService.Domain.Entities;
 
 namespace DF.UserService.Application.Services.Interfaces
