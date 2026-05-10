@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Messaging;
@@ -24,7 +25,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173")
+        policy.WithOrigins("http://localhost:5229")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -67,6 +68,9 @@ builder.Services.AddScoped<ITokenService, TokenService>(); // issuing tokens onl
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ICloudinaryService, CloudinaryService>();
 builder.Services.AddScoped<IProcessedWebhookStore, ProcessedWebhookStore>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 // =======================
 // STRIPE
@@ -144,6 +148,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseCors("AllowFrontend");
+
+app.UseMiddleware<InternalAuthMiddleware>();
+app.UseMiddleware<UserContextMiddleware>();
 
 app.UseAuthorization();
 
