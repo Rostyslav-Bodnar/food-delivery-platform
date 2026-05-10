@@ -1,6 +1,6 @@
-﻿using DF.OrderService.Application.Repositories.Interfaces;
+﻿using DF.Contracts.Gateway.Responses.Order;
+using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services.Interfaces;
-using DF.OrderService.Contracts.Models.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,16 +22,10 @@ public sealed class OrderTrackingController(
         var order = await orderRepository.Get(orderId);
         if (order is null)
             return NotFound();
-
-        // --------
-        // Ідентифікація користувача
-        // --------
+        
         var userId = Guid.Parse(User.FindFirst("sub")!.Value);
         var role   = User.FindFirst("role")!.Value;
-
-        // --------
-        // Перевірка доступу
-        // --------
+        
         bool allowed = role switch
         {
             "Customer" => order.OrderedBy == userId,

@@ -16,7 +16,6 @@ services:
       Redis__Port: 6379
     depends_on:
       - df.menuservice.db
-      - df.redis
     networks:
       - df-network
 

@@ -1,16 +1,17 @@
 using System.Globalization;
 using DF.Contracts.EventDriven;
+using DF.Contracts.Gateway.Requests.Order;
+using DF.Contracts.Gateway.Responses.Order;
 using DF.Contracts.RPC.Requests.MenuService;
 using DF.Contracts.RPC.Requests.TrackingService;
 using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.TrackingService;
 using DF.Contracts.RPC.Responses.UserService;
+using DF.OrderService.Application.Mappers;
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Publishers;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services.Interfaces;
-using DF.OrderService.Contracts.Models.Requests;
-using DF.OrderService.Contracts.Models.Responses;
 using DF.OrderService.Domain.Entities;
 
 namespace DF.OrderService.Application.Services;
@@ -66,7 +67,7 @@ public class OrderService(
             CourierFee = 0,
             CourierPaid = false,
             Profit = 0,
-            PaymentMethod = request.PaymentMethod
+            PaymentMethod = request.PaymentMethod.ToDomain()
         };
 
         var orderEntity = await orderRepository.Create(order);
@@ -679,19 +680,19 @@ public class OrderService(
         });
     }
 
-    public async Task<OrderResponse> ChangeOrderStatus(Guid orderId, OrderStatus status)
+    public async Task<OrderResponse> ChangeOrderStatus(Guid orderId, DF.Contracts.Enums.OrderStatus status)
     {
         var order = await orderRepository.Get(orderId)
                     ?? throw new InvalidOperationException($"Order {orderId} not found");
 
         var shouldPublishDeliveredEvent =
-            status == OrderStatus.Delivered
+            status == DF.Contracts.Enums.OrderStatus.Delivered
             && order.OrderStatus != OrderStatus.Delivered;
 
         if (shouldPublishDeliveredEvent && order.DeliveredById is null)
             throw new InvalidOperationException("Cannot mark order as delivered without assigned courier.");
 
-        order.OrderStatus = status;
+        order.OrderStatus = status.ToDomain();
         await orderRepository.Update(order);
         var business = await userServiceRpcClient.GetBusinessAccountAsync(
             new GetBusinessAccountRequest(order.BusinessId));

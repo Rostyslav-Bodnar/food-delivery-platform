@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
     cancelOrder,
     getCustomerOrders
-} from "../../../api/Order.jsx";
+} from "../../../api/Order.ts";
 import { buildLocation, formatLocation, hasCoordinates } from "../../../utils/orderLocations.js";
 
 const mapStatus = (status) => {

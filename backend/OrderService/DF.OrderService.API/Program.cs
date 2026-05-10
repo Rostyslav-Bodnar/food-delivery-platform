@@ -1,3 +1,4 @@
+using DF.OrderService.API.Middlewares;
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Consumers;
 using DF.OrderService.Application.Messaging.Publishers;
@@ -26,7 +27,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+        policy.WithOrigins("http://localhost:5229") // адреса фронтенду
             .AllowAnyHeader()                     // дозволяємо всі заголовки
             .AllowAnyMethod()                   // дозволяємо всі HTTP методи
             .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
@@ -69,10 +70,14 @@ builder.Services.AddSingleton<IConsumer, CourierPayoutCompletedConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
+builder.Services.AddAuthorization();
 
 //Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderDishRepository, OrderDishRepository>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 //Services
 builder.Services.AddScoped<IOrderService, OrderService>();
@@ -97,6 +102,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowFrontend");
 
 app.UseHttpsRedirection();
+
+app.UseMiddleware<InternalAuthMiddleware>();
+app.UseMiddleware<UserContextMiddleware>();
 
 app.UseAuthorization();
 
