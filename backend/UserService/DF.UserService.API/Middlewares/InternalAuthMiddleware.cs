@@ -2,46 +2,89 @@
 
 namespace DF.UserService.API.Middlewares;
 
-public class InternalAuthMiddleware(RequestDelegate next, IConfiguration config)
+public class InternalAuthMiddleware(
+    RequestDelegate next,
+    IConfiguration config
+)
 {
     public async Task Invoke(HttpContext context)
     {
-        var userId = context.Request.Headers[InternalAuthConstants.UserIdHeader].FirstOrDefault();
-        var timestamp = context.Request.Headers[InternalAuthConstants.TimestampHeader].FirstOrDefault();
-        var signature = context.Request.Headers[InternalAuthConstants.SignatureHeader].FirstOrDefault();
+        var path = context.Request.Path.Value?.ToLower();
 
-        if (userId is null || timestamp is null || signature is null)
+        // ❌ SKIP AUTH
+        if (
+            path is not null &&
+            path.Contains("/api/auth")
+        )
         {
-            context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Missing internal auth headers");
+            await next(context);
             return;
         }
 
-        var signer = new InternalAuthSigner(config["Internal:ApiKey"]!);
+        var timestamp =
+            context.Request.Headers[
+                InternalAuthConstants.TimestampHeader
+            ].FirstOrDefault();
 
-        if (!signer.Validate(userId, timestamp, signature))
+        var nonce =
+            context.Request.Headers[
+                InternalAuthConstants.NonceHeader
+            ].FirstOrDefault();
+
+        var signature =
+            context.Request.Headers[
+                InternalAuthConstants.SignatureHeader
+            ].FirstOrDefault();
+
+        var apiKey =
+            context.Request.Headers[
+                InternalAuthConstants.ApiKeyHeader
+            ].FirstOrDefault();
+
+        if (
+            timestamp is null ||
+            nonce is null ||
+            signature is null ||
+            apiKey is null
+        )
         {
             context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Invalid internal signature");
+            await context.Response.WriteAsync("Missing internal headers");
             return;
         }
 
-        // ⛑ anti replay protection (5 min)
-        var time = DateTimeOffset.FromUnixTimeSeconds(long.Parse(timestamp));
-        if (DateTimeOffset.UtcNow - time > TimeSpan.FromMinutes(5))
+        // API KEY CHECK
+        if (apiKey != config["Internal:ApiKey"])
         {
             context.Response.StatusCode = 401;
-            await context.Response.WriteAsync("Request expired");
+            await context.Response.WriteAsync("Invalid API key");
             return;
         }
 
-        if (Guid.TryParse(userId, out var id))
+        var signer =
+            new InternalAuthSigner(config);
+
+        if (!signer.Validate(timestamp, nonce, signature))
         {
-            context.Items["UserId"] = id;
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Invalid signature");
+            return;
         }
-        else
+
+        // replay protection
+        var time =
+            DateTimeOffset.FromUnixTimeSeconds(
+                long.Parse(timestamp)
+            );
+
+        if (
+            DateTimeOffset.UtcNow - time >
+            TimeSpan.FromMinutes(5)
+        )
         {
-            context.Items["UserId"] = Guid.Empty; 
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Expired request");
+            return;
         }
 
         await next(context);

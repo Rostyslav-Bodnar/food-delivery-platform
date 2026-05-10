@@ -1,7 +1,7 @@
 ﻿import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
-import { CategoryList } from "../../../../constants/category.jsx";
+import { CategoryList } from "../../../../constants/category";
 
 const FilterSidebar = ({
                            isOpen,

@@ -1,9 +1,7 @@
 ﻿import usePhotoUpload from "../hooks/usePhotoUpload"
 import { useAccountFormState } from "../hooks/useAccountFormState"
 import { useAccountSubmit } from "../hooks/useAccountSubmit"
-import { useToast } from "../../../global-components/toast/ToastContext";
 import "../styles/AccountForm.css"
-import {useEffect} from "react";
 
 export default function AccountFormBase({
                                             initialState,
@@ -12,7 +10,6 @@ export default function AccountFormBase({
                                             submitText,
                                             children
                                         }) {
-    const toast = useToast();
 
     const {
         formData,
@@ -23,8 +20,6 @@ export default function AccountFormBase({
     const {
         handleSubmit,
         submitting,
-        error,
-        clearError
     } = useAccountSubmit({
         endpoint,
         buildAccountPayload,
@@ -39,16 +34,6 @@ export default function AccountFormBase({
         onFileChange,
         removePhoto
     } = usePhotoUpload(setFormData)
-
-    useEffect(() => {
-        if (!error) return;
-
-        toast.addToast({
-            message: error
-        });
-
-        clearError();
-    }, [error, toast, clearError]);
 
     return (
         <form className="account-form" onSubmit={handleSubmit}>

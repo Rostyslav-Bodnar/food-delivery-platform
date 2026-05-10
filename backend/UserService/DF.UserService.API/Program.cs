@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using DF.UserService.API.Extensions;
 using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
@@ -131,6 +132,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+app.UseCustomExceptionMiddleware();
 
 // =======================
 // MIGRATIONS

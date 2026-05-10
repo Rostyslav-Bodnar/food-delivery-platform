@@ -1,52 +1,81 @@
 ﻿using System.Net;
 using System.Text.Json;
 using DF.Contracts.Gateway.Responses;
-using DF.Gateway.API.Exceptions;
 
 namespace DF.Gateway.API.Middlewares;
 
-public sealed class ExceptionHandlingMiddleware(RequestDelegate next)
+public class ExceptionMiddleware(
+    RequestDelegate next,
+    ILogger<ExceptionMiddleware> logger)
 {
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
     public async Task InvokeAsync(HttpContext context)
     {
         try
         {
             await next(context);
         }
-        catch (ApiException ex)
-        {
-            await WriteErrorAsync(
-                context,
-                ex.StatusCode,
-                ex.Message
-            );
-        }
         catch (Exception ex)
         {
-            // ❗ fallback для 500
-            await WriteErrorAsync(
-                context,
-                (int)HttpStatusCode.InternalServerError,
-                "Internal server error"
-            );
+            await Handle(context, ex);
         }
     }
 
-    private static async Task WriteErrorAsync(
-        HttpContext context,
-        int statusCode,
-        string message)
+    private async Task Handle(HttpContext context, Exception ex)
     {
-        context.Response.StatusCode = statusCode;
+        var traceId = context.TraceIdentifier;
+
+        var (status, error) = Map(ex, traceId);
+
+        logger.LogError(ex,
+            "Gateway error | TraceId: {TraceId} | Path: {Path}",
+            traceId,
+            context.Request.Path);
+
         context.Response.ContentType = "application/json";
+        context.Response.StatusCode = (int)status;
 
-        var response = new Response<object>(
-            Success: false,
-            Data: null,
-            ErrorMassage: message
-        );
-
-        var json = JsonSerializer.Serialize(response);
+        var json = JsonSerializer.Serialize(error, JsonOptions);
         await context.Response.WriteAsync(json);
+    }
+
+    private static (HttpStatusCode, ServiceErrorResponse) Map(Exception ex, string traceId)
+    {
+        return ex switch
+        {
+            UnauthorizedAccessException => (
+                HttpStatusCode.Unauthorized,
+                new ServiceErrorResponse("UNAUTHORIZED", ex.Message, traceId)
+            ),
+
+            KeyNotFoundException => (
+                HttpStatusCode.NotFound,
+                new ServiceErrorResponse("NOT_FOUND", ex.Message, traceId)
+            ),
+
+            ArgumentException => (
+                HttpStatusCode.BadRequest,
+                new ServiceErrorResponse("VALIDATION_ERROR", ex.Message, traceId)
+            ),
+
+            HttpRequestException => (
+                HttpStatusCode.BadGateway,
+                new ServiceErrorResponse("BAD_GATEWAY", "Downstream service failed", traceId)
+            ),
+
+            TaskCanceledException => (
+                HttpStatusCode.GatewayTimeout,
+                new ServiceErrorResponse("TIMEOUT", "Request timeout", traceId)
+            ),
+
+            _ => (
+                HttpStatusCode.InternalServerError,
+                new ServiceErrorResponse("INTERNAL_ERROR", "Something went wrong", traceId)
+            )
+        };
     }
 }

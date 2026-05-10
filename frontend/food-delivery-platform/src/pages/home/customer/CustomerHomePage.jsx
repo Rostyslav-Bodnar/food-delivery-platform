@@ -1,8 +1,8 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import CustomerSidebar from '../../sidebars/CustomerSidebar';
-import { getAllDishesForCustomer } from '../../../api/Dish.jsx';
-import { CategoryMap } from '../../../constants/category.jsx';
+import { getAllDishesForCustomer } from '../../../api/Dish.ts';
+import { CategoryMap } from '../../../constants/category';
 
 import SearchHero from './components/SearchHero';
 import FilterSidebar from './components/FilterSidebar';

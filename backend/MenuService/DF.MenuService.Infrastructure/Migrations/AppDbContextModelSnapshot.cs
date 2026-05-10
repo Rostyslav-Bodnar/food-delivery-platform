@@ -17,7 +17,7 @@ namespace DF.MenuService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.10")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -45,9 +45,6 @@ namespace DF.MenuService.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
-                    b.Property<Guid?>("MenuId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -57,8 +54,6 @@ namespace DF.MenuService.Infrastructure.Migrations
                         .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("MenuId");
 
                     b.ToTable("Dishes", (string)null);
                 });
@@ -85,36 +80,6 @@ namespace DF.MenuService.Infrastructure.Migrations
                     b.HasIndex("DishId");
 
                     b.ToTable("Ingredients", (string)null);
-                });
-
-            modelBuilder.Entity("DF.MenuService.Domain.Entities.Menu", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("BusinessId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Image")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Menus", (string)null);
-                });
-
-            modelBuilder.Entity("DF.MenuService.Domain.Entities.Dish", b =>
-                {
-                    b.HasOne("DF.MenuService.Domain.Entities.Menu", null)
-                        .WithMany()
-                        .HasForeignKey("MenuId")
-                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("DF.MenuService.Domain.Entities.Ingredient", b =>

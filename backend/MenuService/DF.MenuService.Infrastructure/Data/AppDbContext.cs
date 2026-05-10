@@ -5,7 +5,6 @@ namespace DF.MenuService.Infrastructure.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public DbSet<Menu> Menus { get; set; }
     public DbSet<Dish> Dishes { get; set; }
     
     public DbSet<Ingredient> Ingredients { get; set; }
@@ -13,19 +12,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
-
-        // MENU
-        modelBuilder.Entity<Menu>(entity =>
-        {
-            entity.ToTable("Menus");
-            entity.HasKey(m => m.Id);
-
-            entity.Property(m => m.Name)
-                .HasMaxLength(100);
-
-            entity.Property(m => m.Image)
-                .HasMaxLength(300);
-        });
 
         // DISH
         modelBuilder.Entity<Dish>(entity =>
@@ -45,12 +31,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
             entity.Property(d => d.Price)
                 .HasColumnType("decimal(10,2)");
-
-            // One Menu → Many Dishes
-            entity.HasOne<Menu>()
-                .WithMany()
-                .HasForeignKey(d => d.MenuId)
-                .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Ingredient>(entity =>

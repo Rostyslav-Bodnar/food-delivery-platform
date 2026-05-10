@@ -10,76 +10,36 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="1b51eaab-029b-487e-8820-5caaf6ba4b13" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Payment.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/RestaurantPaymentCard.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/components/StripePaymentModal.jsx" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/styles/StripePaymentModal.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/handlers/handleOnboardingRedirect.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Gateway/.idea/.idea.Gateway/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../Gateway/.idea/.idea.Gateway/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/DF.MenuService.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.API/appsettings.Development.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Cache/IAccountCache.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Cache/IRedisRepository.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Cache/RedisAccountCache.cs" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/DF.MenuService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/DF.MenuService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.MenuService.Contracts/DF.MenuService.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Contracts/DF.MenuService.Contracts.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.MenuService.Domain/DF.MenuService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Domain/DF.MenuService.Domain.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.MenuService.Infrastructure/DF.MenuService.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/DF.OrderService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/DF.OrderService.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.Development.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/DF.OrderService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/DF.OrderService.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/RefundPaymentCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/RefundPaymentCommandHandler.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/Interfaces/IStripeService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/Interfaces/IStripeService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/StripeService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/StripeService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Domain/Entities/Payment.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Domain/Entities/Payment.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/DF.PaymentService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/DF.PaymentService.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/Consumers/OrderCreatedConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/Consumers/OrderCreatedConsumer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripeConnectWebhookController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripeConnectWebhookController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/DF.UserService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/DF.UserService.API.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/DF.UserService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/DF.UserService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Mappers/AccountMapper.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Mappers/AccountMapper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetBusinessAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetBusinessAccountConsumer.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/UserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/UserRepository.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/DF.UserService.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/DF.UserService.Contracts.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/AccountResponse.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/AccountResponse.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/StripeOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/StripeOptions.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/DF.UserService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/DF.UserService.Domain.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/BusinessAccount.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/BusinessAccount.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Data/AppDbContext.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Account.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Account.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Dish.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Dish.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Order.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Order.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/CheckoutPage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/CheckoutPage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/components/RestaurantSection.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/components/RestaurantSection.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/hooks/useOrderSubmit.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/hooks/useOrderSubmit.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/BusinessHomePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/BusinessHomePage.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/components/dish/DishComponent.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/components/dish/DishComponent.jsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/styles/BusinessHomePage.css" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/styles/BusinessHomePage.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="ChangesViewManager">
+    <option name="groupingKeys">
+      <option value="directory" />
+      <option value="repository" />
+    </option>
+  </component>
   <component name="DpaMonitoringSettings">
     <option name="firstShow" value="false" />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="12" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$/../.." value="promo-service" />
+        <entry key="$PROJECT_DIR$/../.." value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
@@ -111,35 +71,28 @@
     <setting file="file://$USER_HOME$/AppData/Roaming/NuGet/NuGet.Config" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/CategoryController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/DishRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/IngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IIngredientRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IMenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/Interfaces/IRepository.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Repositories/MenuRepository.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/CloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/IngredientService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IDishService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IIngredientService.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/Interfaces/IMenuService.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Application/Services/MenuService.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateDishRequest.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/CreateMenuRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Request/IngredientRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/DishResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/IngredientResponse.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/MenuResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Contracts/Models/Response/UploadImageResult.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Category.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Dish.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Ingredient.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/DF.MenuService.Domain/Entities/Menu.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.MenuService.Infrastructure/Data/AppDbContext.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
   </component>
   <component name="KubernetesApiPersistence">{}</component>
   <component name="KubernetesApiProvider">{
@@ -151,7 +104,7 @@
   </component>
   <component name="MetaFilesCheckinStateConfiguration" checkMetaFiles="false" />
   <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
+    <option name="selectedTabId" value="Toolset" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -177,13 +130,14 @@
     &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultAutoModeForALLUsers.v1&quot;: &quot;true&quot;,
     &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/payment-service&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/63-connect-gateway-api-to-menuservice&quot;,
     &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
     &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
     &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;SolutionBuilderGeneralOptionsPage&quot;,
     &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
     &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
@@ -371,6 +325,9 @@
       <workItem from="1774046703129" duration="2118000" />
       <workItem from="1774984597593" duration="3376000" />
       <workItem from="1776277191880" duration="9000" />
+      <workItem from="1778408517026" duration="1431000" />
+      <workItem from="1778410198903" duration="651000" />
+      <workItem from="1778410958130" duration="167000" />
     </task>
     <task id="LOCAL-00004" summary="menu-service/init database">
       <option name="closed" value="true" />
@@ -436,7 +393,15 @@
       <option name="project" value="LOCAL" />
       <updated>1764796683905</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="#63 - delete menu entity">
+      <option name="closed" value="true" />
+      <created>1778408972281</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1778408972281</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -465,7 +430,8 @@
     <MESSAGE value="menu-service - add default migrate" />
     <MESSAGE value="menu-service - add authorization to menu service" />
     <MESSAGE value="menu-service - fix uncorrect call with token" />
-    <option name="LAST_COMMIT_MESSAGE" value="menu-service - fix uncorrect call with token" />
+    <MESSAGE value="#63 - delete menu entity" />
+    <option name="LAST_COMMIT_MESSAGE" value="#63 - delete menu entity" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -483,19 +449,6 @@
           <option name="timeStamp" value="3" />
         </breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
-          <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/MenuController.cs</url>
-          <line>28</line>
-          <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\MenuController.cs" containingFunctionPresentation="Method 'Create'">
-            <startOffsets>
-              <option value="791" />
-            </startOffsets>
-            <endOffsets>
-              <option value="792" />
-            </endOffsets>
-          </properties>
-          <option name="timeStamp" value="11" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/DF.MenuService.API/Controllers/DishController.cs</url>
           <line>80</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.API\Controllers\DishController.cs" containingFunctionPresentation="Method 'CreateDish'">
@@ -510,13 +463,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
-          <line>144</line>
+          <line>139</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'UpdateDishAsync'">
             <startOffsets>
-              <option value="4256" />
+              <option value="4156" />
             </startOffsets>
             <endOffsets>
-              <option value="4257" />
+              <option value="4157" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="20" />
@@ -575,13 +528,13 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="DotNet Breakpoints">
           <url>file://$PROJECT_DIR$/DF.MenuService.Application/Services/DishService.cs</url>
-          <line>254</line>
+          <line>247</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\MenuService\DF.MenuService.Application\Services\DishService.cs" containingFunctionPresentation="Method 'GetAllDishForCustomerAsync'">
             <startOffsets>
-              <option value="7856" />
+              <option value="7679" />
             </startOffsets>
             <endOffsets>
-              <option value="7917" />
+              <option value="7740" />
             </endOffsets>
           </properties>
           <option name="timeStamp" value="36" />

@@ -1,7 +1,7 @@
 ﻿// src/pages/components/BusinessHeader.jsx
 import React from "react";
 import { Plus, Search } from "lucide-react";
-import { CategoryList } from "../../../../constants/category.jsx";
+import { CategoryList } from "../../../../constants/category";
 
 const BusinessHeader = ({
                             q,

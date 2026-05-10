@@ -3,20 +3,35 @@ using System.Text;
 
 namespace DF.Gateway.API.Helpers;
 
-public class InternalAuthSigner(string secret)
+public class InternalAuthSigner(IConfiguration config)
 {
-    public string Sign(string userId, string timestamp)
-    {
-        var payload = $"{userId}:{timestamp}";
-        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(secret));
+    private readonly string _secret =
+        config["Internal:ApiKey"]!;
 
-        var hash = hmac.ComputeHash(Encoding.UTF8.GetBytes(payload));
+    public string Sign(string timestamp, string nonce)
+    {
+        var payload = $"{timestamp}:{nonce}";
+
+        using var hmac =
+            new HMACSHA256(
+                Encoding.UTF8.GetBytes(_secret)
+            );
+
+        var hash = hmac.ComputeHash(
+            Encoding.UTF8.GetBytes(payload)
+        );
+
         return Convert.ToBase64String(hash);
     }
 
-    public bool Validate(string userId, string timestamp, string signature)
+    public bool Validate(
+        string timestamp,
+        string nonce,
+        string signature
+    )
     {
-        var expected = Sign(userId, timestamp);
+        var expected = Sign(timestamp, nonce);
+
         return CryptographicOperations.FixedTimeEquals(
             Encoding.UTF8.GetBytes(expected),
             Encoding.UTF8.GetBytes(signature)

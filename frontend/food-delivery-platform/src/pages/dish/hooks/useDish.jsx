@@ -1,5 +1,5 @@
 ﻿import { useEffect, useState } from "react";
-import { getDishForCustomer } from "../../../api/Dish.jsx";
+import { getDishForCustomer } from "../../../api/Dish.ts";
 import { mapDishToViewModel } from "../services/dishMapper";
 
 const mockReviews = {

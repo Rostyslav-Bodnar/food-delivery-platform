@@ -16,10 +16,7 @@ import useDishModal from "./hooks/useDishModal";
 import useDeleteConfirm from "./hooks/useDeleteConfirm";
 import useOnboardingRedirect from "./handlers/handleOnboardingRedirect.jsx";
 
-import { useToast } from "../../../global-components/toast/ToastContext.jsx";
-
 export default function BusinessHomePage({ userData }) {
-    const toast = useToast();
 
     const { dishes, loading, error } = useFetchDishes(userData);
     const { handleCreate, handleUpdate, handleDelete } =
@@ -60,19 +57,6 @@ export default function BusinessHomePage({ userData }) {
 
     const isNotOnboarded =
         !userData?.currentAccount?.stripeOnboardedAt;
-
-    // =========================
-    // TOAST onboarding error
-    // =========================
-    useEffect(() => {
-        if (!onboardingError) return;
-
-        toast.addToast({
-            message: onboardingError,
-        });
-
-        clearError();
-    }, [onboardingError, toast]);
 
     return (
         <div className="bh-page">

@@ -11,10 +11,8 @@ import useFetchRestaurants from "./hooks/useFetchRestaurants";
 import useRestaurantFilters from "./hooks/useRestaurantFilters";
 import useFilteredRestaurants from "./hooks/useFilteredRestaurants";
 
-import { useToast } from "../../global-components/toast/ToastContext.jsx";
 
 const RestaurantsPage = () => {
-    const toast = useToast();
 
     const {
         restaurants,
@@ -39,19 +37,6 @@ const RestaurantsPage = () => {
         selectedCategory,
         sortBy
     );
-
-    // =========================
-    // ERROR → TOAST
-    // =========================
-    useEffect(() => {
-        if (!error) return;
-
-        toast.addToast({
-            message: error
-        });
-
-        clearError();
-    }, [error, toast]);
 
     return (
         <div className="app-wrapper">

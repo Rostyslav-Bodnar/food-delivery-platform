@@ -8,14 +8,11 @@ import CourierHomePage from "./courier/CourierHomePage"
 import CustomerHomePage from "./customer/CustomerHomePage"
 import UnauthenticatedHome from "./components/UnauthenticatedHome"
 
-import { useToast } from "../../global-components/toast/ToastContext";
-
 const HomePage = () => {
     const [userData, setUserData] = useState(null)
     const [accountType, setAccountType] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const toast = useToast();
 
     const loadUser = async () => {
         try {
@@ -44,9 +41,6 @@ const HomePage = () => {
         } catch (err) {
             // ✅ system error
             setUserData(null);
-            toast.addToast({
-                message: err?.message || "Failed to load user",
-            });
         } finally {
             setLoading(false)
         }

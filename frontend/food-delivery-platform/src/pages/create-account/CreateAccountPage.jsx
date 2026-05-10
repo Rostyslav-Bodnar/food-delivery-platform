@@ -3,34 +3,17 @@ import { useUser } from "../../context/UserContext";
 import { useAccountTypes } from "./hooks/useAccountTypes";
 import AccountTypeTabs from "./components/AccountTypeTabs";
 import AccountFormRenderer from "./components/AccountFormRenderer";
-import { useToast } from "../../global-components/toast/ToastContext";
-import { useEffect, useRef } from "react";
 
 const CreateAccountPage = () => {
     const { user } = useUser();
-    const toast = useToast();
 
     const {
         accountType,
         setAccountType,
         availableAccountTypes,
-        loading,
-        error,
+        loading
     } = useAccountTypes(user);
-
-    const lastErrorRef = useRef(null);
-
-    useEffect(() => {
-        if (!error) return;
-
-        if (lastErrorRef.current === error) return;
-        lastErrorRef.current = error;
-
-        toast.addToast({
-            message: error,
-        });
-    }, [error, toast]);
-
+    
     return (
         <div className="create-page-wrapper">
             <div className="create-container">
