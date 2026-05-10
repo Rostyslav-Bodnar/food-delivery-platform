@@ -9,6 +9,8 @@ services:
     container_name: df.userservice.api
     ports:
       - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
     depends_on:
       - mssql
       - rabbitmq
