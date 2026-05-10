@@ -12,75 +12,9 @@ public class AuthController(IAuthService authService) : ControllerBase
     private const string RefreshTokenCookieName = "refreshToken";
 
     [HttpPost("register")]
-    public async Task<ActionResult<TokenResponse>> Register(
-        [FromBody] RegisterRequest request)
+    public async Task<ActionResult<TokenResponse>> Register([FromBody] RegisterRequest request)
     {
-        try
-        {
-            var tokens = await authService.RegisterAsync(request);
-
-            SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
-            return Ok(new TokenResponse(
-                tokens.AccessToken,
-                tokens.RefreshToken,
-                tokens.AccessTokenExpiresAt
-            ));
-        }
-        catch (Exception exception)
-        {
-            return NotFound(new ServiceErrorResponse(
-                Code: "INVALID_DATA",
-                Message: exception.Message
-            ));
-        }
-    }
-
-    [HttpPost("login")]
-    public async Task<ActionResult<TokenResponse>> Login(
-        [FromBody] LoginRequest request)
-    {
-        try
-        {
-            var tokens = await authService.LoginAsync(request);
-
-            SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
-            return Ok(new TokenResponse(
-                tokens.AccessToken,
-                tokens.RefreshToken,
-                tokens.AccessTokenExpiresAt
-            ));
-        }
-        catch (Exception exception)
-        {
-            return NotFound(new ServiceErrorResponse(
-                Code: "INVALID_DATA",
-                Message: exception.Message
-            ));
-        }
-    }
-
-    [HttpPost("refresh")]
-    public async Task<ActionResult<TokenResponse>> Refresh()
-    {
-        var refreshToken = Request.Cookies[RefreshTokenCookieName];
-
-        if (string.IsNullOrEmpty(refreshToken))
-        {
-            return Unauthorized(new ServiceErrorResponse(
-                Code: "NO_REFRESH_TOKEN",
-                Message: "Refresh token is missing"
-            ));
-        }
-
-        var tokens = await authService.RefreshAsync(refreshToken);
-
-        if (tokens is null)
-        {
-            return Unauthorized(new ServiceErrorResponse(
-                Code: "INVALID_REFRESH_TOKEN",
-                Message: "Invalid or expired refresh token"
-            ));
-        }
+        var tokens = await authService.RegisterAsync(request);
 
         SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
 
@@ -91,6 +25,34 @@ public class AuthController(IAuthService authService) : ControllerBase
         ));
     }
 
+    [HttpPost("login")]
+    public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
+    {
+        var tokens = await authService.LoginAsync(request);
+
+        SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+
+        return Ok(new TokenResponse(
+            tokens.AccessToken,
+            tokens.RefreshToken,
+            tokens.AccessTokenExpiresAt
+        ));
+    }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<TokenResponse>> Refresh()
+    {
+        var refreshToken = Request.Cookies[RefreshTokenCookieName]
+                           ?? throw new UnauthorizedAccessException("Refresh token is missing");
+
+        var tokens = await authService.RefreshAsync(refreshToken)
+                     ?? throw new UnauthorizedAccessException("Invalid or expired refresh token");
+
+        SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+
+        return Ok(tokens);
+    }
+
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke()
     {
@@ -98,10 +60,7 @@ public class AuthController(IAuthService authService) : ControllerBase
 
         if (string.IsNullOrEmpty(refreshToken))
         {
-            return BadRequest(new ServiceErrorResponse(
-                Code: "NO_REFRESH_TOKEN",
-                Message: "Refresh token is missing"
-            ));
+            throw new BadHttpRequestException("Refresh token is missing");
         }
 
         await authService.RevokeAsync(refreshToken);
@@ -118,7 +77,7 @@ public class AuthController(IAuthService authService) : ControllerBase
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false, // true in production
+                Secure = false,
                 SameSite = SameSiteMode.Lax,
                 Expires = expiresAt
             }
