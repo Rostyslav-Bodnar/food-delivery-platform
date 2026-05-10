@@ -1,7 +1,7 @@
+using DF.Contracts.Gateway.Requests.Dish;
+using DF.Contracts.Gateway.Responses.Dish;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
-using DF.MenuService.Contracts.Models.Request;
-using DF.MenuService.Contracts.Models.Response;
 using DF.MenuService.Domain.Entities;
 
 namespace DF.MenuService.Application.Services;

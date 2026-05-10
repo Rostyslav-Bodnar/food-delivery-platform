@@ -1,5 +1,5 @@
+using DF.Contracts.Gateway.Requests.Dish;
 using DF.MenuService.Application.Services.Interfaces;
-using DF.MenuService.Contracts.Models.Request;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 

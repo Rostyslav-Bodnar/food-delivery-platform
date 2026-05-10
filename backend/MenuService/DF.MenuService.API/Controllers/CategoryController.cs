@@ -8,9 +8,9 @@ namespace DF.MenuService.API.Controllers;
 public class CategoryController : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public Task<IActionResult> GetAll()
     {
         var categories = Enum.GetValues(typeof(Category)).Cast<Category>();
-        return Ok(categories);
+        return Task.FromResult<IActionResult>(Ok(categories));
     }
 }

@@ -1,11 +1,11 @@
+using DF.Contracts.Gateway.Requests.Dish;
+using DF.Contracts.Gateway.Responses.Dish;
 using DF.Contracts.RPC.Requests.UserService;
-using DF.Contracts.RPC.Responses.UserService;
+using DF.MenuService.Application.Mappers;
 using DF.MenuService.Application.Messaging;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
 using DF.MenuService.Contracts.Exceptions;
-using DF.MenuService.Contracts.Models.Request;
-using DF.MenuService.Contracts.Models.Response;
 using DF.MenuService.Domain.Entities;
 
 namespace DF.MenuService.Application.Services;
@@ -49,7 +49,7 @@ public class DishService(
             Description = request.Description,
             Image = imageUrl,
             Price = request.Price,
-            Category = request.Category,
+            Category = request.Category.ToDomain(),
             BusinessId = request.BusinessId
         };
 
@@ -73,7 +73,7 @@ public class DishService(
             dish.Description,
             dish.Image,
             dish.Price,
-            dish.Category,
+            dish.Category.ToContract(),
             dish.CookingTime,
             ingredients
         );
@@ -95,7 +95,7 @@ public class DishService(
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 ingredients
             ));
@@ -115,7 +115,7 @@ public class DishService(
             d.Description,
             d.Image,
             d.Price,
-            d.Category,
+            d.Category.ToContract(),
             d.CookingTime,
             ingredients
         );
@@ -136,7 +136,7 @@ public class DishService(
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 ingredients
             ));
@@ -165,7 +165,7 @@ public class DishService(
         existing.Name = request.Name;
         existing.Description = request.Description;
         existing.Price = request.Price;
-        existing.Category = request.Category;
+        existing.Category = request.Category.ToDomain();
         existing.Image = imageUrl;
         existing.CookingTime = request.CookingTime;
 
@@ -179,7 +179,7 @@ public class DishService(
             existing.Description,
             existing.Image,
             existing.Price,
-            existing.Category,
+            existing.Category.ToContract(),
             existing.CookingTime,
             updatedIngredients
         );
@@ -200,7 +200,7 @@ public class DishService(
             d.Description,
             d.Image,
             d.Price,
-            d.Category,
+            d.Category.ToContract(),
             d.CookingTime,
             businessDetails,
             ingredients
@@ -250,7 +250,7 @@ public class DishService(
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 businessDetails,
                 ingredients
@@ -278,7 +278,7 @@ public class DishService(
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 businessDetails,
                 ingredients
