@@ -2,5 +2,6 @@
 
 public record ServiceErrorResponse(
     string Code,
-    string Message
+    string Message,
+    string? TraceId
 );
