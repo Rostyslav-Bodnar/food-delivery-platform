@@ -1,0 +1,22 @@
+﻿.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 12px;
+
+    z-index: 9999;
+
+    /* важливо для адаптиву */
+    max-width: 420px;
+    width: 100%;
+
+    pointer-events: none;
+}
+
+/* щоб кліки працювали тільки по toast */
+.toast-container > * {
+    pointer-events: auto;
+}

@@ -1,31 +1,47 @@
-﻿import React from "react";
-import "../styles/AuthForm.css";
-import useRegisterForm from "../hooks/useRegisterForm";
+﻿import "../styles/AuthForm.css"
+import useRegisterForm from "../hooks/useRegisterForm"
+import { useToast } from "../../../global-components/toast/ToastContext";
+import { useEffect } from "react";
 
 const RegisterForm = ({ onSwitch }) => {
+    const toast = useToast();
+
     const {
         formData,
-        error,
+        formError,
+        systemError,
+        submitting,
         handleChange,
         handleSubmit,
+        clearSystemError
     } = useRegisterForm();
+
+    useEffect(() => {
+        if (!systemError) return;
+
+        toast.addToast({
+            message: systemError
+        });
+
+        clearSystemError();
+    }, [systemError, toast, clearSystemError]);
 
     return (
         <>
             <h2>Create account</h2>
-
-            {error && <p className="error-text">{error}</p>}
 
             <form className="auth-form" onSubmit={handleSubmit}>
                 <div className="fullname-inputs">
                     <input
                         name="name"
                         placeholder="First name"
+                        value={formData.name}
                         onChange={handleChange}
                     />
                     <input
                         name="surname"
                         placeholder="Last name"
+                        value={formData.surname}
                         onChange={handleChange}
                     />
                 </div>
@@ -33,6 +49,7 @@ const RegisterForm = ({ onSwitch }) => {
                 <input
                     name="email"
                     placeholder="Email"
+                    value={formData.email}
                     onChange={handleChange}
                 />
 
@@ -40,10 +57,19 @@ const RegisterForm = ({ onSwitch }) => {
                     name="password"
                     type="password"
                     placeholder="Password"
+                    value={formData.password}
                     onChange={handleChange}
                 />
 
-                <button type="submit">Register</button>
+                {formError && (
+                    <div className="form-error">
+                        {formError}
+                    </div>
+                )}
+
+                <button type="submit" disabled={submitting}>
+                    {submitting ? "Creating account..." : "Register"}
+                </button>
             </form>
 
             <p className="login-text">

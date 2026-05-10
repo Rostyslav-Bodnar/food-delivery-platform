@@ -1,81 +1,97 @@
-﻿import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getProfile } from '../../api/User.jsx';
-import './styles/HomePage.css';
+﻿import React, { useEffect, useState } from "react"
+import "./styles/HomePage.css"
 
-import UnauthenticatedHome from './components/UnauthenticatedHome';
-import CustomerHomePage from './customer/CustomerHomePage.jsx';
-import BusinessHomePage from "./business/BusinessHomePage.jsx";
-import CourierHomePage from "./courier/CourierHomePage.jsx";
+import { getCurrentUser } from "../../api/User"
+
+import BusinessHomePage from "./business/BusinessHomePage"
+import CourierHomePage from "./courier/CourierHomePage"
+import CustomerHomePage from "./customer/CustomerHomePage"
+import UnauthenticatedHome from "./components/UnauthenticatedHome"
+
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const HomePage = () => {
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [accountType, setAccountType] = useState(null);
-    const [userData, setUserData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const navigate = useNavigate();
+    const [userData, setUserData] = useState(null)
+    const [accountType, setAccountType] = useState(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState(null)
+    const toast = useToast();
+
+    const loadUser = async () => {
+        try {
+            setLoading(true)
+            setError(null)
+
+            const token = localStorage.getItem("accessToken")
+
+            // ✅ guest — не помилка
+            if (!token) {
+                setUserData(null)
+                return
+            }
+
+            const user = await getCurrentUser()
+
+            setUserData(user)
+            setAccountType(user.currentAccount?.accountType)
+
+            if (user.currentAccount?.name) {
+                localStorage.setItem(
+                    "currentAccountName",
+                    user.currentAccount.name
+                )
+            }
+        } catch (err) {
+            // ✅ system error
+            setUserData(null);
+            toast.addToast({
+                message: err?.message || "Failed to load user",
+            });
+        } finally {
+            setLoading(false)
+        }
+    }
 
     useEffect(() => {
-        const checkAuth = async () => {
-            const token = localStorage.getItem('accessToken');
-            if (!token) {
-                setIsAuthenticated(false);
-                setLoading(false);
-                return;
-            }
+        loadUser()
+    }, [])
 
-            try {
-                const userProfile = await getProfile();
-                setIsAuthenticated(true);
-                setUserData(userProfile);
-                setAccountType(userProfile.currentAccount?.accountType);
-                if (userProfile.currentAccount?.name) {
-                    localStorage.setItem("currentAccountName", userProfile.currentAccount.name);
-                }
-                console.log(userProfile);
-            } catch (error) {
-                console.log('Token invalid or expired, logging out...');
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('accessTokenExpiresAt');
-                setIsAuthenticated(false);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkAuth();
-    }, []);
-
+    // =========================
+    // LOADING
+    // =========================
     if (loading) {
         return (
-            <div
-                className="page-wrapper"
-                style={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    height: '100vh'
-                }}
-            >
-                <div className="loading-spinner">Loading...</div>
+            <div className="page-wrapper center">
+                <div className="loading-spinner">Loading…</div>
             </div>
-        );
+        )
     }
 
-    if (!isAuthenticated) {
-        return <UnauthenticatedHome />;
+    // =========================
+    // MAIN CONTENT (без return всередині)
+    // =========================
+    let content
+
+    if (!userData) {
+        content = <UnauthenticatedHome />
+    } else {
+        switch (accountType?.toLowerCase()) {
+            case "customer":
+                content = <CustomerHomePage />
+                break
+            case "business":
+                content = <BusinessHomePage userData={userData} />
+                break
+            case "courier":
+                content = <CourierHomePage userData={userData} />
+                break
+            default:
+                content = <UnauthenticatedHome />
+        }
     }
 
-    switch (accountType?.toLowerCase()) {
-        case 'customer':
-            return <CustomerHomePage /*currentAccountId={currentAccountId}*/ />;
-        case 'business':
-            return <BusinessHomePage userData={userData} />;
-        case 'courier':
-             return <CourierHomePage userData={userData} />;
-        default:
-            return <UnauthenticatedHome />;
-    }
-};
+    return content;
 
-export default HomePage;
+}
+
+export default HomePage

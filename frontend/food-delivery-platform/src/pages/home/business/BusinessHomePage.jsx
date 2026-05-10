@@ -1,12 +1,13 @@
-﻿// src/pages/BusinessHomePage.jsx
-import React from "react";
+﻿import React, { useEffect } from "react";
 import "../styles/BusinessHomePage.css";
+
 import BusinessSidebar from "../../sidebars/BusinessSidebar.jsx";
 import DishComponent from "./components/dish/DishComponent";
 import BusinessHeader from "./components/BusinessHeader.jsx";
 import DishesContent from "./components/DishesContent.jsx";
 import BusinessFooter from "./components/BusinessFooter.jsx";
 import DeleteConfirm from "./components/DeleteConfirm.jsx";
+
 import useFetchDishes from "./hooks/useFetchDishes";
 import useDishMutations from "./hooks/useDishMutations";
 import useDishFilters from "./hooks/useDishFilters";
@@ -15,40 +16,105 @@ import useDishModal from "./hooks/useDishModal";
 import useDeleteConfirm from "./hooks/useDeleteConfirm";
 import useOnboardingRedirect from "./handlers/handleOnboardingRedirect.jsx";
 
-export default function BusinessHomePage({ userData }) {
-    const { dishes, loading, error } = useFetchDishes(userData);
-    const { handleCreate, handleUpdate, handleDelete } = useDishMutations(dishes);
-    const { q, setQ, category, setCategory, onlyPopular, setOnlyPopular, sortBy, setSortBy } = useDishFilters();
-    const { filtered } = useFilteredDishes(dishes, q, category, onlyPopular, sortBy);
-    const { isModalOpen, setIsModalOpen, editing, openCreate, openEdit } = useDishModal();
-    const { showDeleteConfirm, toDelete, setShowDeleteConfirm, setToDelete } = useDeleteConfirm();
-    const { handleOnboardingRedirect, loadingOnboarding } = useOnboardingRedirect();
+import { useToast } from "../../../global-components/toast/ToastContext.jsx";
 
-    const isNotOnboarded = !userData?.currentAccount?.stripeOnboardedAt;
+export default function BusinessHomePage({ userData }) {
+    const toast = useToast();
+
+    const { dishes, loading, error } = useFetchDishes(userData);
+    const { handleCreate, handleUpdate, handleDelete } =
+        useDishMutations(dishes);
+
+    const {
+        q,
+        setQ,
+        category,
+        setCategory,
+        onlyPopular,
+        setOnlyPopular,
+        sortBy,
+        setSortBy,
+    } = useDishFilters();
+
+    const { filtered } = useFilteredDishes(
+        dishes,
+        q,
+        category,
+        onlyPopular,
+        sortBy
+    );
+
+    const { isModalOpen, setIsModalOpen, editing, openCreate, openEdit } =
+        useDishModal();
+
+    const { showDeleteConfirm, toDelete, setShowDeleteConfirm, setToDelete } =
+        useDeleteConfirm();
+
+    const {
+        handleOnboardingRedirect,
+        loadingOnboarding,
+        error: onboardingError,
+        retry,
+        clearError,
+    } = useOnboardingRedirect();
+
+    const isNotOnboarded =
+        !userData?.currentAccount?.stripeOnboardedAt;
+
+    // =========================
+    // TOAST onboarding error
+    // =========================
+    useEffect(() => {
+        if (!onboardingError) return;
+
+        toast.addToast({
+            message: onboardingError,
+        });
+
+        clearError();
+    }, [onboardingError, toast]);
 
     return (
         <div className="bh-page">
-
-            {/* ✅ Sidebar отримує disabled */}
-            <BusinessSidebar userData={userData} disabled={isNotOnboarded} />
+            <BusinessSidebar
+                userData={userData}
+                disabled={isNotOnboarded}
+            />
 
             <main className="bh-main">
-
-                {/* ✅ Якщо юзер не пройшов onboarding — показуємо лише це */}
-                {isNotOnboarded ? (
+                {/* =========================
+                    ONBOARDING BLOCK
+                ========================= */}
+                {isNotOnboarded && (
                     <div className="onboarding-box">
-                        <h3>Your business account is not fully set up.</h3>
-                        <p>Please complete onboarding to access your business dashboard.</p>
+                        <h3>
+                            Your business account is not fully set up.
+                        </h3>
+                        <p>
+                            Please complete onboarding to access your
+                            business dashboard.
+                        </p>
 
                         <button
                             className="onboarding-button"
-                            onClick={() => handleOnboardingRedirect(userData.currentAccount.id)}
+                            onClick={() =>
+                                handleOnboardingRedirect(
+                                    userData.currentAccount.id
+                                )
+                            }
                             disabled={loadingOnboarding}
                         >
-                            {loadingOnboarding ? "Redirecting..." : "Complete Onboarding"}
+                            {loadingOnboarding
+                                ? "Redirecting..."
+                                : "Complete Onboarding"}
                         </button>
                     </div>
-                ) : (
+                )}
+
+                {/* =========================
+                    MAIN APP
+                ========================= */}
+                {!isNotOnboarded && (
                     <>
                         <BusinessHeader
                             q={q}
@@ -68,7 +134,9 @@ export default function BusinessHomePage({ userData }) {
                             filtered={filtered}
                             openEdit={openEdit}
                             setToDelete={setToDelete}
-                            setShowDeleteConfirm={setShowDeleteConfirm}
+                            setShowDeleteConfirm={
+                                setShowDeleteConfirm
+                            }
                         />
 
                         <BusinessFooter
@@ -78,7 +146,9 @@ export default function BusinessHomePage({ userData }) {
 
                         <DishComponent
                             open={isModalOpen}
-                            onClose={() => setIsModalOpen(false)}
+                            onClose={() =>
+                                setIsModalOpen(false)
+                            }
                             onCreate={handleCreate}
                             onUpdate={handleUpdate}
                             editing={editing}
@@ -88,13 +158,14 @@ export default function BusinessHomePage({ userData }) {
                         {showDeleteConfirm && toDelete && (
                             <DeleteConfirm
                                 toDelete={toDelete}
-                                setShowDeleteConfirm={setShowDeleteConfirm}
+                                setShowDeleteConfirm={
+                                    setShowDeleteConfirm
+                                }
                                 handleDelete={handleDelete}
                             />
                         )}
                     </>
                 )}
-
             </main>
         </div>
     );

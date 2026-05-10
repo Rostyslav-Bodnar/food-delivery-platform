@@ -1,21 +1,35 @@
-﻿import {useState} from "react";
-import {getOnboardingLink} from "../../../../api/Account.jsx";
+﻿// src/pages/business/handlers/useOnboardingRedirect.js
+import { useState, useCallback } from "react"
+import { getOnboardingLink } from "../../../../api/Account"
 
 export default function useOnboardingRedirect() {
-    const [loadingOnboarding, setLoadingOnboarding] = useState(false);
+    const [loadingOnboarding, setLoadingOnboarding] = useState(false)
+    const [error, setError] = useState(null)
 
-    const handleOnboardingRedirect = async (businessId) => {
-        if (loadingOnboarding) return;
+    const handleOnboardingRedirect = useCallback(async (businessId) => {
+        if (loadingOnboarding) return
 
         try {
-            setLoadingOnboarding(true);
-            window.location.href = await getOnboardingLink(businessId);
-        } catch (e) {
-            console.error("Onboarding error:", e);
-        } finally {
-            setLoadingOnboarding(false);
-        }
-    };
+            setLoadingOnboarding(true)
+            setError(null)
 
-    return { handleOnboardingRedirect, loadingOnboarding };
+            const url = await getOnboardingLink(businessId)
+
+            // ✅ Redirect only on success
+            window.location.href = url
+        } catch (err) {
+            // ✅ err.message з axios interceptor (Gateway flow)
+            setError(err.message || "Failed to start onboarding")
+        } finally {
+            setLoadingOnboarding(false)
+        }
+    }, [loadingOnboarding])
+
+    return {
+        handleOnboardingRedirect,
+        loadingOnboarding,
+        error,
+        retry: handleOnboardingRedirect,
+        clearError: () => setError(null)
+    }
 }
