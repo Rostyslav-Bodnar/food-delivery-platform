@@ -1,13 +1,19 @@
 using System.Text;
+using DF.Gateway.API.Extensions;
 using DF.Gateway.API.Helpers;
-using DF.Gateway.API.Middlewares;
+using DF.Gateway.API.Infrastructure;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // =======================
-// CORS
+// CONFIG
+// =======================
+var configuration = builder.Configuration;
+
+// =======================
+// CORS (frontend gateway access)
 // =======================
 builder.Services.AddCors(options =>
 {
@@ -20,56 +26,116 @@ builder.Services.AddCors(options =>
     });
 });
 
+// =======================
+// CONTROLLERS
+// =======================
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
-builder.Services.AddSingleton<InternalAuthSigner>(
-    new InternalAuthSigner(builder.Configuration["Internal:ApiKey"]!)
-);
+// =======================
+// CORE HTTP INFRASTRUCTURE
+// =======================
 
-//Microservices
-builder.Services.AddHttpClient<InternalHttpClient>(client =>
+builder.Services.AddSingleton<ServiceResolver>();
+builder.Services.AddHttpContextAccessor();
+
+// =======================
+// INTERNAL SECURITY LAYER
+// =======================
+builder.Services.AddSingleton<InternalAuthSigner>(sp =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["Services:UserService"]!);
+    var config = sp.GetRequiredService<IConfiguration>();
+    return new InternalAuthSigner(config);
 });
 
-// JWT 
-var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSection.GetValue<string>("Key")!;
-var issuer = jwtSection.GetValue<string>("Issuer");
-var audience = jwtSection.GetValue<string>("Audience");
+// =======================
+// GATEWAY CONTEXT (user context abstraction)
+// =======================
+builder.Services.AddScoped<InternalGatewayContext>();
+
+// =======================
+// HTTP CLIENT FOR MICROSERVICES
+// =======================
+builder.Services.AddHttpClient<GatewayProxy>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(10);
+
+    // IMPORTANT: disable auto redirect for security in gateway
+    client.DefaultRequestHeaders.ConnectionClose = false;
+});
+
+// =======================
+// JWT AUTH (CLIENT → GATEWAY)
+// =======================
+var jwtSection = configuration.GetSection("Jwt");
+
+var jwtKey = jwtSection["Key"]!;
+var issuer = jwtSection["Issuer"];
+var audience = jwtSection["Audience"];
 
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
     {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(options =>
+        ValidateIssuer = true,
+        ValidIssuer = issuer,
+
+        ValidateAudience = true,
+        ValidAudience = audience,
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.FromSeconds(30)
+    };
+
+    // IMPORTANT for gateway scenarios (cookies + browser)
+    options.Events = new JwtBearerEvents
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        OnMessageReceived = context =>
         {
-            ValidateIssuer = true,
-            ValidIssuer = issuer,
-            ValidateAudience = true,
-            ValidAudience = audience,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-            ValidateLifetime = true,
-            ClockSkew = TimeSpan.FromSeconds(30)
-        };
-    });
+            // support both Authorization header and cookie
+            var token = context.Request.Headers["Authorization"].FirstOrDefault();
+
+            if (string.IsNullOrEmpty(token))
+                token = context.Request.Cookies["accessToken"];
+
+            if (!string.IsNullOrEmpty(token))
+                context.Token = token.Replace("Bearer ", "");
+
+            return Task.CompletedTask;
+        }
+    };
+});
 
 builder.Services.AddAuthorization();
 
+// =======================
+// APP BUILD
+// =======================
 var app = builder.Build();
 
-app.UseMiddleware<ExceptionHandlingMiddleware>();
+// =======================
+// MIDDLEWARE PIPELINE
+// =======================
 
+// global exception handling FIRST (important)
+app.UseCustomExceptionMiddleware();
+
+// cors BEFORE auth
 app.UseCors("AllowFrontend");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
 app.Run();
