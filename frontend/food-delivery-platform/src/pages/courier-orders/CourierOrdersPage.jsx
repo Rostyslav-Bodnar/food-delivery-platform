@@ -15,9 +15,9 @@ import {
     changeOrderStatus,
     deliverOrder,
     getActiveCourierOrders,
-    getAvailableCourierOrders,
+    getOrdersByCourier,
     getCourierOrderHistory
-} from "../../api/Order.jsx";
+} from "../../api/Order.ts";
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
 import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
@@ -111,7 +111,7 @@ export default function CourierOrdersPage() {
             try {
                 setLoading(true);
                 const [available, active, historyData] = await Promise.all([
-                    getAvailableCourierOrders(courierId),
+                    getOrdersByCourier(courierId),
                     getActiveCourierOrders(courierId),
                     getCourierOrderHistory(courierId)
                 ]);

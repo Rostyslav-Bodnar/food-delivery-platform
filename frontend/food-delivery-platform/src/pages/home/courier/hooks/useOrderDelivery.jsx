@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import {
     getActiveCourierOrders,
-    getAvailableCourierOrders,
+    getOrdersByCourier,
     getCourierOrderHistory
-} from "../../../../api/Order.jsx";
+} from "../../../../api/Order.ts";
 import { getCourierDeliveryStage, mapCourierOrder } from "../../../courier-orders/courierOrderUtils.js";
 
 const useOrderDelivery = (userData) => {
@@ -25,7 +25,7 @@ const useOrderDelivery = (userData) => {
         const load = async () => {
             try {
                 const [available, active, historyData] = await Promise.all([
-                    getAvailableCourierOrders(courierId),
+                    getOrdersByCourier(courierId),
                     getActiveCourierOrders(courierId),
                     getCourierOrderHistory(courierId)
                 ]);

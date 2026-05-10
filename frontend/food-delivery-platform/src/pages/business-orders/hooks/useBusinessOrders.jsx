@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getOrdersByBusiness } from "../../../api/Order.jsx";
+import { getOrdersByBusiness } from "../../../api/Order.ts";
 import { buildLocation, formatLocation } from "../../../utils/orderLocations.js";
 
 const BACKEND_STATUS_MAP = {

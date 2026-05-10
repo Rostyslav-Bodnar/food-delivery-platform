@@ -2,7 +2,7 @@
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
-import { createOrders, getCustomerOrders } from "../../../api/Order.jsx";
+import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
 import { getBusinessLocationsByBusinessId } from "../../../api/Tracking.jsx";
 import { clearCart } from "../../../utils/CartStorage.jsx";
 
