@@ -1,7 +1,10 @@
 ﻿import ErrorPanel from "../error/ErrorPanel";
 import "./ToastContainer.css";
 
-export default function ToastContainer({ toasts, removeToast }) {
+export default function ToastContainer({
+                                           toasts,
+                                           removeToast
+                                       }) {
     return (
         <div className="toast-container">
             {toasts.map(t => (

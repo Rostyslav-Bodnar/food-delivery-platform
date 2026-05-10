@@ -10,11 +10,9 @@ import PaymentCards from "./components/PaymentCards";
 import BusinessAddresses from "./components/BusinessAddresses";
 
 import "./styles/ProfilePage.css";
-import { useToast } from "../../global-components/toast/ToastContext";
 
 const ProfilePage = () => {
     const { accounts, currentAccountId, loading, user } = useUser();
-    const { addToast } = useToast();
     
     const {
         error,
@@ -69,16 +67,6 @@ const ProfilePage = () => {
         selectPointOnMap,
         handleSubmit,
     } = useBusinessAddresses();
-
-    React.useEffect(() => {
-        if (error) {
-            addToast({
-                message: error
-            });
-
-            clearError();
-        }
-    }, [error]);
     
     if (loading) return <>Loading profile...</>;
 

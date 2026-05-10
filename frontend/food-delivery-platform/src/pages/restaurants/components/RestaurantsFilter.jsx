@@ -1,5 +1,5 @@
 ﻿import { Search, X, Filter } from "lucide-react";
-import { CategoryList } from "../../../constants/category.jsx";
+import { CategoryList } from "../../../constants/category";
 import "../styles/RestaurantsFilter.css";
 
 const RestaurantsFilter = ({

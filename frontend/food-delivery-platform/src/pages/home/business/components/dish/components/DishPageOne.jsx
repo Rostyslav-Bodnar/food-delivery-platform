@@ -1,4 +1,4 @@
-﻿import { CategoryList } from "../../../../../../constants/category.jsx";
+﻿import { CategoryList } from "../../../../../../constants/category";
 import { ImageDropzone } from "./ImageDropzone";
 
 export function DishPageOne({

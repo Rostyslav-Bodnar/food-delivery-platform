@@ -1,6 +1,6 @@
 ﻿// src/hooks/useFetchDishes.js
 import { useEffect, useState } from "react";
-import { getDishesByBusinessId } from "../../../../api/Dish.jsx";
+import { getDishesByBusinessId } from "../../../../api/Dish.ts";
 
 const useFetchDishes = (userData) => {
     const [dishes, setDishes] = useState([]);
