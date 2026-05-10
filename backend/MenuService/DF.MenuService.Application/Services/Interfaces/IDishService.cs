@@ -9,7 +9,7 @@ public interface IDishService
 {
     Task<DishResponse> CreateDishAsync(CreateDishRequest request);
     Task<IEnumerable<DishResponse>> GetAllAsync();
-    Task<DishResponse> GetByIdAsync(Guid id);
+    Task<DishResponse?> GetByIdAsync(Guid id);
     Task<IEnumerable<DishResponse>> GetByBusinessId(Guid businessId);
     Task<DishForCustomerResponse> GetDishForCustomerAsync(Guid dishId);
     Task<List<DishForCustomerResponse>> GetAllDishForCustomerAsync();
