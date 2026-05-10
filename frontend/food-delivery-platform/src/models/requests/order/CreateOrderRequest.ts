@@ -1,6 +1,7 @@
 ﻿import {CreateLocationRequest} from "./CreateLocationRequest";
+import {CreateOrderDishRequest} from "./CreateOrderDishRequest";
 
-export interface CreateOrderDishRequest {
+export interface CreateOrderRequest {
     businessId : string
     orderedBy : string
     orderDate : string
