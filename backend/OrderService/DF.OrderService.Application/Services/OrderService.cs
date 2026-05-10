@@ -680,19 +680,19 @@ public class OrderService(
         });
     }
 
-    public async Task<OrderResponse> ChangeOrderStatus(Guid orderId, OrderStatus status)
+    public async Task<OrderResponse> ChangeOrderStatus(Guid orderId, DF.Contracts.Enums.OrderStatus status)
     {
         var order = await orderRepository.Get(orderId)
                     ?? throw new InvalidOperationException($"Order {orderId} not found");
 
         var shouldPublishDeliveredEvent =
-            status == OrderStatus.Delivered
+            status == DF.Contracts.Enums.OrderStatus.Delivered
             && order.OrderStatus != OrderStatus.Delivered;
 
         if (shouldPublishDeliveredEvent && order.DeliveredById is null)
             throw new InvalidOperationException("Cannot mark order as delivered without assigned courier.");
 
-        order.OrderStatus = status;
+        order.OrderStatus = status.ToDomain();
         await orderRepository.Update(order);
         var business = await userServiceRpcClient.GetBusinessAccountAsync(
             new GetBusinessAccountRequest(order.BusinessId));

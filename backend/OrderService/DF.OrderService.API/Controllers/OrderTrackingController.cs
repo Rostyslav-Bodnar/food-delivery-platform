@@ -22,16 +22,10 @@ public sealed class OrderTrackingController(
         var order = await orderRepository.Get(orderId);
         if (order is null)
             return NotFound();
-
-        // --------
-        // Ідентифікація користувача
-        // --------
+        
         var userId = Guid.Parse(User.FindFirst("sub")!.Value);
         var role   = User.FindFirst("role")!.Value;
-
-        // --------
-        // Перевірка доступу
-        // --------
+        
         bool allowed = role switch
         {
             "Customer" => order.OrderedBy == userId,

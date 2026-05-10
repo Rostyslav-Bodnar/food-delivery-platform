@@ -1,7 +1,6 @@
-﻿
+﻿using DF.Contracts.Enums;
 using DF.Contracts.Gateway.Requests.Order;
 using DF.Contracts.Gateway.Responses.Order;
-using DF.OrderService.Domain.Entities;
 namespace DF.OrderService.Application.Services.Interfaces;
 
 public interface IOrderService
