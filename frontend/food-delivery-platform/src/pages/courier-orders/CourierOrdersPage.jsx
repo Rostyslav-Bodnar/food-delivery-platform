@@ -33,6 +33,7 @@ import {
     setCourierDeliveryStage
 } from "./courierOrderUtils.js";
 import "./styles/CourierOrdersPage.css";
+import {OrderStatus} from "../../models/enums/OrderStatus.ts";
 
 const markerPalette = {
     courier: { fillColor: "#7c5cff", strokeColor: "#d9d2ff" },
@@ -281,7 +282,7 @@ export default function CourierOrdersPage() {
 
         try {
             setActionLoading(activeOrder.id);
-            await changeOrderStatus(activeOrder.id, "Delivered");
+            await changeOrderStatus(activeOrder.id, OrderStatus.Delivered);
             await publishStage("delivered");
             clearCourierDeliveryStage(activeOrder.id);
             setHistory((current) => [{ ...activeOrder, orderStatus: "delivered" }, ...current]);
