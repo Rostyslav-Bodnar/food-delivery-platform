@@ -9,31 +9,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="ab8f5b70-9134-4303-a273-5ac83622176a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/Enums/OrderStatus.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Extensions/MiddlewareExtensions.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Helpers/InternalAuthConstants.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Helpers/InternalAuthSigner.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/ExceptionMiddleware.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/IUserContext.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/InternalAuthMiddleware.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContext.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContextMiddleware.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Mappers/OrderStatusMapper.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/BusinessLocationController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/LocationController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AccountController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AuthController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/ProfileController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/ProfileController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/UserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/UserController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.Gateway.API/DF.Gateway.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/DF.Gateway.API.csproj" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Helpers/ServiceType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Helpers/ServiceType.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/Docker/compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/Docker/compose.generated.override.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../MenuService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/compose.yaml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderTrackingController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderTrackingController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Program.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/DF.OrderService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/DF.OrderService.Application.csproj" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/Interfaces/IOrderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/Interfaces/IOrderService.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/OrderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/OrderService.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" afterDir="false" />
     </list>
@@ -52,7 +40,7 @@
     <option name="firstShow" value="false" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="20" />
+    <option name="cachedIndexableFilesCount" value="30" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
@@ -80,12 +68,15 @@
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/44/cc0f9517/UserDto.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/c9/3bc511a6/TokenResponse.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/e0/805fcc38/ProfileResponse.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7cde04e1aef6453aa4dec16caf7acfed22400/cf/28e5e79a/CreateOrderRequest.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/fda0156beb9746548884fb42f16ae3661d7910/98/7e21ff7d/ActionMethodExecutor.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6af28599e71724c5fc6a617444e2f60b5d57dfdc5be0df4ba43ccfc36977/DefaultHttpContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Attributes/GatewayServiceAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Constants/InternalAuthConstants.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Controllers/MenuService/DishController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/BusinessLocationController.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/LocationController.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Exceptions/ApiException.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Helpers/InternalAuthSigner.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Helpers/ServiceResolver.cs" root0="FORCE_HIGHLIGHTING" />
@@ -95,10 +86,10 @@
     <setting file="file://$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" root0="FORCE_HIGHLIGHTING" />
   </component>
-  <component name="KubernetesApiPersistence"><![CDATA[{}]]></component>
-  <component name="KubernetesApiProvider"><![CDATA[{
-  "isMigrated": true
-}]]></component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
@@ -125,7 +116,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "feature/64-connect-gateway-api-to-orderservice",
+    "git-widget-placeholder": "feature/65-connect-gateway-api-to-trackingservice",
     "junie.onboarding.icon.badge.shown": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -223,6 +214,7 @@
       <updated>1778331437042</updated>
       <workItem from="1778331437042" duration="12052000" />
       <workItem from="1778364209681" duration="6320000" />
+      <workItem from="1778520538825" duration="1164000" />
     </task>
     <task id="LOCAL-00001" summary="#FDP-update tracking view">
       <option name="closed" value="true" />

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace DF.Gateway.API.Controllers.UserService;
 
 [ApiController]
-[Route("api/auth")]
+[Route("api/[controller]")]
 [GatewayServiceAttribute(ServiceType.UserService)]
 public class AuthController(GatewayProxy proxy) : ControllerBase
 {

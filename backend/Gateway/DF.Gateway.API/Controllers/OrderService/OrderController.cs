@@ -12,7 +12,7 @@ namespace DF.Gateway.API.Controllers.OrderService;
 
 [Authorize]
 [ApiController]
-[Route("api/order")]
+[Route("api/[controller]")]
 [GatewayService(ServiceType.OrderService)]
 public class OrderController(GatewayProxy proxy) : ControllerBase
 {
