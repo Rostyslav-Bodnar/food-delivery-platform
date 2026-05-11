@@ -12,7 +12,9 @@ using StackExchange.Redis;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using DF.TrackingService.API.Extensions;
 using DF.TrackingService.API.Hubs.Filters;
+using DF.TrackingService.API.Middlewares;
 using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,7 +33,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+        policy.WithOrigins("http://localhost:5229") // адреса фронтенду
             .AllowAnyHeader()                     // дозволяємо всі заголовки
             .AllowAnyMethod()                   // дозволяємо всі HTTP методи
             .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
@@ -93,48 +95,6 @@ builder.Services.AddSingleton<IConsumer, GetBusinessLocationConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
-builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-
-            ValidIssuer = "df.orderservice",
-            ValidAudience = "df.tracking",
-
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(
-                    builder.Configuration["Jwt:Key"]!
-                )
-            ),
-
-            ClockSkew = TimeSpan.FromSeconds(30)
-        };
-
-        // 🔥 КРИТИЧНО ДЛЯ SIGNALR (token через query)
-        options.Events = new JwtBearerEvents
-        {
-            OnMessageReceived = context =>
-            {
-                var accessToken = context.Request.Query["access_token"];
-                var path = context.HttpContext.Request.Path;
-
-                if (!string.IsNullOrEmpty(accessToken) &&
-                    path.StartsWithSegments("/hubs/courier-tracking"))
-                {
-                    context.Token = accessToken;
-                }
-
-                return Task.CompletedTask;
-            }
-        };
-    });
-
 builder.Services.AddAuthorization();
 
 builder.Services.AddMemoryCache();
@@ -163,9 +123,12 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     return ConnectionMultiplexer.Connect(configuration);
 });
 
-
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 var app = builder.Build();
+
+app.UseCustomExceptionMiddleware();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -194,7 +157,9 @@ app.UseHttpsRedirection();
 
 app.UseCors("AllowFrontend");
 
-app.UseAuthentication();
+app.UseMiddleware<InternalAuthMiddleware>();
+app.UseMiddleware<UserContextMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
