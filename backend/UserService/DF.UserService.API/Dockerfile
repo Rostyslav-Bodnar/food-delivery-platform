@@ -16,13 +16,14 @@ WORKDIR /src
 RUN apt-get update && apt-get install -y libgssapi-krb5-2
 
 # ✅ AUTH до GitHub Packages
-RUN dotnet nuget add source \
+RUN dotnet nuget remove source github || true && \
+    dotnet nuget add source \
     --username "Rostyslav-Bodnar" \
     --password $GITHUB_TOKEN \
     --store-password-in-clear-text \
-    --force \
     --name github \
     "https://nuget.pkg.github.com/Rostyslav-Bodnar/index.json"
+
 
 
 COPY . .
