@@ -18,14 +18,6 @@ RUN apt-get update && apt-get install -y libgssapi-krb5-2
 # copy solution
 COPY . .
 
-# restore with explicit config + auth env
-RUN dotnet restore "DF.UserService.API/DF.UserService.API.csproj" \
-    --configfile backend/UserService/nuget.config \
-    -p:RestoreAdditionalProjectSources="https://nuget.pkg.github.com/Rostyslav-Bodnar/index.json" \
-    -p:NuGetInteractive=false \
-    /p:ContinuousIntegrationBuild=true \
-    /v:m
-
 # publish
 WORKDIR /src/DF.UserService.API
 
