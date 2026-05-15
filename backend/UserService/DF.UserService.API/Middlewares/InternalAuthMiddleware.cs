@@ -13,8 +13,7 @@ public class InternalAuthMiddleware(
 
         // ❌ SKIP AUTH
         if (
-            path is not null &&
-            path.Contains("/api/auth")
+            path is not null && (path.Contains("/api/auth") || path.Contains("/health"))
         )
         {
             await next(context);
