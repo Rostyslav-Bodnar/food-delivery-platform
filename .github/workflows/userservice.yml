@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: read
-  packages: read
+  packages: write
 
 concurrency:
   group: userservice-${{ github.ref }}
