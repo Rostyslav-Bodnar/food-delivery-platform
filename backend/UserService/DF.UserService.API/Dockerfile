@@ -23,6 +23,7 @@ COPY ["DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj", "DF.
 COPY . .
 
 # ONLY restore (no nuget add source!)
+RUN apt-get update && apt-get install -y libgssapi-krb5-2
 RUN dotnet restore "DF.UserService.API/DF.UserService.API.csproj" \
     --configfile /src/nuget.config
 

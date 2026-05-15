@@ -153,5 +153,6 @@ app.UseMiddleware<UserContextMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health", () => "OK");
+app.MapGet("/health", () => "OK")
+    .AllowAnonymous();
 app.Run();
