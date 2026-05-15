@@ -2,9 +2,22 @@
   "profiles": {
     "DF.UserService.API": {
       "commandName": "Project",
+      
       "launchBrowser": true,
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+
+        "ConnectionStrings__UserServiceDatabase": "YOUR_CONNECTION",
+
+        "Jwt__Key": "SUPER_SECRET_KEY",
+
+        "RabbitMQ__HostName": "localhost",
+
+        "RabbitMQ__UserName": "guest",
+
+        "RabbitMQ__Password": "guest",
+
+        "RabbitMQ__Port": "5672"
       },
       "applicationUrl": "http://localhost:5000"
     }

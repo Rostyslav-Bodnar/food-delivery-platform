@@ -9,7 +9,7 @@ namespace DF.Gateway.API.Controllers.UserService;
 
 [Authorize]
 [ApiController]
-[Route("api/account")]
+[Route("api/[controller]")]
 [GatewayService(ServiceType.UserService)]
 public class AccountController(GatewayProxy proxy) : ControllerBase
 {

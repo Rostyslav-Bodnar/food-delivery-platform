@@ -37,9 +37,7 @@ builder.Services.AddCors(options =>
 // DATABASE
 // =======================
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlServer(
-        builder.Configuration.GetConnectionString("UserServiceMSSQLDatabase")
-    ));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("UserServiceDatabase")));
 
 // =======================
 // IDENTITY (USER MANAGEMENT ONLY)
@@ -97,7 +95,11 @@ builder.Services.AddSingleton<IConnection>(sp =>
         HostName = config["HostName"],
         UserName = config["UserName"],
         Password = config["Password"],
-        Port = int.Parse(config["Port"]!)
+        Port = int.Parse(config["Port"]!),
+        Ssl = new SslOption
+        {
+            Enabled = !builder.Environment.IsDevelopment()
+        }
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
@@ -158,4 +160,5 @@ app.UseMiddleware<UserContextMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapGet("/health", () => "OK");
 app.Run();

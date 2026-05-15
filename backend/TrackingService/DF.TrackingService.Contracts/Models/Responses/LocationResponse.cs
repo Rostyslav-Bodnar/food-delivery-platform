@@ -8,5 +8,4 @@ public record LocationResponse(
     string House,
     double Latitude,
     double Longitude
-    
     );

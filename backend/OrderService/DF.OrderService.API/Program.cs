@@ -1,3 +1,4 @@
+using DF.OrderService.API.Extensions;
 using DF.OrderService.API.Middlewares;
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Consumers;
@@ -86,6 +87,8 @@ builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
 
 var app = builder.Build();
+
+app.UseCustomExceptionMiddleware();
 
 using (var scope = app.Services.CreateScope())
 {

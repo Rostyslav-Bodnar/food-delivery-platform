@@ -9,7 +9,7 @@ namespace DF.Gateway.API.Controllers.UserService;
 
 [Authorize]
 [ApiController]
-[Route("api/profile")]
+[Route("api/[controller]")]
 [GatewayService(ServiceType.UserService)]
 public class ProfileController(GatewayProxy proxy) : ControllerBase
 {

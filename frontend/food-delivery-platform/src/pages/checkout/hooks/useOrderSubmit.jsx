@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
-import { getBusinessLocationsByBusinessId } from "../../../api/Tracking.jsx";
+import { getBusinessLocationsByBusinessId } from "../../../api/BusinessLocation.ts";
 import { clearCart } from "../../../utils/CartStorage.jsx";
 
 const PAYMENT_API_BASE = "http://localhost:5003/api";

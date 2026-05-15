@@ -1,8 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-    addLocation,
-    getBusinessLocationsByBusinessId
-} from "../../../api/Tracking.jsx";
+
+import { getBusinessLocationsByBusinessId }
+    from "../../../api/BusinessLocation"
+
+import { addBusinessLocation }
+    from "../../../api/Location"
+
+
 import { useUser } from "../../../context/UserContext";
 import {
     reverseGeocodeAddress,
@@ -212,7 +216,7 @@ const useBusinessAddresses = () => {
         setSubmitSuccess("");
 
         try {
-            await addLocation({
+            await addBusinessLocation({
                 businessId: currentAccountId,
                 fullAddress: addressForm.fullAddress.trim(),
                 city: addressForm.city.trim(),

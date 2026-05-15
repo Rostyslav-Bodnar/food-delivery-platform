@@ -1,5 +1,5 @@
-﻿using DF.TrackingService.Contracts.Models.Requests;
-using DF.TrackingService.Contracts.Models.Responses;
+﻿using DF.Contracts.Gateway.Requests.Tracking;
+using DF.Contracts.Gateway.Responses.Tracking;
 
 namespace DF.TrackingService.Application.Services.Interfaces;
 
