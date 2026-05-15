@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text;
 using DF.Gateway.API.Extensions;
 using DF.Gateway.API.Helpers;
@@ -56,13 +57,26 @@ builder.Services.AddScoped<InternalGatewayContext>();
 // =======================
 // HTTP CLIENT FOR MICROSERVICES
 // =======================
-builder.Services.AddHttpClient<GatewayProxy>(client =>
-{
-    client.Timeout = TimeSpan.FromSeconds(10);
 
-    // IMPORTANT: disable auto redirect for security in gateway
-    client.DefaultRequestHeaders.ConnectionClose = false;
-});
+
+builder.Services.AddHttpClient<GatewayProxy>(client =>
+    {
+        client.Timeout = TimeSpan.FromSeconds(10);
+
+        client.DefaultRequestHeaders.UserAgent.ParseAdd(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+
+        client.DefaultRequestHeaders.Accept.ParseAdd("application/json");
+
+        client.DefaultRequestHeaders.AcceptEncoding.ParseAdd("gzip, deflate, br");
+    })
+    .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+    {
+        AutomaticDecompression =
+            DecompressionMethods.GZip |
+            DecompressionMethods.Deflate |
+            DecompressionMethods.Brotli
+    });
 
 // =======================
 // JWT AUTH (CLIENT → GATEWAY)

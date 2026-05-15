@@ -15,6 +15,9 @@ public class ServiceResolver(IConfiguration config)
         var baseUrl = config[$"Services:{attr.ServiceType}"]
                       ?? throw new InvalidOperationException($"Service {attr.ServiceType} not configured");
 
-        return new Uri(new Uri(baseUrl), context.Request.Path);
+        var pathAndQuery =
+            $"{context.Request.Path}{context.Request.QueryString}";
+
+        return new Uri(new Uri(baseUrl), pathAndQuery);
     }
 }

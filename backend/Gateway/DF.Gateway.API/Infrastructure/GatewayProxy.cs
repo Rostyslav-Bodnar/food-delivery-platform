@@ -89,8 +89,14 @@ public class GatewayProxy(
             if (BlockedHeaders.Contains(header.Key))
                 continue;
 
+            if (header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase) ||
+                header.Key.Equals("Content-Length", StringComparison.OrdinalIgnoreCase) ||
+                header.Key.Equals("Transfer-Encoding", StringComparison.OrdinalIgnoreCase))
+                continue;
+
             request.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
         }
+
 
         // body
         if (HttpMethods.IsPost(context.Request.Method) ||
@@ -111,8 +117,10 @@ public class GatewayProxy(
                     MediaTypeHeaderValue.Parse(context.Request.ContentType);
             }
 
+            content.Headers.ContentLength = memory.Length; // ✅ ВАЖЛИВО
             request.Content = content;
-
+            request.Content.Headers.ContentType =
+                new MediaTypeHeaderValue("application/json");
             context.Request.Body.Position = 0;
         }
 
