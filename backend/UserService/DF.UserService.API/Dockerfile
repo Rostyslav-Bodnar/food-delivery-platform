@@ -15,10 +15,18 @@ WORKDIR /src
 
 RUN apt-get update && apt-get install -y libgssapi-krb5-2
 
-# copy solution
+# ✅ AUTH до GitHub Packages
+RUN dotnet nuget add source \
+    --username "Rostyslav-Bodnar" \
+    --password $GITHUB_TOKEN \
+    --store-password-in-clear-text \
+    --force \
+    --name github \
+    "https://nuget.pkg.github.com/Rostyslav-Bodnar/index.json"
+
+
 COPY . .
 
-# publish
 WORKDIR /src/DF.UserService.API
 
 RUN dotnet publish DF.UserService.API.csproj \
