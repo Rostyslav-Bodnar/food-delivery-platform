@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DF.Contracts.Gateway.Requests.Tracking;
+using Microsoft.AspNetCore.Mvc;
 using DF.TrackingService.Application.Services.Interfaces;
-using DF.TrackingService.Contracts.Models.Requests;
 
 namespace DF.TrackingService.API.Controllers;
 

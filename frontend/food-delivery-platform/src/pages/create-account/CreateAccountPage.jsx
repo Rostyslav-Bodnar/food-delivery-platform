@@ -13,12 +13,12 @@ const CreateAccountPage = () => {
         availableAccountTypes,
         loading
     } = useAccountTypes(user);
-
-    if (loading) return <div>Loading...</div>;
-
+    
     return (
         <div className="create-page-wrapper">
             <div className="create-container">
+                {loading && <div>Loading...</div>}
+
                 <aside className="create-sidebar">
                     <div className="create-brand">
                         <div className="create-logo">FE</div>
@@ -37,7 +37,7 @@ const CreateAccountPage = () => {
                     />
 
                     <div className="create-footer">
-                        <div>Need help? Contact support.</div>
+                        Need help? Contact support.
                     </div>
                 </aside>
 

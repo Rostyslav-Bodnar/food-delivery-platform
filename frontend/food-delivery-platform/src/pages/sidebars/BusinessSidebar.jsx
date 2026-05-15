@@ -1,7 +1,7 @@
 import { BarChart2, Package, Filter, Users } from "lucide-react";
 import Sidebar from "./components/Sidebar.jsx";
 
-export default function BusinessSidebar({ userData }) {
+export default function BusinessSidebar({ userData, disabled }) {
 
     const items = [
         { id: "dashboard", label: "Dashboard", icon: BarChart2, path: "/" },
@@ -15,6 +15,7 @@ export default function BusinessSidebar({ userData }) {
             logo="FoodEx"
             title={userData?.currentAccount?.name}
             items={items}
+            disabled={disabled}
         />
     );
 }

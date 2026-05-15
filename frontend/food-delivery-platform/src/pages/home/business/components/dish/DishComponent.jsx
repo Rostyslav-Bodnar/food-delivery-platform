@@ -26,8 +26,7 @@ export default function DishComponent({
 
     const submit = () => {
         const payload = {
-            userId: userData.id,
-            menuId: null,
+            businessId: userData.currentAccount.id,
             name: form.name,
             description: form.description,
             price: Number(form.price) || 0,

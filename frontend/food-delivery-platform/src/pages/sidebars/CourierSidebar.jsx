@@ -1,19 +1,25 @@
-﻿import { Package, Bike, History, Power } from "lucide-react";
+import { Home, Package, Power } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 
 export default function CourierSidebar({
-                                           activeOrder,
-                                           history,
-                                           isOnline,
-                                           setIsOnline,
-                                           userData
-                                       }) {
-
+    isOnline,
+    setIsOnline,
+    userData,
+    availableCount = 0,
+    activeCount = 0
+}) {
     const items = [
-        { id: "new", label: "New Orders", icon: Package, path: "/courier/new" },
-        { id: "active", label: "Active order", icon: Bike, path: "/courier/active", badge: activeOrder ? 1 : null },
-        { id: "history", label: "Order's History", icon: History, path: "/courier/history", badge: history.length },
+        { id: "home", label: "Home", icon: Home, path: "/" },
+        {
+            id: "orders",
+            label: activeCount ? "Orders / Active" : "Orders",
+            icon: Package,
+            path: "/courier/orders",
+            badge: activeCount || availableCount || null
+        }
     ];
+
+    const displayName = userData?.currentAccount?.name || userData?.name || "Courier";
 
     const footer = (
         <>
@@ -27,10 +33,10 @@ export default function CourierSidebar({
 
             <div className="courier-info">
                 <div className="courier-avatar">
-                    {userData?.name?.[0] || "К"}
+                    {displayName[0] || "K"}
                 </div>
                 <div>
-                    <div>{userData?.name}</div>
+                    <div>{displayName}</div>
                 </div>
             </div>
         </>

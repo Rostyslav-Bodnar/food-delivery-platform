@@ -1,9 +1,11 @@
+using DF.Contracts.Gateway.Requests.Dish;
+using DF.Contracts.Gateway.Responses.Dish;
 using DF.Contracts.RPC.Requests.UserService;
+using DF.MenuService.Application.Mappers;
 using DF.MenuService.Application.Messaging;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
-using DF.MenuService.Contracts.Models.Request;
-using DF.MenuService.Contracts.Models.Response;
+using DF.MenuService.Contracts.Exceptions;
 using DF.MenuService.Domain.Entities;
 
 namespace DF.MenuService.Application.Services;
@@ -17,53 +19,51 @@ public class DishService(
 {
     public async Task<DishResponse> CreateDishAsync(CreateDishRequest request)
     {
-        // 1. Отримати бізнес-акаунт
-        var accountResponse = await userServiceRpcClient.GetAccountAsync(
-            new GetAccountRequest(request.UserId));
+        var accountResponse = await userServiceRpcClient.GetBusinessAccountAsync(
+            new GetBusinessAccountRequest(request.BusinessId));
 
-        // 2. Завантажити картинку
+        if (accountResponse == null)
+            throw new NullReferenceException("Account not found");
+
+        if (!accountResponse.StripeChargesEnabled || !accountResponse.StripePayoutsEnabled)
+            throw new StripeAccountNotReadyException();
+
+        if (!string.IsNullOrWhiteSpace(accountResponse.StripeRequirementsDue))
+            throw new StripeAccountNotReadyException("Stripe requirements are not completed.");
+
         string? imageUrl = null;
+
         if (request.Image != null)
         {
             var upload = await cloudinaryService.UploadAsync(request.Image, "dishes");
             imageUrl = upload.Url;
         }
 
-        // 3. Створити dish
         var dish = new Dish
         {
-            MenuId = request.MenuId,
             Name = request.Name,
             Description = request.Description,
             Image = imageUrl,
             Price = request.Price,
-            Category = request.Category,
-            BusinessId = accountResponse.AccountId
+            Category = request.Category.ToDomain(),
+            BusinessId = request.BusinessId
         };
 
-        // 4. Зберегти dish
         var result = await repository.Create(dish);
 
-        // 5. Проставити DishId для інгредієнтів
-        var ingredientsWithDishId = request.Ingredients
-            .Select(i => new CreateIngredientRequest(
-                Name: i.Name,
-                Weight: i.Weight
-            )).ToList();
+        var ingredients = await ingredientService.CreateIngredients(
+            request.Ingredients.Select(i =>
+                new CreateIngredientRequest(i.Name, i.Weight)).ToList(),
+            result.Id);
 
-        // 6. Створити інгредієнти
-        var ingredients = await ingredientService.CreateIngredients(ingredientsWithDishId, result.Id);
-
-        // 7. Повернути DTO
         return new DishResponse(
-            dish.Id,
-            dish.MenuId,
-            dish.Name,
-            dish.Description,
-            dish.Image,
-            dish.Price,
-            dish.Category,
-            dish.CookingTime,
+            result.Id,
+            result.Name,
+            result.Description,
+            result.Image,
+            result.Price,
+            result.Category.ToContract(),
+            result.CookingTime,
             ingredients
         );
     }
@@ -72,20 +72,19 @@ public class DishService(
     {
         var dishes = await repository.GetAll();
 
-        // Потрібно підтягувати інгредієнти
         var result = new List<DishResponse>();
+
         foreach (var d in dishes)
         {
             var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
 
             result.Add(new DishResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 ingredients
             ));
@@ -94,19 +93,22 @@ public class DishService(
         return result;
     }
 
-    public async Task<DishResponse> GetByIdAsync(Guid id)
+    public async Task<DishResponse?> GetByIdAsync(Guid id)
     {
         var d = await repository.Get(id);
+
+        if (d == null)
+            return null;
+
         var ingredients = await ingredientService.GetAllIngredientsByDishId(id);
 
         return new DishResponse(
             d.Id,
-            d.MenuId,
             d.Name,
             d.Description,
             d.Image,
             d.Price,
-            d.Category,
+            d.Category.ToContract(),
             d.CookingTime,
             ingredients
         );
@@ -117,18 +119,18 @@ public class DishService(
         var dishes = await repository.GetByBusinessIdAsync(businessId);
 
         var result = new List<DishResponse>();
+
         foreach (var d in dishes)
         {
             var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
 
             result.Add(new DishResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 ingredients
             ));
@@ -138,11 +140,19 @@ public class DishService(
     }
 
     public async Task<bool> DeleteAsync(Guid id)
-        => await repository.Delete(id);
+    {
+        var exists = await repository.Get(id);
+
+        if (exists == null)
+            throw new NullReferenceException($"Dish {id} not found");
+
+        return await repository.Delete(id);
+    }
 
     public async Task<DishResponse> UpdateDishAsync(UpdateDishRequest request)
     {
         var existing = await repository.Get(request.DishId);
+
         if (existing == null)
             throw new NullReferenceException($"Dish {request.DishId} not found");
 
@@ -157,22 +167,22 @@ public class DishService(
         existing.Name = request.Name;
         existing.Description = request.Description;
         existing.Price = request.Price;
-        existing.Category = request.Category;
+        existing.Category = request.Category.ToDomain();
         existing.Image = imageUrl;
         existing.CookingTime = request.CookingTime;
 
         await repository.Update(existing);
-        
-        var updatedIngredients = await ingredientService.UpdateIngredients(existing.Id, request.Ingredients);
+
+        var updatedIngredients =
+            await ingredientService.UpdateIngredients(existing.Id, request.Ingredients);
 
         return new DishResponse(
             existing.Id,
-            existing.MenuId,
             existing.Name,
             existing.Description,
             existing.Image,
             existing.Price,
-            existing.Category,
+            existing.Category.ToContract(),
             existing.CookingTime,
             updatedIngredients
         );
@@ -181,20 +191,30 @@ public class DishService(
     public async Task<DishForCustomerResponse> GetDishForCustomerAsync(Guid dishId)
     {
         var d = await repository.Get(dishId);
+
+        if (d == null)
+            throw new NullReferenceException($"Dish {dishId} not found");
+
         var ingredients = await ingredientService.GetAllIngredientsByDishId(dishId);
 
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(d.BusinessId));
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(
+            new GetBusinessAccountRequest(d.BusinessId));
 
-        var businessDetails = new BusinessResponse(businessResponse.AccountId,  businessResponse.Name, businessResponse.Description);
-        
+        if (businessResponse == null)
+            throw new NullReferenceException("Business not found");
+
+        var businessDetails = new BusinessResponse(
+            businessResponse.AccountId,
+            businessResponse.Name,
+            businessResponse.Description);
+
         return new DishForCustomerResponse(
             d.Id,
-            d.MenuId,
             d.Name,
             d.Description,
             d.Image,
             d.Price,
-            d.Category,
+            d.Category.ToContract(),
             d.CookingTime,
             businessDetails,
             ingredients
@@ -205,76 +225,95 @@ public class DishService(
     {
         var dishes = (await repository.GetAll()).ToList();
 
-        // 1️⃣ Витягуємо всі унікальні бізнеси
         var businessIds = dishes
             .Where(d => d.BusinessId != Guid.Empty)
             .Select(d => d.BusinessId)
             .Distinct()
             .ToList();
 
-        // 2️⃣ Робимо fan-out RPC виклики паралельно
         var businessTasks = businessIds.ToDictionary(
             id => id,
-            id => userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(id))
+            id => userServiceRpcClient.GetBusinessAccountAsync(
+                new GetBusinessAccountRequest(id))
         );
 
         await Task.WhenAll(businessTasks.Values);
 
-        // 3️⃣ Формуємо словник BusinessId -> BusinessResponse
         var businesses = businessTasks.ToDictionary(
             x => x.Key,
-            x => new BusinessResponse(
-                x.Value.Result.AccountId,
-                x.Value.Result.Name,
-                x.Value.Result.Description
-            )
+            x =>
+            {
+                var result = x.Value.Result;
+
+                if (result == null)
+                    throw new NullReferenceException($"Business {x.Key} not found");
+
+                return new BusinessResponse(
+                    result.AccountId,
+                    result.Name,
+                    result.Description
+                );
+            }
         );
 
-        // 4️⃣ Підтягуємо інгредієнти для кожної страви
-        var result = new List<DishForCustomerResponse>();
+        var response = new List<DishForCustomerResponse>();
+
         foreach (var d in dishes)
         {
             var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
 
             var businessDetails = businesses.GetValueOrDefault(d.BusinessId);
 
-            result.Add(new DishForCustomerResponse(
+            if (businessDetails == null)
+                continue;
+
+            response.Add(new DishForCustomerResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 businessDetails,
                 ingredients
             ));
         }
-        return result.Where(r => r.BusinessDetails != null).ToList();
+
+        return response;
     }
 
     public async Task<List<DishForCustomerResponse>> GetDishesForCustomerByBusinessIdAsync(Guid businessId)
     {
-        var dishes = await repository.GetByBusinessIdAsync(businessId);
-        
-        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(new GetBusinessAccountRequest(dishes.First().BusinessId));
-        
-        var businessDetails = new  BusinessResponse(businessResponse.AccountId, businessResponse.Name, businessResponse.Description);
+        var dishes = (await repository.GetByBusinessIdAsync(businessId)).ToList();
+
+        if (!dishes.Any())
+            return [];
+
+        var businessResponse = await userServiceRpcClient.GetBusinessAccountAsync(
+            new GetBusinessAccountRequest(businessId));
+
+        if (businessResponse == null)
+            throw new NullReferenceException("Business not found");
+
+        var businessDetails = new BusinessResponse(
+            businessResponse.AccountId,
+            businessResponse.Name,
+            businessResponse.Description);
 
         var result = new List<DishForCustomerResponse>();
+
         foreach (var d in dishes)
         {
             var ingredients = await ingredientService.GetAllIngredientsByDishId(d.Id);
 
             result.Add(new DishForCustomerResponse(
                 d.Id,
-                d.MenuId,
                 d.Name,
                 d.Description,
                 d.Image,
                 d.Price,
-                d.Category,
+                d.Category.ToContract(),
                 d.CookingTime,
                 businessDetails,
                 ingredients
@@ -283,5 +322,4 @@ public class DishService(
 
         return result;
     }
-
 }

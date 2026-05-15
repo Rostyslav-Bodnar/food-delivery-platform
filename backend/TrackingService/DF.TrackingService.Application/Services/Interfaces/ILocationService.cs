@@ -1,5 +1,5 @@
-﻿using DF.TrackingService.Contracts.Models.Requests;
-using DF.TrackingService.Contracts.Models.Responses;
+﻿using DF.Contracts.Gateway.Requests.Tracking;
+using DF.Contracts.Gateway.Responses.Tracking;
 
 namespace DF.TrackingService.Application.Services.Interfaces;
 
@@ -10,4 +10,6 @@ public interface ILocationService
     Task<LocationResponse> CreateLocation(CreateLocationRequest request);
     Task<LocationResponse> UpdateLocation(UpdateLocationRequest request);
     Task<bool> DeleteLocation(Guid id);
+    Task<LocationResponse> AddLocationAsync(AddLocationRequest request);
+
 }

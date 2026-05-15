@@ -31,11 +31,20 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("BusinessId")
                         .HasColumnType("uuid");
 
+                    b.Property<decimal>("CourierFee")
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<bool>("CourierPaid")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid?>("DeliverFromId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid?>("DeliverToId")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("DeliveryFee")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<Guid?>("DeliveredById")
                         .HasColumnType("uuid");
@@ -53,6 +62,9 @@ namespace DF.OrderService.Infrastructure.Migrations
 
                     b.Property<Guid>("OrderedBy")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("PaymentMethod")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("Profit")
                         .HasColumnType("numeric");

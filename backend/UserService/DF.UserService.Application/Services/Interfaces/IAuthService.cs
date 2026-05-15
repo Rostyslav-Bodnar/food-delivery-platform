@@ -1,5 +1,7 @@
-﻿using DF.UserService.Contracts.Models.Request;
-using DF.UserService.Contracts.Models.Response;
+﻿
+
+using DF.Contracts.Gateway.Requests.Auth;
+using DF.Contracts.Gateway.Responses;
 
 namespace DF.UserService.Application.Services.Interfaces;
 

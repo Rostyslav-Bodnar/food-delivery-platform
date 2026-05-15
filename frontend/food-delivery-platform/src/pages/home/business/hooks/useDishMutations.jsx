@@ -1,44 +1,71 @@
-﻿// src/hooks/useDishMutations.js
-import { useState } from "react";
-import { createDish, updateDish, deleteDish } from "../../../../api/Dish.jsx";
+﻿import { useEffect, useState } from "react";
+
+import {
+    createDish,
+    updateDish,
+    deleteDish
+} from "../../../../api/Dish.ts";
 
 const useDishMutations = (dishes) => {
     const [localDishes, setLocalDishes] = useState(dishes);
 
+
+    useEffect(() => {
+        setLocalDishes(dishes);
+    }, [dishes]);
+
     const handleCreate = async (newDish) => {
         try {
             const created = await createDish(newDish);
+
             setLocalDishes(prev => [created, ...prev]);
         } catch (err) {
-            console.log(newDish);
             console.error(err);
-            alert("Помилка створення страви");
         }
     };
 
-    const handleUpdate = async (id, patch) => {
+    const handleUpdate = async (request) => {
         try {
-            const updated = await updateDish(id, patch);
+            const updated = await updateDish(request);
+
             setLocalDishes(prev =>
-                prev.map(d => (d.id === id ? updated : d))
+                prev.map(d =>
+                    d.id === updated.id
+                        ? updated
+                        : d
+                )
             );
         } catch (err) {
             console.error(err);
-            alert("Помилка оновлення страви");
+
+            toast.addToast({
+                message: err.message,
+            });
         }
     };
 
     const handleDelete = async (id) => {
         try {
             await deleteDish(id);
-            setLocalDishes(prev => prev.filter(d => d.id !== id));
+
+            setLocalDishes(prev =>
+                prev.filter(d => d.id !== id)
+            );
         } catch (err) {
             console.error(err);
-            alert("Не вдалося видалити страву");
+
+            toast.addToast({
+                message: err.message,
+            });
         }
     };
 
-    return { handleCreate, handleUpdate, handleDelete };
+    return {
+        localDishes,
+        handleCreate,
+        handleUpdate,
+        handleDelete
+    };
 };
 
 export default useDishMutations;

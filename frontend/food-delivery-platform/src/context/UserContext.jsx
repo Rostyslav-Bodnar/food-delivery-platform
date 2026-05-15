@@ -1,38 +1,52 @@
 ﻿// src/context/UserContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getProfileData, switchAccount } from "../api/Profile.jsx";
-import { refresh, logout } from "../api/Auth.jsx";
+import { getProfileData, switchAccount } from "../api/Profile";
+import { logout } from "../api/Auth.ts";
 
-const UserContext = createContext();
+const UserContext = createContext(null);
 
 export const UserProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [accounts, setAccounts] = useState([]);
     const [currentAccountId, setCurrentAccountId] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    // =========================
+    // LOAD PROFILE
+    // =========================
     const loadUser = async () => {
         try {
-            let token = localStorage.getItem("accessToken");
+            setLoading(true);
+            setError(null);
+
+
+            const token = localStorage.getItem("accessToken");
             if (!token) {
-                const tokens = await refresh();
-                token = tokens.accessToken;
+                setUser(null);
+                setAccounts([]);
+                setCurrentAccountId(null);
+                return;
             }
-            const data = await getProfileData(token);
+            
+            const data = await getProfileData();
+
             setUser(data.user);
             setAccounts(data.accounts);
             setCurrentAccountId(data.currentAccount.id);
 
-            // Зберігаємо accountType у localStorage
-            const currentAcc = data.accounts.find(a => a.id === data.currentAccount.id);
-            console.log(currentAcc);
+            const currentAcc = data.accounts.find(
+                a => a.id === data.currentAccount.id
+            );
 
             if (currentAcc) {
                 localStorage.setItem("currentAccountType", currentAcc.accountType);
-                localStorage.setItem("currentAccountId", data.currentAccount.id);
+                localStorage.setItem("currentAccountId", currentAcc.id);
+                localStorage.setItem("currentAccountName", currentAcc.name ?? "");
             }
         } catch (err) {
-            console.error("Load user error:", err);
+            // ✅ новий стандарт
+            setError(err.message);
             setUser(null);
         } finally {
             setLoading(false);
@@ -43,29 +57,29 @@ export const UserProvider = ({ children }) => {
         loadUser();
     }, []);
 
+    // =========================
+    // SWITCH ACCOUNT
+    // =========================
     const handleSwitchAccount = async (accountId) => {
         try {
-            let token = localStorage.getItem("accessToken");
-            if (!token) {
-                const tokens = await refresh();
-                token = tokens.accessToken;
-            }
+            setError(null);
 
-            await switchAccount(accountId, token);
-            await loadUser(); // оновлюємо дані
+            await switchAccount(accountId);
+            await loadUser();
 
-            // ПЕРЕЗАВАНТАЖУЄМО СТОРІНКУ ПІСЛЯ ПЕРЕМИКАННЯ
+            // UX‑рішення — залишаємо як було
             window.location.reload();
         } catch (err) {
-            console.error("Switch account error:", err);
+            setError(err.message);
         }
     };
 
+    // =========================
+    // LOGOUT
+    // =========================
     const handleLogout = async () => {
         try {
             await logout();
-        } catch (err) {
-            console.warn("Logout error:", err);
         } finally {
             localStorage.clear();
             window.location.href = "/food-delivery-platform/";
@@ -79,9 +93,11 @@ export const UserProvider = ({ children }) => {
                 accounts,
                 currentAccountId,
                 loading,
+                error,
                 reloadUser: loadUser,
                 switchAccount: handleSwitchAccount,
                 logout: handleLogout,
+                clearError: () => setError(null)
             }}
         >
             {children}

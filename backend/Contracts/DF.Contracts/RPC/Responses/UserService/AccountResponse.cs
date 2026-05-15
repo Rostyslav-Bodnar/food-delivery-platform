@@ -24,7 +24,11 @@ public record GetBusinessAccountResponse(
     string Name,
     string Description,
     string PhoneNumber,
-    List<string> Adresses 
+    List<string> Adresses,
+    bool StripeChargesEnabled,
+    bool StripePayoutsEnabled,
+    string StripeRequirementsDue,
+    string StripeId
     ) : GetAccountResponse(AccountId, UserId, AccountType);
 public record GetCourierAccountResponse(
     Guid AccountId,

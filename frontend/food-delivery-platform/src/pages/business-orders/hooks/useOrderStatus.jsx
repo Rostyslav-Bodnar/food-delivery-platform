@@ -1,4 +1,4 @@
-﻿import { changeOrderStatus } from "../../../api/Order.jsx";
+﻿import { changeOrderStatus } from "../../../api/Order.ts";
 
 const FRONT_TO_BACK_STATUS = {
     preparing: "Preparing",

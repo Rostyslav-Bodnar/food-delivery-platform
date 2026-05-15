@@ -1,42 +1,41 @@
-﻿using DF.UserService.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+﻿using DF.Contracts.Gateway.Responses;
+using DF.UserService.API.Middlewares;
+using DF.UserService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-public class UserController(IUserService userService) : ControllerBase
+public class UserController(IUserService userService, IUserContext userContext) : ControllerBase
 {
     [HttpGet("profile")]
-    [Authorize]
-    public async Task<IActionResult> Me()
+    public async Task<ActionResult<UserDto>> Me()
     {
-        // Отримуємо клейм NameIdentifier
-        var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
+        var userId = userContext.UserId;
+        if(userId == null)
+            throw new UnauthorizedAccessException("User is not authenticated");
 
-        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
-            return Unauthorized("Invalid token or user id");
+        var user = await userService.GetUserAsync(userId);
 
-        var result = await userService.GetUserAsync(userId);
-        if (result == null)
-            return NotFound("User not found");
-
-        return Ok(result);
+        return Ok(user);
     }
 
     [HttpGet("user")]
-    public async Task<IActionResult> GetUser([FromQuery] Guid userId)
+    public async Task<ActionResult<UserDto>> GetUser([FromQuery] Guid userId)
     {
         var user = await userService.GetUserAsync(userId);
         return Ok(user);
     }
 
     [HttpGet("users")]
-    public async Task<IActionResult> GetUsers()
+    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
     {
         var users = await userService.GetAllUsers();
+
+        if (!users.Any())
+            throw new NullReferenceException("No users found");
+
         return Ok(users);
     }
 }

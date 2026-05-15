@@ -10,6 +10,7 @@ public record CreateOrderRequest(
     Guid? DeliveredBy,
     CreateLocationRequest DeliverTo,
     CreateLocationRequest DeliverFrom,
+    PaymentMethod PaymentMethod,
     List<CreateOrderDishRequest> Dishes
 );
 

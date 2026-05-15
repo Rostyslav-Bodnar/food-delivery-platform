@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react";
-import { getAllDishesForCustomer } from "../../../../api/Dish.jsx";
-import { CategoryMap } from "../../../../constants/category.jsx";
+import { getAllDishesForCustomer } from "../../../../api/Dish.ts";
+import { CategoryMap } from "../../../../constants/category";
 
 export const useDishes = () => {
     const [popularDishes, setPopularDishes] = useState([]);

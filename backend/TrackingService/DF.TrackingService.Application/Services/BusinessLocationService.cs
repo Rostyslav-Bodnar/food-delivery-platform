@@ -1,7 +1,7 @@
-﻿using DF.TrackingService.Application.Repositories.Interfaces;
+﻿using DF.Contracts.Gateway.Requests.Tracking;
+using DF.Contracts.Gateway.Responses.Tracking;
+using DF.TrackingService.Application.Repositories.Interfaces;
 using DF.TrackingService.Application.Services.Interfaces;
-using DF.TrackingService.Contracts.Models.Requests;
-using DF.TrackingService.Contracts.Models.Responses;
 using DF.TrackingService.Domain.Entities;
 
 namespace DF.TrackingService.Application.Services;

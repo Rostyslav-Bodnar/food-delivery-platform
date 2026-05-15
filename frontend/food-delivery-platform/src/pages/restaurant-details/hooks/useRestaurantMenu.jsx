@@ -1,38 +1,58 @@
 ﻿// src/hooks/useRestaurantMenu.js
-import { useState, useEffect } from 'react';
-import { getDishesForCustomerByBusinessId } from "../../../api/Dish.jsx";
-import { CategoryMap } from "../../../constants/category.jsx";
+
+import { useState, useEffect } from "react";
+
+import { getDishesForCustomerByBusinessId }
+    from "../../../api/Dish.ts";
+
+import { CategoryMap }
+    from "../../../constants/category";
 
 const useRestaurantMenu = (restaurantId) => {
     const [menu, setMenu] = useState([]);
     const [loading, setLoading] = useState(true);
-
+    
     useEffect(() => {
+        if (!restaurantId) return;
+
         const loadMenu = async () => {
             try {
-                const dishes = await getDishesForCustomerByBusinessId(restaurantId);
+                setLoading(true);
+
+                const dishes =
+                    await getDishesForCustomerByBusinessId(
+                        restaurantId
+                    );
+
                 setMenu(
                     dishes.map(d => ({
                         ...d,
                         image: d.imageUrl,
                         desc: d.description,
-                        rating: d.rating ?? 5, // або з бекенду
-                        reviews: d.reviews ?? 0, // або з бекенду
-                        popular: d.popular ?? false, // або з бекенду
-                        restaurant: d.restaurantName || '', // assuming restaurant.name is not directly available, adjust if needed
+                        rating: d.rating ?? 5,
+                        reviews: d.reviews ?? 0,
+                        popular: d.popular ?? false,
+                        restaurant: d.restaurantName || "",
                         category: CategoryMap[d.category]
                     }))
                 );
             } catch (e) {
-                console.error("Menu loading error:", e);
+                console.error(
+                    "Menu loading error:",
+                    e
+                );
             } finally {
                 setLoading(false);
             }
         };
+
         loadMenu();
     }, [restaurantId]);
 
-    return { menu, loading };
+    return {
+        menu,
+        loading
+    };
 };
 
 export default useRestaurantMenu;

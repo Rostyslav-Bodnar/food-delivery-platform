@@ -1,26 +1,30 @@
-﻿import usePhotoUpload from "../hooks/usePhotoUpload";
-import { useAccountFormState } from "../hooks/useAccountFormState";
-import { useAccountSubmit } from "../hooks/useAccountSubmit";
-import "../styles/AccountForm.css";
+﻿import usePhotoUpload from "../hooks/usePhotoUpload"
+import { useAccountFormState } from "../hooks/useAccountFormState"
+import { useAccountSubmit } from "../hooks/useAccountSubmit"
+import "../styles/AccountForm.css"
 
 export default function AccountFormBase({
-        initialState,
-        buildAccountPayload,
-        endpoint,
-        submitText,
-        children
-    }) {
+                                            initialState,
+                                            buildAccountPayload,
+                                            endpoint,
+                                            submitText,
+                                            children
+                                        }) {
+
     const {
         formData,
         setFormData,
         changeField
-    } = useAccountFormState(initialState);
+    } = useAccountFormState(initialState)
 
-    const { handleSubmit } = useAccountSubmit({
+    const {
+        handleSubmit,
+        submitting,
+    } = useAccountSubmit({
         endpoint,
         buildAccountPayload,
         formData
-    });
+    })
 
     const {
         dropRef,
@@ -29,7 +33,7 @@ export default function AccountFormBase({
         onDragLeave,
         onFileChange,
         removePhoto
-    } = usePhotoUpload(setFormData);
+    } = usePhotoUpload(setFormData)
 
     return (
         <form className="account-form" onSubmit={handleSubmit}>
@@ -86,7 +90,9 @@ export default function AccountFormBase({
                 />
             </div>
 
-            <button type="submit">{submitText}</button>
+            <button type="submit" disabled={submitting}>
+                {submitting ? "Submitting..." : submitText}
+            </button>
         </form>
-    );
+    )
 }

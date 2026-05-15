@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
     </PropertyGroup>
@@ -13,8 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="DF.Contracts" Version="1.0.1-preview" />
+      <PackageReference Include="DF.Contracts" Version="1.0.1-pre-release7" />
       <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.17.0" />
     </ItemGroup>
 
     <ItemGroup>

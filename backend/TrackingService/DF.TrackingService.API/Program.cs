@@ -1,3 +1,4 @@
+using DF.TrackingService.API.Hubs;
 using DF.TrackingService.Application.Messaging.Consumers;
 using DF.TrackingService.Application.Messaging.Publishers;
 using DF.TrackingService.Application.Repositories;
@@ -7,6 +8,14 @@ using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using RabbitMQ.Client;
+using StackExchange.Redis;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using DF.TrackingService.API.Extensions;
+using DF.TrackingService.API.Hubs.Filters;
+using DF.TrackingService.API.Middlewares;
+using Microsoft.AspNetCore.SignalR;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +33,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5173") // адреса фронтенду
+        policy.WithOrigins("http://localhost:5229") // адреса фронтенду
             .AllowAnyHeader()                     // дозволяємо всі заголовки
             .AllowAnyMethod()                   // дозволяємо всі HTTP методи
             .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
@@ -40,8 +49,6 @@ builder.Services.AddDbContext<SqlDbContext>(options =>
 
 builder.Services.AddDbContext<MongoDbContext>(options =>
     options.UseMongoDB(builder.Configuration.GetConnectionString("MongoDdConnection"), "TrackingDb"));
-
-
 
 // RabbitMQ connection
 builder.Services.AddSingleton<IConnection>(sp =>
@@ -84,12 +91,44 @@ builder.Services.AddSingleton<IEventPublisher, TrackingEventPublisher>();
 //Consumers
 builder.Services.AddSingleton<IConsumer, OrderCreatedConsumer>();
 builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessLocationConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
+builder.Services.AddAuthorization();
 
+builder.Services.AddMemoryCache();
+
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = false;
+    options.KeepAliveInterval = TimeSpan.FromSeconds(10);
+    options.ClientTimeoutInterval = TimeSpan.FromSeconds(30);
+})
+.AddHubOptions<CourierTrackingHub>(options =>
+{
+    options.AddFilter<RateLimitHubFilter>();
+});
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = ConfigurationOptions.Parse(
+        builder.Configuration["Redis:ConnectionString"]!
+    );
+
+    configuration.AbortOnConnectFail = false;
+    configuration.ConnectRetry = 3;
+    configuration.ReconnectRetryPolicy = new ExponentialRetry(5000);
+
+    return ConnectionMultiplexer.Connect(configuration);
+});
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<IUserContext, UserContext>();
 
 var app = builder.Build();
+
+app.UseCustomExceptionMiddleware();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -104,6 +143,10 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
+app.MapHub<CourierTrackingHub>("/hubs/courier-tracking");
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -111,6 +154,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowFrontend");
+
+app.UseMiddleware<InternalAuthMiddleware>();
+app.UseMiddleware<UserContextMiddleware>();
 
 app.UseAuthorization();
 

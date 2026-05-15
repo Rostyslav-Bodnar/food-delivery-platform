@@ -9,37 +9,34 @@ services:
     container_name: df.userservice.api
     ports:
       - "5000:5000"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ConnectionStrings__UserServiceDatabase: Host=df.menuservice.db;Port=5432;Database=MenuServiceDb;Username=MenuService;Password=MenuService2025!
+      Jwt__Key: 
+      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__UserName: guest
+      RabbitMQ__Password: guest
+      RabbitMQ__Port: 5672
     depends_on:
-      - mssql
+      - df.userservice.db
       - rabbitmq
     networks:
       - df-network
 
-  mssql:
-    image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: mssql
+  df.userservice.db:
+    image: postgres:16
+    container_name: df.userservice.db
     environment:
-      ACCEPT_EULA: Y
-      SA_PASSWORD: StrongPass123!
+      POSTGRES_USER: UserService
+      POSTGRES_PASSWORD: UserService2025!
+      POSTGRES_DB: UserServiceDb
     ports:
-      - "11433:1433"
+      - "5433:5432"
     volumes:
-      - mssql_data:/var/opt/mssql
+      - user_service_data:/var/lib/postgresql/data
     networks:
       - df-network
   
-  mssql-init:
-    image: mcr.microsoft.com/mssql-tools
-    depends_on:
-      - mssql
-    volumes:
-      - ./init.sql:/init.sql
-    entrypoint: >
-      /bin/bash -c "
-      sleep 20;
-      /opt/mssql-tools/bin/sqlcmd -S mssql -U sa -P StrongPass123! -i /init.sql
-      "
-
   rabbitmq:
     image: rabbitmq:3-management
     container_name: rabbitmq
@@ -53,7 +50,7 @@ services:
       - df-network
 
 volumes:
-  mssql_data:
+  user_service_data:
 
 networks:
   df-network:

@@ -69,56 +69,7 @@ const UserCard = ({
                 )}
 
                 <p>Email: {user?.email}</p>
-
-                {editingField === "phone" ? (
-                    <div className="edit-field">
-                        <input
-                            type="text"
-                            name="phone"
-                            value={formData.phone}
-                            onChange={handleInputChange}
-                            onBlur={() => handleSave("phone")}
-                            className="edit-input"
-                            ref={inputRef}
-                            autoFocus
-                        />
-                    </div>
-                ) : (
-                    <p>
-                        Phone Number: {formData.phone || "—"}
-                        <button
-                            className="field-edit-btn"
-                            onClick={() => handleEditToggle("phone")}
-                        >
-                            ✏️
-                        </button>
-                    </p>
-                )}
-
-                {editingField === "address" ? (
-                    <div className="edit-field">
-                        <input
-                            type="text"
-                            name="address"
-                            value={formData.address}
-                            onChange={handleInputChange}
-                            onBlur={() => handleSave("address")}
-                            className="edit-input"
-                            ref={inputRef}
-                            autoFocus
-                        />
-                    </div>
-                ) : (
-                    <p>
-                        Address: {formData.address || "—"}
-                        <button
-                            className="field-edit-btn"
-                            onClick={() => handleEditToggle("address")}
-                        >
-                            ✏️
-                        </button>
-                    </p>
-                )}
+                <p>Phone Number: {formData.phone || "+111111111111"}</p>
             </div>
         </div>
     );

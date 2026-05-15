@@ -5,7 +5,8 @@ export default function OrdersGrid({
                                        orders,
                                        statusMap,
                                        onStatusChange,
-                                       onOpenDetails
+                                       onOpenDetails,
+                                       onTrackOrder
                                    }) {
     return (
         <div className="orders-grid">
@@ -16,6 +17,7 @@ export default function OrdersGrid({
                     statusMap={statusMap}
                     onStatusChange={onStatusChange}
                     onOpenDetails={onOpenDetails}
+                    onTrackOrder={onTrackOrder}
                 />
             ))}
         </div>

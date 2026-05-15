@@ -33,7 +33,12 @@ namespace DF.UserService.Contracts.Models.DTO
         string AccountType,
         string? ImageUrl,
         string Name,
-        string? Description
+        string? Description,
+        string? StripeAccountId,
+        bool? StripeChargesEnabled,
+        bool? StripePayoutsEnabled,
+        string? StripeRequirementsDue,
+        DateTime? StripeOnboardedAt
     ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
 
     // === COURIER ACCOUNT DTO ===
@@ -48,8 +53,4 @@ namespace DF.UserService.Contracts.Models.DTO
         string? Address,
         string? Description
     ) : AccountResponse(Id, UserId, AccountType, ImageUrl);
-
-
-
-    //TODO: create DTO for accounts
 }

@@ -1,6 +1,6 @@
-﻿using DF.UserService.Application.Services.Interfaces;
-using DF.UserService.Contracts.Models.Request;
-using DF.UserService.Contracts.Models.Response;
+﻿using DF.Contracts.Gateway.Requests.Auth;
+using DF.Contracts.Gateway.Responses;
+using DF.UserService.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
@@ -12,50 +12,58 @@ public class AuthController(IAuthService authService) : ControllerBase
     private const string RefreshTokenCookieName = "refreshToken";
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register([FromBody] RegisterRequest request)
+    public async Task<ActionResult<TokenResponse>> Register([FromBody] RegisterRequest request)
     {
         var tokens = await authService.RegisterAsync(request);
 
         SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
 
-        return Ok(new TokenResponse(tokens.AccessToken, tokens.RefreshToken, tokens.AccessTokenExpiresAt));
+        return Ok(new TokenResponse(
+            tokens.AccessToken,
+            tokens.RefreshToken,
+            tokens.AccessTokenExpiresAt
+        ));
     }
 
     [HttpPost("login")]
-    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
     {
         var tokens = await authService.LoginAsync(request);
 
         SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
 
-        return Ok(new TokenResponse(tokens.AccessToken, tokens.RefreshToken, tokens.AccessTokenExpiresAt));
+        return Ok(new TokenResponse(
+            tokens.AccessToken,
+            tokens.RefreshToken,
+            tokens.AccessTokenExpiresAt
+        ));
     }
 
     [HttpPost("refresh")]
-    public async Task<IActionResult> Refresh()
+    public async Task<ActionResult<TokenResponse>> Refresh()
     {
-        var refreshToken = Request.Cookies[RefreshTokenCookieName];
-        if (string.IsNullOrEmpty(refreshToken))
-            return Unauthorized("No refresh token");
+        var refreshToken = Request.Cookies[RefreshTokenCookieName]
+                           ?? throw new UnauthorizedAccessException("Refresh token is missing");
 
-        var tokens = await authService.RefreshAsync(refreshToken);
-        if (tokens == null)
-            return Unauthorized("Invalid or expired refresh token");
+        var tokens = await authService.RefreshAsync(refreshToken)
+                     ?? throw new UnauthorizedAccessException("Invalid or expired refresh token");
 
         SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
 
-        return Ok(new TokenResponse(tokens.AccessToken, tokens.RefreshToken, tokens.AccessTokenExpiresAt));
+        return Ok(tokens);
     }
 
     [HttpPost("revoke")]
     public async Task<IActionResult> Revoke()
     {
         var refreshToken = Request.Cookies[RefreshTokenCookieName];
+
         if (string.IsNullOrEmpty(refreshToken))
-            return BadRequest("No refresh token");
+        {
+            throw new BadHttpRequestException("Refresh token is missing");
+        }
 
         await authService.RevokeAsync(refreshToken);
-
         Response.Cookies.Delete(RefreshTokenCookieName);
 
         return NoContent();
@@ -63,29 +71,16 @@ public class AuthController(IAuthService authService) : ControllerBase
 
     private void SetRefreshTokenCookie(string refreshToken, DateTime expiresAt)
     {
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = false, // у production включай завжди
-            SameSite = SameSiteMode.Lax,
-            Expires = expiresAt
-        };
-
-        Response.Cookies.Append(RefreshTokenCookieName, refreshToken, cookieOptions);
+        Response.Cookies.Append(
+            RefreshTokenCookieName,
+            refreshToken,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
+                Expires = expiresAt
+            }
+        );
     }
-
-    [HttpPost("logout")]
-    public async Task<IActionResult> Logout()
-    {
-        var refreshToken = Request.Cookies[RefreshTokenCookieName];
-        if (string.IsNullOrEmpty(refreshToken))
-            return BadRequest("No refresh token");
-
-        await authService.RevokeAsync(refreshToken);
-
-        Response.Cookies.Delete(RefreshTokenCookieName);
-
-        return NoContent();
-    }
-
 }

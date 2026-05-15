@@ -1,7 +1,7 @@
 ﻿// src/pages/components/DishesContent.jsx
 import React from "react";
 import { Trash2, Edit3 } from "lucide-react";
-import { CategoryMap } from "../../../../constants/category.jsx";
+import { CategoryMap } from "../../../../constants/category";
 
 const DishesContent = ({
                            loading,

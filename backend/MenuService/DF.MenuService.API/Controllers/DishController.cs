@@ -1,11 +1,9 @@
+using DF.Contracts.Gateway.Requests.Dish;
 using DF.MenuService.Application.Services.Interfaces;
-using DF.MenuService.Contracts.Models.Request;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.MenuService.API.Controllers;
 
-[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class DishController(IDishService dishService) : ControllerBase
@@ -23,7 +21,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var dish = await dishService.GetByIdAsync(id);
 
         if (dish == null)
-            return NotFound();
+            throw new NullReferenceException("Dish not found");
 
         return Ok(dish);
     }
@@ -34,7 +32,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var result = await dishService.GetDishForCustomerAsync(id);
         
         if (result == null)
-            return NotFound();
+            throw new NullReferenceException("Dish not found");
 
         return Ok(result);
     }
@@ -52,7 +50,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var result =  await dishService.GetDishesForCustomerByBusinessIdAsync(businessId);
         
         if (result == null)
-            return NotFound();
+            throw new NullReferenceException("Dish not found");
 
         return Ok(result);
     }
@@ -63,7 +61,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var result =  await dishService.GetByBusinessId(businessId);
         
         if (result == null)
-            return NotFound();
+            throw new NullReferenceException("Dish not found");
 
         return Ok(result);
     }

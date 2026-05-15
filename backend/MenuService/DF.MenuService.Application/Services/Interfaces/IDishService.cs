@@ -1,5 +1,7 @@
-using DF.MenuService.Contracts.Models.Request;
-using DF.MenuService.Contracts.Models.Response;
+
+
+using DF.Contracts.Gateway.Requests.Dish;
+using DF.Contracts.Gateway.Responses.Dish;
 
 namespace DF.MenuService.Application.Services.Interfaces;
 
@@ -7,7 +9,7 @@ public interface IDishService
 {
     Task<DishResponse> CreateDishAsync(CreateDishRequest request);
     Task<IEnumerable<DishResponse>> GetAllAsync();
-    Task<DishResponse> GetByIdAsync(Guid id);
+    Task<DishResponse?> GetByIdAsync(Guid id);
     Task<IEnumerable<DishResponse>> GetByBusinessId(Guid businessId);
     Task<DishForCustomerResponse> GetDishForCustomerAsync(Guid dishId);
     Task<List<DishForCustomerResponse>> GetAllDishForCustomerAsync();

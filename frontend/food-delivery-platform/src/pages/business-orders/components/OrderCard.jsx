@@ -1,16 +1,24 @@
-﻿import React from "react";
-import { ChevronRight } from "lucide-react";
+import React from "react";
+import { ChevronRight, Route } from "lucide-react";
 import StatusBadge from "./StatusBadge";
 import StatusActions from "./StatusActions";
 
+const formatCurrency = (value) =>
+    new Intl.NumberFormat("uk-UA", {
+        style: "currency",
+        currency: "UAH",
+        maximumFractionDigits: 0
+    }).format(Number(value ?? 0));
+
 export default function OrderCard({
-                                      order,
-                                      statusMap,
-                                      onStatusChange,
-                                      onOpenDetails
-                                  }) {
-    const s = statusMap[order.status];
-    const StatusIcon = s.icon;
+    order,
+    statusMap,
+    onStatusChange,
+    onOpenDetails,
+    onTrackOrder
+}) {
+    const statusDefinition = statusMap[order.status];
+    const StatusIcon = statusDefinition.icon;
 
     return (
         <div className="order-card">
@@ -24,21 +32,21 @@ export default function OrderCard({
                 <div className="address">{order.address}</div>
 
                 <div className="order-items">
-                    {order.items.map((item, i) => (
-                        <div key={i} className="item-row">
-                            <span>{item.quantity}× {item.name}</span>
-                            <span>{item.price * item.quantity} ₴</span>
+                    {order.items.map((item, index) => (
+                        <div key={index} className="item-row">
+                            <span>{item.quantity}x {item.name}</span>
+                            <span>{formatCurrency(item.price * item.quantity)}</span>
                         </div>
                     ))}
                 </div>
 
                 <div className="order-total">
-                    Subtotal: {order.total} ₴
+                    Subtotal: {formatCurrency(order.total)}
                 </div>
             </div>
 
             <div className="order-footer">
-                <StatusBadge status={s} StatusIcon={StatusIcon} />
+                <StatusBadge status={statusDefinition} StatusIcon={StatusIcon} />
 
                 <StatusActions
                     status={order.status}
@@ -46,12 +54,22 @@ export default function OrderCard({
                     onStatusChange={onStatusChange}
                 />
 
-                <button
-                    className="details-btn"
-                    onClick={() => onOpenDetails(order)}
-                >
-                    Details <ChevronRight size={16} />
-                </button>
+                <div className="order-footer__actions">
+                    <button
+                        className="track-order-btn"
+                        onClick={() => onTrackOrder(order)}
+                    >
+                        <Route size={15} />
+                        Track live
+                    </button>
+
+                    <button
+                        className="details-btn"
+                        onClick={() => onOpenDetails(order)}
+                    >
+                        Details <ChevronRight size={16} />
+                    </button>
+                </div>
             </div>
         </div>
     );

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DF.Contracts.Gateway.Requests.Tracking;
+using Microsoft.AspNetCore.Mvc;
 using DF.TrackingService.Application.Services.Interfaces;
-using DF.TrackingService.Contracts.Models.Requests;
 
 namespace DF.TrackingService.API.Controllers;
 
@@ -55,5 +55,12 @@ public class LocationController(ILocationService locationService) : ControllerBa
             return NotFound();
 
         return NoContent();
+    }
+    
+    [HttpPost("add")]
+    public async Task<IActionResult> AddBusinessLocation([FromBody] AddLocationRequest request)
+    {
+        var result = await locationService.AddLocationAsync(request);
+        return Ok(result);
     }
 }

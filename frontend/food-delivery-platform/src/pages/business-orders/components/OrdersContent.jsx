@@ -7,7 +7,8 @@ export default function OrdersContent({
                                           filteredOrders,
                                           statusMap,
                                           onStatusChange,
-                                          onOpenDetails
+                                          onOpenDetails,
+                                          onTrackOrder
                                       }) {
     if (loading) {
         return <div className="bh-empty">Loading...</div>;
@@ -28,6 +29,7 @@ export default function OrdersContent({
             statusMap={statusMap}
             onStatusChange={onStatusChange}
             onOpenDetails={onOpenDetails}
+            onTrackOrder={onTrackOrder}
         />
     );
 }

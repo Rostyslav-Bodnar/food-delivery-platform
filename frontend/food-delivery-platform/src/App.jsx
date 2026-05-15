@@ -1,11 +1,25 @@
 ﻿import React from "react";
+
 import AppRouter from "./AppRouter.jsx";
-import { UserProvider } from "./context/UserContext.jsx";
+
+import {
+    UserProvider
+} from "./context/UserContext.jsx";
+
+import {
+    ToastProvider
+} from "./global-components/toast/ToastContext.jsx";
+
+function AppContent() {
+    return <AppRouter />;
+}
 
 function App() {
     return (
         <UserProvider>
-            <AppRouter />
+            <ToastProvider>
+                <AppContent />
+            </ToastProvider>
         </UserProvider>
     );
 }
