@@ -89,10 +89,10 @@ builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 // =======================
 builder.Services.AddSingleton<IConnection>(sp =>
 {
-    var config = builder.Configuration.GetSection("RabbitMQ");
     var factory = new ConnectionFactory
     {
-        Uri = new Uri(config["RabbitMQ:Url"])
+        Uri = new Uri(builder.Configuration["RabbitMQ:Url"]
+                      ?? throw new InvalidOperationException("RabbitMQ Url is missing"))
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
