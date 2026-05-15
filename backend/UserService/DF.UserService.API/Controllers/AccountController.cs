@@ -27,6 +27,7 @@ public class AccountController(IAccountService accountService, IUserContext user
     }
 
     [HttpGet("all/business")]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAllBusinessAccounts()
     {
         var result = await accountService.GetBusinessAccountsAsync();
@@ -38,6 +39,7 @@ public class AccountController(IAccountService accountService, IUserContext user
     }
 
     [HttpPost("courier")]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<AccountResponse>> CreateCourierAccount(
         [FromForm] CreateCourierAccountRequest request)
         => await CreateAccount(request);
@@ -47,7 +49,8 @@ public class AccountController(IAccountService accountService, IUserContext user
         [FromForm] CreateCustomerAccountRequest request)
         => await CreateAccount(request);
 
-    [HttpPost("business")]
+    [HttpPost("business")] 
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<AccountResponse>> CreateBusinessAccount(
         [FromForm] CreateBusinessAccountRequest request)
         => await CreateAccount(request);

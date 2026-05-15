@@ -119,12 +119,7 @@ export async function createDish(
 
     const res = await api.post<ApiResponse<DishResponse>>(
         `/dish/create`,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
-            }
+        formData
     )
 
     return res.data.data!
@@ -172,12 +167,12 @@ export async function updateDish(
 
     const res = await api.post<ApiResponse<DishResponse>>(
         `/dish/update`,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "multipart/form-data"
-                }
+        formData,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data"
             }
+        }
     )
 
     return res.data.data!

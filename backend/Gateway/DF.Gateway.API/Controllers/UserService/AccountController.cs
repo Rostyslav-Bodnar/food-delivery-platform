@@ -46,26 +46,29 @@ public class AccountController(GatewayProxy proxy) : ControllerBase
     // =========================
 
     [HttpPost("customer")]
-    public Task<Response<AccountResponse>> CreateCustomer()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<CustomerAccountResponse>> CreateCustomer()
+        => proxy.ProxyAsync<CustomerAccountResponse>(HttpContext);
 
     [HttpPost("business")]
-    public Task<Response<AccountResponse>> CreateBusiness()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<BusinessAccountResponse>> CreateBusiness()
+        => proxy.ProxyAsync<BusinessAccountResponse>(HttpContext);
 
     [HttpPost("courier")]
-    public Task<Response<AccountResponse>> CreateCourier()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<CourierAccountResponse>> CreateCourier()
+        => proxy.ProxyAsync<CourierAccountResponse>(HttpContext);
 
     [HttpPut("customer")]
-    public Task<Response<AccountResponse>> UpdateCustomer()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<CustomerAccountResponse>> UpdateCustomer()
+        => proxy.ProxyAsync<CustomerAccountResponse>(HttpContext);
 
     [HttpPut("business")]
-    public Task<Response<AccountResponse>> UpdateBusiness()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<BusinessAccountResponse>> UpdateBusiness()
+        => proxy.ProxyAsync<BusinessAccountResponse>(HttpContext);
 
     [HttpPut("courier")]
-    public Task<Response<AccountResponse>> UpdateCourier()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<CourierAccountResponse>> UpdateCourier()
+        => proxy.ProxyAsync<CourierAccountResponse>(HttpContext);
 }

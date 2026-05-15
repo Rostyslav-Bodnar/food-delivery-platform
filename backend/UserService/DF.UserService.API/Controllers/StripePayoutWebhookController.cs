@@ -10,7 +10,7 @@ using Stripe;
 namespace DF.UserService.API.Controllers;
 
 [ApiController]
-[Route("webhooks/stripe/connect")]
+[Route("webhooks/stripe/payout")]
 public sealed class StripePayoutWebhookController(
     IAccountRepository accountRepository,
     IPayoutRepository payoutRepository,

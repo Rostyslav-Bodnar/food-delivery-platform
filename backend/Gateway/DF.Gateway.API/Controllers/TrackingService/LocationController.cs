@@ -33,16 +33,14 @@ public class LocationController(GatewayProxy proxy) : ControllerBase
     // CREATE LOCATION
     // =========================
     [HttpPost]
-    public Task<Response<LocationResponse>> CreateLocation(
-        [FromBody] CreateLocationRequest request)
+    public Task<Response<LocationResponse>> CreateLocation()
         => proxy.ProxyAsync<LocationResponse>(HttpContext);
 
     // =========================
     // UPDATE LOCATION
     // =========================
     [HttpPut]
-    public Task<Response<LocationResponse>> UpdateLocation(
-        [FromBody] UpdateLocationRequest request)
+    public Task<Response<LocationResponse>> UpdateLocation()
         => proxy.ProxyAsync<LocationResponse>(HttpContext);
 
     // =========================
@@ -56,7 +54,6 @@ public class LocationController(GatewayProxy proxy) : ControllerBase
     // ADD BUSINESS LOCATION
     // =========================
     [HttpPost("add")]
-    public Task<Response<LocationResponse>> AddBusinessLocation(
-        [FromBody] AddLocationRequest request)
+    public Task<Response<LocationResponse>> AddBusinessLocation()
         => proxy.ProxyAsync<LocationResponse>(HttpContext);
 }
