@@ -1,6 +1,11 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 
+# ✅ ВАЖЛИВО: саме тут додаємо certificates (runtime контейнер!)
+RUN apt-get update && apt-get install -y \
+    ca-certificates && \
+    update-ca-certificates
+
 ENV ASPNETCORE_URLS=http://+:10000
 ENV ASPNETCORE_ENVIRONMENT=Production
 
@@ -13,7 +18,11 @@ ARG GITHUB_TOKEN
 
 WORKDIR /src
 
-RUN apt-get update && apt-get install -y libgssapi-krb5-2
+# ✅ тут залишаємо як було + можна теж додати certs (не обов'язково, але норм)
+RUN apt-get update && apt-get install -y \
+    libgssapi-krb5-2 \
+    ca-certificates && \
+    update-ca-certificates
 
 # ✅ AUTH до GitHub Packages
 RUN dotnet nuget remove source github || true && \
@@ -23,8 +32,6 @@ RUN dotnet nuget remove source github || true && \
     --store-password-in-clear-text \
     --name github \
     "https://nuget.pkg.github.com/Rostyslav-Bodnar/index.json"
-
-
 
 COPY . .
 
