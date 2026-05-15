@@ -174,8 +174,6 @@ const useOrderSubmit = (
                 Object.entries(groupedItems).map(async ([restaurant, items]) => {
                     const settings = getSettingsFor(restaurant);
 
-                    debugger;
-                    // ✅ КРИТИЧНО: беремо координати ТІЛЬКИ з mapAddress
                     const customerLocation = normalizeLocation(mapAddress);
                     if (settings.deliveryType === "delivery" && !customerLocation) {
                         throw new Error(`Адреса доставки не вибрана для ${restaurant}`);
@@ -188,26 +186,20 @@ const useOrderSubmit = (
                     );
 
                     const paymentMethod =
-                        settings.paymentType === "card" ? 0 : 1;
-
-                    const toLocation = (loc) => ({
-                        fullAddress: loc.fullAddress,
-                        address: loc.fullAddress,
-                        city: loc.city,
-                        street: loc.street,
-                        house: loc.house,
-                        latitude: loc.latitude,
-                        longitude: loc.longitude
-                    });
+                        settings.paymentType === "card" ? 0 : 1; // enum OK
 
                     return {
-                        businessId: items[0].businessId,
-                        orderedBy,
-                        orderDate: now,
-                        totalPrice: getRestaurantTotal(restaurant),
+                        businessId: items[0].businessId,       // Guid ✅
+                        orderedBy,                             // Guid ✅
+                        orderDate: now,                        // ISO → DateTime ✅
+                        totalPrice: getRestaurantTotal(restaurant), // decimal ✅
                         deliveredBy: null,
-                        deliverFrom: toLocation(businessLocation),
-                        deliverTo: toLocation(customerLocation),
+                        deliverFrom: {
+                            fullAddress: businessLocation.fullAddress
+                        },
+                        deliverTo: {
+                            fullAddress: customerLocation.fullAddress
+                        },
                         paymentMethod,
                         dishes: items.map((i) => ({
                             orderId: "00000000-0000-0000-0000-000000000000",

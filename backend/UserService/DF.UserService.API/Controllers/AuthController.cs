@@ -7,23 +7,46 @@ namespace DF.UserService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IAuthService authService) : ControllerBase
+public class AuthController(IAuthService authService,
+    ILogger<AuthController> logger
+    ) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
 
     [HttpPost("register")]
+
     public async Task<ActionResult<TokenResponse>> Register([FromBody] RegisterRequest request)
     {
-        var tokens = await authService.RegisterAsync(request);
+        logger.LogInformation("REGISTER START {@Request}", request);
 
-        SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+        try
+        {
+            var tokens = await authService.RegisterAsync(request);
 
-        return Ok(new TokenResponse(
-            tokens.AccessToken,
-            tokens.RefreshToken,
-            tokens.AccessTokenExpiresAt
-        ));
+            if (tokens == null)
+            {
+                logger.LogWarning("REGISTER FAILED: tokens is null");
+                return BadRequest("Registration failed");
+            }
+
+            SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+
+            logger.LogInformation("REGISTER SUCCESS for {Email}", request.Email);
+
+            return Ok(new TokenResponse(
+                tokens.AccessToken,
+                tokens.RefreshToken,
+                tokens.AccessTokenExpiresAt
+            ));
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "REGISTER EXCEPTION for {Email}", request.Email);
+
+            return BadRequest(new { error = ex.Message });
+        }
     }
+
 
     [HttpPost("login")]
     public async Task<ActionResult<TokenResponse>> Login([FromBody] LoginRequest request)
