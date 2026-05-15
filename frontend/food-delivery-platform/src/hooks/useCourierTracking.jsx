@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-import { getTrackingAccessToken } from "../api/Order.jsx";
+//import { getTrackingAccessToken } from "../api/Order.jsx";
 import { TRACKING_HUB_URL } from "../config/api.js";
 
 const normalizeLocation = (dto) => {
@@ -52,7 +52,7 @@ export default function useCourierTracking(orderId, { enabled = true } = {}) {
             try {
                 setStatus("connecting");
 
-                const { token } = await getTrackingAccessToken(orderId);
+                const { token } = "token"//await getTrackingAccessToken(orderId);
                 if (cancelled) {
                     return;
                 }
