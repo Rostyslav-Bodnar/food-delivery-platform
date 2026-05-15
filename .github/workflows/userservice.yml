@@ -88,7 +88,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: backend/UserService
-          file: backend/UserService/Dockerfile
+          file: backend/UserService/UserService.API/Dockerfile
 
           push: ${{ github.ref == 'refs/heads/main' }}
 
