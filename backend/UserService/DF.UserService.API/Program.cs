@@ -92,14 +92,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
     var config = builder.Configuration.GetSection("RabbitMQ");
     var factory = new ConnectionFactory
     {
-        HostName = config["HostName"],
-        UserName = config["UserName"],
-        Password = config["Password"],
-        Port = int.Parse(config["Port"]!),
-        Ssl = new SslOption
-        {
-            Enabled = !builder.Environment.IsDevelopment()
-        }
+        Uri = new Uri(config["RabbitMQ:Url"])
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });

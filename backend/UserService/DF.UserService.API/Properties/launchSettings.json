@@ -17,7 +17,8 @@
 
         "RabbitMQ__Password": "guest",
 
-        "RabbitMQ__Port": "5672"
+        "RabbitMQ__Port": "5672",
+        "RabbitMQ__Url": "amqp://guest:guest@localhost:5672/"
       },
       "applicationUrl": "http://localhost:5000"
     }
