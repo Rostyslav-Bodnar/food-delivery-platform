@@ -12,9 +12,14 @@ ARG BUILD_CONFIGURATION=Release
 
 WORKDIR /src
 
+COPY ["DF.UserService.API/DF.UserService.API.csproj", "DF.UserService.API/"]
+COPY ["DF.UserService.Application/DF.UserService.Application.csproj", "DF.UserService.Application/"]
+COPY ["DF.UserService.Contracts/DF.UserService.Contracts.csproj", "DF.UserService.Contracts/"]
+COPY ["DF.UserService.Domain/DF.UserService.Domain.csproj", "DF.UserService.Domain/"]
+COPY ["DF.UserService.Infrastructure/DF.UserService.Infrastructure.csproj", "DF.UserService.Infrastructure/"]
 COPY . .
 
-RUN dotnet restore "DF.UserService.API/DF.UserService.API.csproj"
+RUN dotnet restore "DF.UserService.API/DF.UserService.API.csproj" --configfile nuget.config
 
 WORKDIR "/src/DF.UserService.API"
 
