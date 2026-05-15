@@ -54,15 +54,11 @@ builder.Services.AddCors(options =>
 // ------------------------------------------------------------
 builder.Services.AddSingleton<IConnection>(sp =>
 {
-    var config = builder.Configuration.GetSection("RabbitMQ");
     var factory = new ConnectionFactory
     {
-        HostName = config["HostName"]!,
-        UserName = config["UserName"]!,
-        Password = config["Password"]!,
-        Port = int.Parse(config["Port"] ?? "5672")
+        Uri = new Uri(builder.Configuration["RabbitMQ:Url"]
+                      ?? throw new InvalidOperationException("RabbitMQ Url is missing"))
     };
-    // Створення асинхронного конекшена (чекаємо до готовності)
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
 

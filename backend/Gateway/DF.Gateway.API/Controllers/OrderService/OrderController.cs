@@ -104,8 +104,7 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
     // CREATE BATCH
     // =========================
     [HttpPost("create/batch")]
-    public Task<Response<bool>> CreateOrders(
-        [FromBody] List<CreateOrderRequest> request)
+    public Task<Response<bool>> CreateOrders()
         => proxy.ProxyAsync<bool>(HttpContext);
 
     // =========================
