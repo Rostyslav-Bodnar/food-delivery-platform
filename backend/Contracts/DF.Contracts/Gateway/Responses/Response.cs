@@ -3,5 +3,5 @@
 public record Response<T>(
     bool Success,
     T Data,
-    string? ErrorMassage = null
+    string? ErrorMessage = null
     );

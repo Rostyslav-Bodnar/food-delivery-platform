@@ -44,13 +44,10 @@ builder.Services.AddStackExchangeRedisCache(options =>
 // RabbitMQ connection
 builder.Services.AddSingleton<IConnection>(sp =>
 {
-    var config = builder.Configuration.GetSection("RabbitMQ");
     var factory = new ConnectionFactory
     {
-        HostName = config["HostName"],
-        UserName = config["UserName"],
-        Password = config["Password"],
-        Port = int.Parse(config["Port"])
+        Uri = new Uri(builder.Configuration["RabbitMQ:Url"]
+                      ?? throw new InvalidOperationException("RabbitMQ Url is missing"))
     };
     return factory.CreateConnectionAsync().GetAwaiter().GetResult();
 });
