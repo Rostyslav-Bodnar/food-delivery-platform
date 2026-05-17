@@ -1,3 +1,3 @@
 ﻿namespace DF.PaymentService.Application.Commands;
 
-public sealed record RefundPaymentCommand(Guid PaymentId, decimal? Amount);
+public sealed record RefundPaymentCommand(Guid PaymentId, decimal? Amount, string? IdempotencyKey = null);

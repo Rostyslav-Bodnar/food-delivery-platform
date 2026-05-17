@@ -2,6 +2,7 @@ using DF.Contracts.Gateway.Requests.Dish;
 using DF.Contracts.Gateway.Responses.Dish;
 using DF.MenuService.Application.Repositories.Interfaces;
 using DF.MenuService.Application.Services.Interfaces;
+using DF.MenuService.Contracts.Exceptions;
 using DF.MenuService.Domain.Entities;
 
 namespace DF.MenuService.Application.Services;
@@ -45,7 +46,7 @@ public class IngredientService(IIngredientRepository repository) : IIngredientSe
         var entity = await repository.Get(req.Id.Value);
 
         if (entity == null)
-            throw new NullReferenceException($"Ingredient with id {req.Id} not found");
+            throw new NotFoundException($"Ingredient with id {req.Id} not found");
 
         entity.Name = req.Name;
         entity.Weight = req.Weight;

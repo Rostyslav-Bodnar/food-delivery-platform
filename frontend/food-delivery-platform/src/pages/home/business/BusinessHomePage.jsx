@@ -51,6 +51,8 @@ export default function BusinessHomePage({ userData }) {
         handleOnboardingRedirect,
         loadingOnboarding,
         error: onboardingError,
+        provisioning,
+        retryAfterSeconds,
         retry,
         clearError,
     } = useOnboardingRedirect();
@@ -92,6 +94,17 @@ export default function BusinessHomePage({ userData }) {
                                 ? "Redirecting..."
                                 : "Complete Onboarding"}
                         </button>
+
+                        {provisioning && (
+                            <p className="onboarding-sub">
+                                Your business is still being set up. Please try
+                                again in {retryAfterSeconds ?? 15} seconds.
+                            </p>
+                        )}
+
+                        {onboardingError && (
+                            <p className="onboarding-sub">{onboardingError}</p>
+                        )}
                     </div>
                 )}
 

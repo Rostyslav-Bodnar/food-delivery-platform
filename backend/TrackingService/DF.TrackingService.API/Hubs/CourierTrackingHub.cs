@@ -1,18 +1,14 @@
-using System.Text.Json;
+using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Contracts.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using StackExchange.Redis;
 
 namespace DF.TrackingService.API.Hubs;
 
-[Authorize]
-public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
+[Authorize(AuthenticationSchemes = "TrackingHub")]
+public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 {
     private const string GroupPrefix = "order:";
-    private static readonly TimeSpan SnapshotExpiry = TimeSpan.FromHours(6);
-
-    private readonly IDatabase _redis = redis.GetDatabase();
 
     public async Task SendLocation(CourierLocationDto dto)
     {
@@ -28,7 +24,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         if (tokenOrderId != dto.OrderId)
             throw new HubException("Order mismatch");
 
-        var snapshot = await ReadSnapshotAsync(dto.OrderId);
+        var snapshot = await snapshotStore.ReadAsync(dto.OrderId);
         snapshot = snapshot with
         {
             CourierId = dto.CourierId,
@@ -37,7 +33,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
             UpdatedAtUtc = dto.TimestampUtc == default ? DateTime.UtcNow : dto.TimestampUtc
         };
 
-        await SaveSnapshotAsync(snapshot);
+        await snapshotStore.SaveAsync(snapshot);
         await BroadcastSnapshotAsync(snapshot);
     }
 
@@ -58,7 +54,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         if (!OrderTrackingStages.IsValid(stage))
             throw new HubException("Unsupported tracking stage");
 
-        var snapshot = await ReadSnapshotAsync(orderId);
+        var snapshot = await snapshotStore.ReadAsync(orderId);
         snapshot = snapshot with
         {
             CourierId = snapshot.CourierId ?? GetSubjectId(),
@@ -66,7 +62,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
             UpdatedAtUtc = DateTime.UtcNow
         };
 
-        await SaveSnapshotAsync(snapshot);
+        await snapshotStore.SaveAsync(snapshot);
         await BroadcastSnapshotAsync(snapshot);
     }
 
@@ -79,7 +75,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, GetGroupName(orderId));
 
-        var snapshot = await ReadSnapshotAsync(orderId);
+        var snapshot = await snapshotStore.ReadAsync(orderId);
         await SendSnapshotToCallerAsync(snapshot);
     }
 
@@ -111,39 +107,6 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         return scopes?.Split(' ').Contains(scope) == true;
     }
 
-    private async Task<OrderTrackingSnapshotDto> ReadSnapshotAsync(Guid orderId)
-    {
-        var snapshotJson = await _redis.StringGetAsync(GetSnapshotKey(orderId));
-
-        if (snapshotJson.HasValue)
-        {
-            var snapshot = JsonSerializer.Deserialize<OrderTrackingSnapshotDto>((ReadOnlySpan<byte>)snapshotJson);
-            if (snapshot != null)
-            {
-                return snapshot with
-                {
-                    Stage = OrderTrackingStages.Normalize(snapshot.Stage)
-                };
-            }
-        }
-
-        return new OrderTrackingSnapshotDto(
-            OrderId: orderId,
-            CourierId: null,
-            Stage: OrderTrackingStages.AwaitingCourier,
-            CourierLocation: null,
-            UpdatedAtUtc: DateTime.UtcNow
-        );
-    }
-
-    private async Task SaveSnapshotAsync(OrderTrackingSnapshotDto snapshot)
-    {
-        await _redis.StringSetAsync(
-            GetSnapshotKey(snapshot.OrderId),
-            JsonSerializer.Serialize(snapshot),
-            expiry: SnapshotExpiry);
-    }
-
     private async Task BroadcastSnapshotAsync(OrderTrackingSnapshotDto snapshot)
     {
         await Clients.Group(GetGroupName(snapshot.OrderId))
@@ -165,8 +128,6 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
             await Clients.Caller.SendAsync("CourierLocationUpdated", snapshot.CourierLocation);
         }
     }
-
-    private static string GetSnapshotKey(Guid orderId) => $"{GetGroupName(orderId)}:tracking";
 
     private static string GetGroupName(Guid orderId) => $"{GroupPrefix}{orderId}";
 }

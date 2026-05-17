@@ -1,6 +1,7 @@
 ﻿using DF.Contracts.Gateway.Responses;
 using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
@@ -38,12 +39,12 @@ public class ProfileController(
             throw new UnauthorizedAccessException("User is not authenticated");
 
         var user = await userService.GetUserEntityAsync(userId)
-                   ?? throw new NullReferenceException("User not found");
+                   ?? throw new NotFoundException("User not found");
 
         var accounts = await accountService.GetAccountsByUserAsync(userId);
 
         if (accounts == null || !accounts.Any(a => a.Id == accountId.ToString()))
-            throw new NullReferenceException("Account not found or not owned by user");
+            throw new NotFoundException("Account not found or not owned by user");
 
         user.AccountId = accountId;
         await userService.UpdateUserAsync(user);

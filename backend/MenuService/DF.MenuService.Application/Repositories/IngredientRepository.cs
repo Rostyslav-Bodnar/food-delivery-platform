@@ -15,7 +15,7 @@ public class IngredientRepository(AppDbContext dbContext) : IIngredientRepositor
 
     public async Task<IEnumerable<Ingredient?>> GetAll()
     {
-        return await dbContext.Ingredients.ToListAsync();
+        return await dbContext.Ingredients.AsNoTracking().ToListAsync();
     }
 
     public async Task<Ingredient> Create(Ingredient entity)
@@ -45,7 +45,10 @@ public class IngredientRepository(AppDbContext dbContext) : IIngredientRepositor
 
     public async Task<IEnumerable<Ingredient>> GetAllIngredientsByDishId(Guid dishId)
     {
-        return await dbContext.Ingredients.Where(i => i.DishId == dishId).ToListAsync();
+        return await dbContext.Ingredients
+            .AsNoTracking()
+            .Where(i => i.DishId == dishId)
+            .ToListAsync();
     }
 
     public async Task<IEnumerable<Ingredient>> CreateIngredients(IEnumerable<Ingredient> ingredients)

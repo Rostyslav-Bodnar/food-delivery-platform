@@ -13,9 +13,9 @@ services:
       ASPNETCORE_ENVIRONMENT: Development
       Redis__ConnectionString: df.redis:6379
       ConnectionStrings__DefaultConnection: Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
+      RabbitMQ__Url: amqp://guest:guest@rabbitmq:5672/
     depends_on:
       - df.trackingservice.db
-      - df.trackingservice.mongo
       - df.redis
     networks:
       - df-network
@@ -34,16 +34,6 @@ services:
     networks:
       - df-network
 
-  df.trackingservice.mongo:
-    image: mongo:7.0
-    container_name: df.trackingservice.mongo
-    ports:
-      - "27018:27017"
-    volumes:
-      - tracking_service_mongo_data:/data/db
-    networks:
-      - df-network
-
   df.redis:
     image: redis:7.2-alpine
     container_name: df.redis
@@ -56,7 +46,6 @@ services:
 
 volumes:
   tracking_service_data:
-  tracking_service_mongo_data:
   redis_data:
 
 networks:

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text.Json;
 using DF.Contracts.Gateway.Responses;
+using DF.UserService.Contracts.Exceptions;
 
 namespace DF.UserService.API.Middlewares;
 
@@ -67,6 +68,14 @@ public class ExceptionMiddleware(
             ),
 
             // 🔍 NOT FOUND
+            NotFoundException => (
+                HttpStatusCode.NotFound,
+                new ServiceErrorResponse(
+                    "NOT_FOUND",
+                    ex.Message,
+                    traceId)
+            ),
+
             KeyNotFoundException => (
                 HttpStatusCode.NotFound,
                 new ServiceErrorResponse(

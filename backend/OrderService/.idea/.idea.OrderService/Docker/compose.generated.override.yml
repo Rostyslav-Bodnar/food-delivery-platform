@@ -3,21 +3,43 @@ version: "3.9"
 services:
   df.orderservice.api:
     build:
-      context: "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\\
-        OrderService"
+      context: "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\\
+        backend\\OrderService"
       dockerfile: "DF.OrderService.API/Dockerfile"
       target: "base"
     command: []
     entrypoint:
     - "dotnet"
-    - "/app/bin/Debug/net9.0/DF.OrderService.API.dll"
+    - "/app/bin/Debug/net10.0/DF.OrderService.API.dll"
     environment:
       DOTNET_USE_POLLING_FILE_WATCHER: "true"
     image: "df.orderservice.api:dev"
     ports: []
     volumes:
-    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\OrderService\\\
-      DF.OrderService.API:/app:rw"
-    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\OrderService:/src:rw"
-    - "C:\\Users\\User\\.nuget\\packages:/home/app/.nuget/packages"
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      OrderService\\DF.OrderService.API:/app:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      OrderService:/src:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\.nuget\\packages:/home/app/.nuget/packages"
+    working_dir: "/app"
+  df.orderservice.migrator:
+    build:
+      context: "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\\
+        backend\\OrderService"
+      dockerfile: "DF.OrderService.API/Dockerfile"
+      target: "base"
+    command: []
+    entrypoint:
+    - "dotnet"
+    - "/app/bin/Debug/net10.0/DF.OrderService.API.dll"
+    environment:
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    image: "df.orderservice.api:dev"
+    ports: []
+    volumes:
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      OrderService\\DF.OrderService.API:/app:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      OrderService:/src:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\.nuget\\packages:/home/app/.nuget/packages"
     working_dir: "/app"

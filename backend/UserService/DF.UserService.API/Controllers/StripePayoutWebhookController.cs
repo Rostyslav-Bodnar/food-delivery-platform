@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ public sealed class StripePayoutWebhookController(
     IOptions<StripeOptions> options,
     IProcessedWebhookStore webhookStore) : ControllerBase
 {
-    private readonly string _endpointSecret = options.Value.WebhookSecretConnect!;
+    private readonly string _endpointSecret = options.Value.WebhookSecretPayout!;
 
     [HttpPost]
     public async Task<IActionResult> Handle()
@@ -85,7 +86,8 @@ public sealed class StripePayoutWebhookController(
 
         var business = await GetBusiness(stripeAccountId);
         if (business is null)
-            throw new Exception($"Business for StripeAccountId={stripeAccountId} not found");
+            // NotFound → 404 → Stripe acks the webhook (won't retry forever). A bare Exception → 500 → endless retries.
+            throw new NotFoundException($"Business for StripeAccountId={stripeAccountId} not found");
 
         var rec = new PayoutRecord
         {

@@ -12,9 +12,14 @@ public class InternalAuthMiddleware(
         var path = context.Request.Path.Value?.ToLower();
 
         // ❌ SKIP AUTH
+        // /api/auth — login/register flow (no signed headers yet)
+        // /hubs/    — SignalR negotiate/transport from browser, authenticated via JWT
+        // /health   — liveness/readiness probes
         if (
-            path is not null &&
-            path.Contains("/api/auth")
+            path is not null && (
+                path.Contains("/api/auth")
+                || path.StartsWith("/hubs/")
+                || path.StartsWith("/health"))
         )
         {
             await next(context);
@@ -53,8 +58,12 @@ public class InternalAuthMiddleware(
             return;
         }
 
-        // API KEY CHECK
-        if (apiKey != config["Internal:ApiKey"])
+        // API KEY CHECK — timing-safe to defeat side-channel enumeration.
+        var expectedKey = config["Internal:ApiKey"] ?? string.Empty;
+        var providedBytes = System.Text.Encoding.UTF8.GetBytes(apiKey);
+        var expectedBytes = System.Text.Encoding.UTF8.GetBytes(expectedKey);
+        if (providedBytes.Length != expectedBytes.Length
+            || !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes))
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsync("Invalid API key");

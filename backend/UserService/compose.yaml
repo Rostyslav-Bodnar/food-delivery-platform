@@ -8,18 +8,17 @@ services:
       dockerfile: DF.UserService.API/Dockerfile
     container_name: df.userservice.api
     ports:
-      - "5000:5000"
+      - "5000:10000"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      ConnectionStrings__UserServiceDatabase: Host=df.menuservice.db;Port=5432;Database=MenuServiceDb;Username=MenuService;Password=MenuService2025!
-      Jwt__Key: 
-      RabbitMQ__HostName: rabbitmq
-      RabbitMQ__UserName: guest
-      RabbitMQ__Password: guest
-      RabbitMQ__Port: 5672
+      ConnectionStrings__UserServiceDatabase: Host=df.userservice.db;Port=5432;Database=UserServiceDb;Username=UserService;Password=UserService2025!
+      Jwt__Key: food-delivery-platform-jwt-key-1234567890!
+      RabbitMQ__Url: amqp://guest:guest@rabbitmq:5672/
     depends_on:
-      - df.userservice.db
-      - rabbitmq
+      df.userservice.db:
+        condition: service_started
+      rabbitmq:
+        condition: service_started
     networks:
       - df-network
 

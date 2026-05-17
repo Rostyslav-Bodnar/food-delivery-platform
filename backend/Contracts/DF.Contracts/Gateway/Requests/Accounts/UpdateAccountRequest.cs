@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using DF.Contracts.Enums;
 using Microsoft.AspNetCore.Http;
 
@@ -20,8 +21,8 @@ public record UpdateBusinessAccountRequest(
     string? UserId,
     AccountType AccountType,
     IFormFile? ImageFile,
-    string Name,
-    string? Description
+    [Required, StringLength(200)] string Name,
+    [StringLength(1000)] string? Description
 ) : UpdateAccountRequest(Id, UserId, AccountType, ImageFile);
 
 // === CUSTOMER ACCOUNT DTO ===
@@ -30,10 +31,10 @@ public record UpdateCustomerAccountRequest(
     string? UserId,
     AccountType AccountType,
     IFormFile? ImageFile,
-    string? PhoneNumber,
-    string? Name,
-    string? Surname,
-    string? Address
+    [StringLength(20)] string? PhoneNumber,
+    [StringLength(100)] string? Name,
+    [StringLength(100)] string? Surname,
+    [StringLength(300)] string? Address
 ) : UpdateAccountRequest(Id, UserId, AccountType, ImageFile);
 
 // === COURIER ACCOUNT DTO ===
@@ -42,10 +43,9 @@ public record UpdateCourierAccountRequest(
     string? UserId,
     AccountType AccountType,
     IFormFile? ImageFile,
-    string? PhoneNumber,
-    string? Name,
-    string? Surname,
-    string? Address,
-    string? Description
+    [StringLength(20)] string? PhoneNumber,
+    [StringLength(100)] string? Name,
+    [StringLength(100)] string? Surname,
+    [StringLength(300)] string? Address,
+    [StringLength(1000)] string? Description
 ) : UpdateAccountRequest(Id, UserId, AccountType, ImageFile);
-

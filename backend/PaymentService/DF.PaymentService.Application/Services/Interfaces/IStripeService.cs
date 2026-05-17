@@ -9,7 +9,7 @@ public interface IStripeService
     Task<StripePaymentIntentResult> CreatePaymentIntentAsync(Payment payment, CancellationToken ct = default);
 
     // ✅ Виправлений підпис: приймаємо Payment, а не Guid/amountMinor
-    Task<string> RefundAsync(Payment payment, decimal? amount = null, CancellationToken ct = default);
+    Task<string> RefundAsync(Payment payment, decimal? amount = null, string? idempotencyKey = null, CancellationToken ct = default);
 
     // ✅ Нове: для кейсів 2/6 (user cancel/timeout)
     Task CancelPaymentIntentAsync(Payment payment, CancellationToken ct = default);
@@ -29,6 +29,7 @@ public interface IStripeService
     Task<string> RefundDestinationAsync(
         Payment payment,
         decimal? amount = null,
+        string? idempotencyKey = null,
         CancellationToken ct = default);
 
     Task<string> TransferToConnectedAccountAsync(

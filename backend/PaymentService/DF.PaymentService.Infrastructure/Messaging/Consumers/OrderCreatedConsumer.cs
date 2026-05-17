@@ -16,30 +16,18 @@ public class OrderCreatedConsumer(
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        // Підпишемося один раз на старті
-        
         eventBus.Subscribe<OrderCreatedEvent>(async order =>
         {
             using var scope = scopeFactory.CreateScope();
 
+            // CreatePaymentCommandHandler is now the single writer: it persists the Payment row
+            // AND (for Online orders) stages a PaymentTask in the same DB transaction. The
+            // StripeTaskProcessor (idempotent on payment.StripePaymentIntentId) is the only
+            // place that actually calls Stripe — so message redelivery never creates a second PI.
             var createPayment = scope.ServiceProvider.GetRequiredService<CreatePaymentCommandHandler>();
             await createPayment.Handle(new CreatePaymentCommand(
                 order.OrderId, order.TotalPrice, order.Currency,
                 Enum.Parse<PaymentMethod>(order.PaymentMethod)), stoppingToken);
-
-            if (order.PaymentMethod == PaymentMethod.Online.ToString())
-            {
-                var repo = scope.ServiceProvider.GetRequiredService<IPaymentRepository>();
-                var stripe = scope.ServiceProvider.GetRequiredService<IStripeService>();
-                var payment = await repo.GetByOrderIdAsync(order.OrderId, stoppingToken);
-                if (payment != null && string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
-                {
-                    var result = await stripe.CreatePaymentIntentAsync(payment, stoppingToken);
-                    payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
-                    payment.SetExpiration(DateTime.UtcNow.AddMinutes(15));
-                    await repo.SaveChangesAsync(stoppingToken);
-                }
-            }
         });
 
 

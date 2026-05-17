@@ -7,44 +7,32 @@ namespace DF.UserService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(IAuthService authService,
+public class AuthController(
+    IAuthService authService,
+    IConfiguration configuration,
     ILogger<AuthController> logger
     ) : ControllerBase
 {
     private const string RefreshTokenCookieName = "refreshToken";
 
     [HttpPost("register")]
-
     public async Task<ActionResult<TokenResponse>> Register([FromBody] RegisterRequest request)
     {
-        logger.LogInformation("REGISTER START {@Request}", request);
+        logger.LogInformation("REGISTER START for {Email}", request.Email);
 
-        try
+        var tokens = await authService.RegisterAsync(request);
+
+        if (tokens == null)
         {
-            var tokens = await authService.RegisterAsync(request);
-
-            if (tokens == null)
-            {
-                logger.LogWarning("REGISTER FAILED: tokens is null");
-                return BadRequest("Registration failed");
-            }
-
-            SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
-
-            logger.LogInformation("REGISTER SUCCESS for {Email}", request.Email);
-
-            return Ok(new TokenResponse(
-                tokens.AccessToken,
-                tokens.RefreshToken,
-                tokens.AccessTokenExpiresAt
-            ));
+            logger.LogWarning("REGISTER FAILED: tokens is null");
+            return BadRequest("Registration failed");
         }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "REGISTER EXCEPTION for {Email}", request.Email);
 
-            return BadRequest(new { error = ex.Message });
-        }
+        SetRefreshTokenCookie(tokens.RefreshToken);
+
+        logger.LogInformation("REGISTER SUCCESS for {Email}", request.Email);
+
+        return Ok(tokens);
     }
 
 
@@ -53,7 +41,7 @@ public class AuthController(IAuthService authService,
     {
         var tokens = await authService.LoginAsync(request);
 
-        SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+        SetRefreshTokenCookie(tokens.RefreshToken);
 
         return Ok(new TokenResponse(
             tokens.AccessToken,
@@ -68,16 +56,21 @@ public class AuthController(IAuthService authService,
         var refreshToken = Request.Cookies[RefreshTokenCookieName]
                            ?? throw new UnauthorizedAccessException("Refresh token is missing");
 
-        var tokens = await authService.RefreshAsync(refreshToken)
-                     ?? throw new UnauthorizedAccessException("Invalid or expired refresh token");
+        var tokens = await authService.RefreshAsync(refreshToken);
 
-        SetRefreshTokenCookie(tokens.RefreshToken, tokens.AccessTokenExpiresAt);
+        if (tokens is null)
+        {
+            Response.Cookies.Delete(RefreshTokenCookieName);
+            throw new UnauthorizedAccessException("Invalid or expired refresh token");
+        }
+
+        SetRefreshTokenCookie(tokens.RefreshToken);
 
         return Ok(tokens);
     }
 
-    [HttpPost("revoke")]
-    public async Task<IActionResult> Revoke()
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
     {
         var refreshToken = Request.Cookies[RefreshTokenCookieName];
 
@@ -92,17 +85,19 @@ public class AuthController(IAuthService authService,
         return NoContent();
     }
 
-    private void SetRefreshTokenCookie(string refreshToken, DateTime expiresAt)
+    private void SetRefreshTokenCookie(string refreshToken)
     {
+        var refreshDays = configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays");
+
         Response.Cookies.Append(
             RefreshTokenCookieName,
             refreshToken,
             new CookieOptions
             {
                 HttpOnly = true,
-                Secure = false,
+                Secure = Request.IsHttps,
                 SameSite = SameSiteMode.Lax,
-                Expires = expiresAt
+                Expires = DateTime.UtcNow.AddDays(refreshDays)
             }
         );
     }

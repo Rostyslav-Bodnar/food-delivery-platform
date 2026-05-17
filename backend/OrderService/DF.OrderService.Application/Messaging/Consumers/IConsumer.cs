@@ -1,6 +1,7 @@
-﻿namespace DF.OrderService.Application.Messaging.Consumers;
+namespace DF.OrderService.Application.Messaging.Consumers;
 
-public interface IConsumer
+public interface IConsumer : IAsyncDisposable
 {
-    void Start();
+    Task StartAsync(CancellationToken cancellationToken);
+    Task StopAsync(CancellationToken cancellationToken);
 }

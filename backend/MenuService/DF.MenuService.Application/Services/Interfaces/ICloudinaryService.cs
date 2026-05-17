@@ -5,6 +5,6 @@ namespace DF.MenuService.Application.Services.Interfaces;
 
 public interface ICloudinaryService
 {
-    Task<UploadImageResult> UploadAsync(IFormFile file, string folder = null);
+    Task<UploadImageResult> UploadAsync(IFormFile file, string? folder = null);
     Task<bool> DeleteAsync(string publicId);
 }

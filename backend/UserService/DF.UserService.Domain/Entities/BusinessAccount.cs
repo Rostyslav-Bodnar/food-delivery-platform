@@ -9,4 +9,9 @@ public class BusinessAccount : Account
     public bool? StripePayoutsEnabled { get; set; }
     public string? StripeRequirementsDue { get; set; }
     public DateTime? StripeOnboardedAt  { get; set; }
+
+    // Provisioning bookkeeping (populated by StripeAccountProvisioningWorker)
+    public int StripeProvisioningAttempts { get; set; }
+    public DateTime? StripeProvisioningLastAttemptUtc { get; set; }
+    public string? StripeProvisioningLastError { get; set; }
 }

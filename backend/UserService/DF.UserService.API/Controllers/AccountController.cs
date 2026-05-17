@@ -2,6 +2,8 @@
 using DF.Contracts.Gateway.Responses;
 using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
+using DF.UserService.Contracts.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
@@ -14,7 +16,7 @@ public class AccountController(IAccountService accountService, IUserContext user
     public async Task<ActionResult<AccountResponse>> GetAccount(Guid userId)
     {
         var account = await accountService.GetAccountByUserAsync(userId)
-                      ?? throw new NullReferenceException("Account not found");
+                      ?? throw new NotFoundException("Account not found");
 
         return Ok(account);
     }
@@ -27,13 +29,12 @@ public class AccountController(IAccountService accountService, IUserContext user
     }
 
     [HttpGet("all/business")]
-    [Consumes("multipart/form-data")]
     public async Task<ActionResult<IEnumerable<AccountResponse>>> GetAllBusinessAccounts()
     {
         var result = await accountService.GetBusinessAccountsAsync();
 
         if (result == null || !result.Any())
-            throw new NullReferenceException("No business accounts found");
+            throw new NotFoundException("No business accounts found");
 
         return Ok(result);
     }
@@ -100,21 +101,29 @@ public class AccountController(IAccountService accountService, IUserContext user
         var deleted = await accountService.DeleteAccountAsync(id);
 
         if (!deleted)
-            throw new NullReferenceException("Account not found");
+            throw new NotFoundException("Account not found");
 
         return NoContent();
     }
 
     [HttpGet("onboarding/{businessId:guid}")]
-    public async Task<ActionResult<string>> GetOnboardingLink(Guid businessId)
+    public async Task<ActionResult<OnboardingLinkResponse>> GetOnboardingLink(Guid businessId)
     {
-        var link = await accountService.GetOnboardingLinkAsync(
+        var result = await accountService.GetOnboardingLinkAsync(
             businessId,
-            CancellationToken.None);
+            HttpContext.RequestAborted);
 
-        if (string.IsNullOrEmpty(link))
-            throw new NullReferenceException("Onboarding link not found");
+        if (result.Status == OnboardingLinkResponse.ProvisioningStatus)
+        {
+            // 202 Accepted: account exists but Stripe provisioning is still
+            // in flight (StripeAccountProvisioningWorker). Client should retry.
+            if (result.RetryAfterSeconds is int retry)
+            {
+                Response.Headers["Retry-After"] = retry.ToString();
+            }
+            return StatusCode(StatusCodes.Status202Accepted, result);
+        }
 
-        return Ok(link);
+        return Ok(result);
     }
 }

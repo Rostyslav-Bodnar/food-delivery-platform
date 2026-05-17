@@ -1,0 +1,305 @@
+# =============================================================
+# All-Docker dev stack: infra + APIs + Gateway.
+# Each API reads config from its own appsettings.json (committed
+# with Docker-friendly DNS hostnames). compose only sets
+# ASPNETCORE_ENVIRONMENT=Production so appsettings.Development.json
+# (which targets localhost) is NOT loaded inside containers.
+#
+# Frontend stays on the host:
+#   cd frontend/food-delivery-platform && npm run dev
+# Vite hits the Gateway at http://localhost:5229/api.
+#
+#   docker network create df-network            # one-time
+#   docker compose up -d --build
+# =============================================================
+
+services:
+  # -----------------------------------------------------------
+  # INFRA
+  # -----------------------------------------------------------
+  df.userservice.db:
+    image: postgres:16
+    container_name: df.userservice.db
+    environment:
+      POSTGRES_USER: UserService
+      POSTGRES_PASSWORD: UserService2025!
+      POSTGRES_DB: UserServiceDb
+    ports: ["5433:5432"]
+    volumes: [user_service_data:/var/lib/postgresql/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U UserService -d UserServiceDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  df.menuservice.db:
+    image: postgres:16
+    container_name: df.menuservice.db
+    environment:
+      POSTGRES_USER: MenuService
+      POSTGRES_PASSWORD: MenuService2025!
+      POSTGRES_DB: MenuServiceDb
+    ports: ["5434:5432"]
+    volumes: [menu_service_data:/var/lib/postgresql/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U MenuService -d MenuServiceDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  df.orderservice.db:
+    image: postgres:16
+    container_name: df.orderservice.db
+    environment:
+      POSTGRES_USER: OrderService
+      POSTGRES_PASSWORD: OrderService2025!
+      POSTGRES_DB: OrderServiceDb
+    ports: ["5435:5432"]
+    volumes: [order_service_data:/var/lib/postgresql/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U OrderService -d OrderServiceDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  df.paymentservice.db:
+    image: postgres:16
+    container_name: df.paymentservice.db
+    environment:
+      POSTGRES_USER: PaymentService
+      POSTGRES_PASSWORD: PaymentService2025!
+      POSTGRES_DB: PaymentServiceDb
+    ports: ["5436:5432"]
+    volumes: [payment_service_data:/var/lib/postgresql/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U PaymentService -d PaymentServiceDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  df.trackingservice.db:
+    image: postgis/postgis:16-3.4
+    container_name: df.trackingservice.db
+    environment:
+      POSTGRES_USER: TrackingService
+      POSTGRES_PASSWORD: TrackingService2025!
+      POSTGRES_DB: TrackingServiceDb
+    ports: ["5437:5432"]
+    volumes: [tracking_service_data:/var/lib/postgresql/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U TrackingService -d TrackingServiceDb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  df.redis:
+    image: redis:7.2-alpine
+    container_name: df.redis
+    ports: ["6379:6379"]
+    volumes: [redis_data:/data]
+    networks: [df-network]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  # -----------------------------------------------------------
+  # MIGRATORS (run once, exit 0)
+  # Each uses the same image as its API; --migrate is honored by
+  # the Program.cs runMigratorMode branch and returns 0.
+  # -----------------------------------------------------------
+  df.userservice.migrator:
+    image: df.userservice.api
+    build:
+      context: ./backend/UserService
+      dockerfile: DF.UserService.API/Dockerfile
+    container_name: df.userservice.migrator
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.userservice.db:
+        condition: service_healthy
+    restart: "no"
+    networks: [df-network]
+
+  df.menuservice.migrator:
+    image: df.menuservice.api
+    build:
+      context: ./backend/MenuService
+      dockerfile: DF.MenuService.API/Dockerfile
+    container_name: df.menuservice.migrator
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.menuservice.db:
+        condition: service_healthy
+    restart: "no"
+    networks: [df-network]
+
+  df.orderservice.migrator:
+    image: df.orderservice.api
+    build:
+      context: ./backend/OrderService
+      dockerfile: DF.OrderService.API/Dockerfile
+    container_name: df.orderservice.migrator
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.orderservice.db:
+        condition: service_healthy
+    restart: "no"
+    networks: [df-network]
+
+  df.paymentservice.migrator:
+    image: df.paymentservice.api
+    build:
+      context: ./backend/PaymentService
+      dockerfile: DF.PaymentService.API/Dockerfile
+    container_name: df.paymentservice.migrator
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.paymentservice.db:
+        condition: service_healthy
+    restart: "no"
+    networks: [df-network]
+
+  df.trackingservice.migrator:
+    image: df.trackingservice.api
+    build:
+      context: ./backend/TrackingService
+      dockerfile: DF.TrackingService.API/Dockerfile
+    container_name: df.trackingservice.migrator
+    command: ["--migrate"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.trackingservice.db:
+        condition: service_healthy
+    restart: "no"
+    networks: [df-network]
+
+  # -----------------------------------------------------------
+  # APIs
+  # -----------------------------------------------------------
+  df.userservice.api:
+    image: df.userservice.api
+    container_name: df.userservice.api
+    ports: ["5000:10000"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    depends_on:
+      df.userservice.db:    { condition: service_healthy }
+      rabbitmq:             { condition: service_healthy }
+      df.userservice.migrator: { condition: service_completed_successfully }
+    networks: [df-network]
+
+  df.menuservice.api:
+    image: df.menuservice.api
+    container_name: df.menuservice.api
+    ports: ["5004:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    depends_on:
+      df.menuservice.db:    { condition: service_healthy }
+      rabbitmq:             { condition: service_healthy }
+      df.redis:             { condition: service_healthy }
+      df.menuservice.migrator: { condition: service_completed_successfully }
+    networks: [df-network]
+
+  df.orderservice.api:
+    image: df.orderservice.api
+    container_name: df.orderservice.api
+    ports: ["5005:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    depends_on:
+      df.orderservice.db:   { condition: service_healthy }
+      rabbitmq:             { condition: service_healthy }
+      df.orderservice.migrator: { condition: service_completed_successfully }
+    networks: [df-network]
+
+  df.trackingservice.api:
+    image: df.trackingservice.api
+    container_name: df.trackingservice.api
+    ports: ["5006:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    depends_on:
+      df.trackingservice.db: { condition: service_healthy }
+      rabbitmq:              { condition: service_healthy }
+      df.redis:              { condition: service_healthy }
+      df.trackingservice.migrator: { condition: service_completed_successfully }
+    networks: [df-network]
+
+  df.paymentservice.api:
+    image: df.paymentservice.api
+    container_name: df.paymentservice.api
+    ports: ["5003:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    depends_on:
+      df.paymentservice.db: { condition: service_healthy }
+      rabbitmq:             { condition: service_healthy }
+      df.paymentservice.migrator: { condition: service_completed_successfully }
+    networks: [df-network]
+
+  df.gateway.api:
+    image: df.gateway.api
+    build:
+      context: ./backend/Gateway
+      dockerfile: DF.Gateway.API/Dockerfile
+    container_name: df.gateway.api
+    ports: ["5229:8080"]
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+    depends_on:
+      df.userservice.api:     { condition: service_started }
+      df.menuservice.api:     { condition: service_started }
+      df.orderservice.api:    { condition: service_started }
+      df.trackingservice.api: { condition: service_started }
+      df.paymentservice.api:  { condition: service_started }
+    networks: [df-network]
+
+volumes:
+  user_service_data:
+  menu_service_data:
+  order_service_data:
+  payment_service_data:
+  tracking_service_data:
+  redis_data:
+
+networks:
+  df-network:
+    external: true

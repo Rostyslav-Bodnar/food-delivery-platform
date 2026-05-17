@@ -1,6 +1,7 @@
-﻿namespace DF.TrackingService.Application.Messaging.Consumers;
+namespace DF.TrackingService.Application.Messaging.Consumers;
 
-public interface IConsumer
+public interface IConsumer : IAsyncDisposable
 {
-    void Start();
+    Task StartAsync(CancellationToken cancellationToken);
+    Task StopAsync(CancellationToken cancellationToken);
 }

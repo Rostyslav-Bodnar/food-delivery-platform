@@ -1,7 +1,29 @@
-﻿services:
+services:
   df.gateway.api:
     image: df.gateway.api
     build:
       context: .
       dockerfile: DF.Gateway.API/Dockerfile
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: df.gateway.api
+    ports:
+      - "5050:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      # Internal Docker DNS — each service is reachable by its container name.
+      Services__UserService: http://df.userservice.api:5000
+      Services__MenuService: http://df.menuservice.api:8080
+      Services__OrderService: http://df.orderservice.api:8090
+      Services__TrackingService: http://df.trackingservice.api:8100
+      Jwt__Key: food-delivery-platform-jwt-key-1234567890!
+      Jwt__Issuer: df.auth
+      Jwt__Audience: df.client
+      Internal__ApiKey: 6f3c9a8d2b7e4f1c9a0d5e8b7c1f3a9d6e2b4c8f1a7d9e3b5c0f2a8d6e1b7c4
+    networks:
+      - df-network
 
+networks:
+  df-network:
+    external: true

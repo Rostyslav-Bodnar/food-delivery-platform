@@ -7,23 +7,211 @@
   <component name="AutoImportSettings">
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
+  <component name="CMakeProjectFlavorService">
+    <option name="flavorId" value="CMakePlainProjectFlavor" />
+  </component>
+  <component name="CMakeSettings">
+    <configurations />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="ab8f5b70-9134-4303-a273-5ac83622176a" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/BusinessLocationController.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/TrackingService/LocationController.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TrackingService/.idea/.idea.TrackingService/.idea/indexLayout.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../TrackingService/.idea/.idea.TrackingService/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/../../.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/DF.Contracts.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Accounts/CreateAccountRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Accounts/CreateAccountRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Accounts/UpdateAccountRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Accounts/UpdateAccountRequest.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Auth/Auth.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Auth/Auth.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Order/CreateOrderDishRequest.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/Gateway/Requests/Order/CreateOrderDishRequest.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" beforeDir="false" afterPath="$PROJECT_DIR$/../Contracts/DF.Contracts/nuget.config" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2026_16_18_[Changes]/shelved.patch" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/shelf/Uncommitted_changes_before_Update_at_09_05_2026_16_18__Changes_.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Gateway/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/OrderService/OrderController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AccountController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/AuthController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/ProfileController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/ProfileController.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/UserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Controllers/UserService/UserController.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.Gateway.API/DF.Gateway.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/DF.Gateway.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Dockerfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Helpers/ServiceType.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Helpers/ServiceType.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Infrastructure/GatewayProxy.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Infrastructure/GatewayProxy.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/appsettings.Development.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DF.Gateway.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/DF.Gateway.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/compose.yaml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/Docker/compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/.idea/.idea.MenuService/Docker/compose.generated.override.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Controllers/DishController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Controllers/DishController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/DF.MenuService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/DF.MenuService.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Middlewares/ExceptionMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Middlewares/ExceptionMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Middlewares/InternalAuthMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Middlewares/InternalAuthMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/appsettings.Development.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/DF.MenuService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/DF.MenuService.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/ConsumerHostedService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/ConsumerHostedService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/Consumers/GetDishConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/Consumers/GetDishConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/Consumers/GetDishesConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/Consumers/GetDishesConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/IConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/IConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Messaging/UserServiceRpcClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/DishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/DishRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/IngredientRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/IngredientRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Repositories/Interfaces/IDishRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/CloudinaryService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/CloudinaryService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/DishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/DishService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/IngredientService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/IngredientService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/Interfaces/ICloudinaryService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/Interfaces/IDishService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Application/Services/Interfaces/IDishService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Domain/Entities/Dish.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Domain/Entities/Dish.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Infrastructure/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Infrastructure/Data/AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/DF.MenuService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/DF.MenuService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../MenuService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../MenuService/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/Docker/compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/.idea/.idea.OrderService/Docker/compose.generated.override.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderTrackingController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Controllers/OrderTrackingController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/DF.OrderService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/DF.OrderService.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/ExceptionMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/ExceptionMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/IUserContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/IUserContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/InternalAuthMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/InternalAuthMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContextMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Middlewares/UserContextMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/DF.OrderService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/DF.OrderService.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/MenuServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/MenuServiceRpcClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/TrackingServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/TrackingServiceRpcClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/UserServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Clients/UserServiceRpcClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/ConsumerHostedService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/ConsumerHostedService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/CourierPayoutCompletedConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/CourierPayoutCompletedConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/IConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/IConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/LocationsCreatedConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Consumers/LocationsCreatedConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Publishers/OrderEventPublisher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Messaging/Publishers/OrderEventPublisher.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Repositories/Interfaces/IOrderRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Repositories/Interfaces/IOrderRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Repositories/OrderRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Repositories/OrderRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/Interfaces/IOrderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/Interfaces/IOrderService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/OrderService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/OrderService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/ProfitService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Application/Services/ProfitService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/Order.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/Order.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/OrderedDish.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Domain/Entities/OrderedDish.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/Data/AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/DF.OrderService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../OrderService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../OrderService/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Controllers/PaymentsController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Controllers/PaymentsController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/DF.PaymentService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/DF.PaymentService.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.Development.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/CreatePaymentCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/CreatePaymentCommandHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/RefundPaymentCommandHandler.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/CommandHandlers/RefundPaymentCommandHandler.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Commands/RefundPaymentCommand.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Commands/RefundPaymentCommand.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/DF.PaymentService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/DF.PaymentService.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/Interfaces/IStripeService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/Interfaces/IStripeService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/StripeService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Application/Services/StripeService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Contracts/DF.PaymentService.Contracts.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Contracts/DF.PaymentService.Contracts.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Domain/DF.PaymentService.Domain.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Domain/DF.PaymentService.Domain.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/DF.PaymentService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/DF.PaymentService.Infrastructure.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/Consumers/OrderCreatedConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/Consumers/OrderCreatedConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/ProcessedWebhookStore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/ProcessedWebhookStore.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/RabbitMQEventBus.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/DF.PaymentService.Infrastructure/Messaging/RabbitMQEventBus.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../PaymentService/global.json" beforeDir="false" afterPath="$PROJECT_DIR$/../PaymentService/global.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Controllers/BusinessLocationController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Controllers/BusinessLocationController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Controllers/LocationController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Controllers/LocationController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/DF.TrackingService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/DF.TrackingService.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Dockerfile" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Dockerfile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Hubs/CourierTrackingHub.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Hubs/CourierTrackingHub.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/ExceptionMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/ExceptionMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/IUserContext.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/InternalAuthMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/InternalAuthMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/UserContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/UserContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/UserContextMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Middlewares/UserContextMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/appsettings.Development.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/DF.TrackingService.Application.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/DF.TrackingService.Application.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/ConsumerHostedService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/ConsumerHostedService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/GetBusinessLocationConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/GetBusinessLocationConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/GetLocationsConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/GetLocationsConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/IConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/IConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/OrderCreatedConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Consumers/OrderCreatedConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Publishers/TrackingEventPublisher.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Messaging/Publishers/TrackingEventPublisher.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/BusinessLocationRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/BusinessLocationRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/CourierLocationRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/Interfaces/ICourierLocationRepository.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/Interfaces/ILocationRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/Interfaces/ILocationRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/LocationRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Repositories/LocationRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/BusinessLocationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/BusinessLocationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/GeolocationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/GeolocationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/Interfaces/ILocationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/Interfaces/ILocationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/Interfaces/IRoutingService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/Interfaces/IRoutingService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/LocationService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/LocationService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/RoutingService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Application/Services/RoutingService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Domain/Entities/CourierLocation.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Domain/Entities/CourierStatus.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Domain/Entities/Location.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Domain/Entities/Location.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/DF.TrackingService.Infrastructure.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/DF.TrackingService.Infrastructure.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/Data/MongoDbContext.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/Data/SqlDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/Data/SqlDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/DF.TrackingService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../TrackingService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../TrackingService/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/.idea/.idea.DF.UserService/Docker/compose.generated.override.yml" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/.idea/.idea.DF.UserService/Docker/compose.generated.override.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AccountController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AuthController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/AuthController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/ProfileController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/ProfileController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripeConnectWebhookController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripeConnectWebhookController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripePayoutWebhookController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/StripePayoutWebhookController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/UserController.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Controllers/UserController.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/DF.UserService.API.csproj" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/DF.UserService.API.csproj" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Helpers/InternalAuthSigner.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Helpers/InternalAuthSigner.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Middlewares/ExceptionMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Middlewares/ExceptionMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Middlewares/InternalAuthMiddleware.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Middlewares/InternalAuthMiddleware.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Program.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/Properties/launchSettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/Properties/launchSettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.Development.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.Development.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.API/appsettings.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Factories/AccountFactory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Factories/AccountFactory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Factories/Interfaces/IAccountFactory.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Factories/Interfaces/IAccountFactory.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Clients/TrackingServiceRpcClient.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Clients/TrackingServiceRpcClient.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/ConsumerHostedService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetAccountConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetBusinessAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetBusinessAccountConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetCourierAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetCourierAccountConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetCustomerAccountConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/Consumers/GetCustomerAccountConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/IConsumer.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Messaging/IConsumer.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/AccountRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/AccountRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/Interfaces/IAccountRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/Interfaces/IAccountRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/Interfaces/IUserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/Interfaces/IUserRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/UserRepository.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Repositories/UserRepository.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AccountService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AuthService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/AuthService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IAccountService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IAccountService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IStripeConnectService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/Interfaces/IStripeConnectService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/StripeConnectService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/StripeConnectService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/TokenService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/TokenService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/UserService.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Application/Services/UserService.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/StripeOptions.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Contracts/Models/DTO/StripeOptions.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/BusinessAccount.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/BusinessAccount.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/RefreshToken.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Domain/Entities/RefreshToken.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Data/AppDbContext.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Data/AppDbContext.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/DF.UserService.Infrastructure/Migrations/AppDbContextModelSnapshot.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/compose.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/../UserService/compose.yaml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UserService/init.sql" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Account.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Account.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Auth.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Order.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Order.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Payment.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/Payment.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/apiClient.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/api/apiClient.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/hooks/useCourierLocationSender.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/hooks/useCourierLocationSender.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/hooks/useCourierTracking.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/hooks/useCourierTracking.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/models/requests/order/CreateOrderDishRequest.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/models/requests/order/CreateOrderDishRequest.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/hooks/useOrderSubmit.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/checkout/hooks/useOrderSubmit.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/BusinessHomePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/BusinessHomePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/handlers/handleOnboardingRedirect.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/../../frontend/food-delivery-platform/src/pages/home/business/handlers/handleOnboardingRedirect.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,14 +251,6 @@
   }
 }</component>
   <component name="HighlightingSettingsPerFile">
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/4e09f6ff7c574a38a6cb04165745f695f45908/9a/178e293b/AsyncTaskMethodBuilder`1.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/72b221de13a44434aee278318eb13c3f83910/3e/5c63ef9c/PrincipalExtensions.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/44/cc0f9517/UserDto.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/c9/3bc511a6/TokenResponse.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/74008fb437ed4490a2139f019ee26e1c17400/e0/805fcc38/ProfileResponse.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/7cde04e1aef6453aa4dec16caf7acfed22400/cf/28e5e79a/CreateOrderRequest.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/DecompilerCache/decompiler/fda0156beb9746548884fb42f16ae3661d7910/98/7e21ff7d/ActionMethodExecutor.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$APPLICATION_CONFIG_DIR$/resharper-host/SourcesCache/6af28599e71724c5fc6a617444e2f60b5d57dfdc5be0df4ba43ccfc36977/DefaultHttpContext.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Attributes/GatewayServiceAttribute.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Constants/InternalAuthConstants.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/DF.Gateway.API/Controllers/MenuService/DishController.cs" root0="FORCE_HIGHLIGHTING" />
@@ -113,11 +293,16 @@
     "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
     "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "cidr.known.project.marker": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "git-widget-placeholder": "feature/65-connect-gateway-api-to-trackingservice",
+    "git-widget-placeholder": "feature/69-implement-order-tracking-flow",
     "junie.onboarding.icon.badge.shown": "true",
+    "last_opened_file_path": "C:/Users/DmytroStrembetskyi/RiderProjects/food-delivery-platform/backend/Gateway/Gateway.sln",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -215,6 +400,7 @@
       <workItem from="1778331437042" duration="12052000" />
       <workItem from="1778364209681" duration="6320000" />
       <workItem from="1778520538825" duration="1164000" />
+      <workItem from="1779027236656" duration="6672000" />
     </task>
     <task id="LOCAL-00001" summary="#FDP-update tracking view">
       <option name="closed" value="true" />
@@ -277,6 +463,32 @@
           <line>47</line>
           <properties documentPath="C:\Users\User\Desktop\Я\Projects\food-delivery-platform\backend\Gateway\DF.Gateway.API\Controllers\AuthController.cs" containingFunctionPresentation="Method 'Forward'" />
           <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.Gateway.API/Infrastructure/GatewayProxy.cs</url>
+          <line>47</line>
+          <properties documentPath="C:\Users\DmytroStrembetskyi\RiderProjects\food-delivery-platform\backend\Gateway\DF.Gateway.API\Infrastructure\GatewayProxy.cs" containingFunctionPresentation="Method 'ProxyAsync'">
+            <startOffsets>
+              <option value="1275" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1441" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="DotNet Breakpoints">
+          <url>file://$PROJECT_DIR$/DF.Gateway.API/Infrastructure/GatewayProxy.cs</url>
+          <line>52</line>
+          <properties documentPath="C:\Users\DmytroStrembetskyi\RiderProjects\food-delivery-platform\backend\Gateway\DF.Gateway.API\Infrastructure\GatewayProxy.cs" containingFunctionPresentation="Method 'ProxyAsync'">
+            <startOffsets>
+              <option value="1455" />
+            </startOffsets>
+            <endOffsets>
+              <option value="1576" />
+            </endOffsets>
+          </properties>
+          <option name="timeStamp" value="14" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

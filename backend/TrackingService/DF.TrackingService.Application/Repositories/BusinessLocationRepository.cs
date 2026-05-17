@@ -9,12 +9,18 @@ public class BusinessLocationRepository(SqlDbContext dbContext) : IBusinessLocat
 {
     public async Task<BusinessLocation?> Get(Guid id)
     {
-        return await dbContext.BusinessLocations.FindAsync(id);
+        // BusinessLocationService.MapToResponse dereferences entity.Location;
+        // Find() alone wouldn't load it. Use Include + FirstOrDefault.
+        return await dbContext.BusinessLocations
+            .Include(bl => bl.Location)
+            .FirstOrDefaultAsync(bl => bl.Id == id);
     }
 
     public async Task<IEnumerable<BusinessLocation?>> GetAll()
     {
-        return await dbContext.BusinessLocations.ToListAsync();
+        return await dbContext.BusinessLocations
+            .Include(bl => bl.Location)
+            .ToListAsync();
     }
 
     public async Task<BusinessLocation> Create(BusinessLocation entity)

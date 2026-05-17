@@ -1,4 +1,6 @@
-﻿using DF.UserService.API.Helpers;
+﻿using System.Security.Cryptography;
+using System.Text;
+using DF.UserService.API.Helpers;
 
 namespace DF.UserService.API.Middlewares;
 
@@ -52,8 +54,12 @@ public class InternalAuthMiddleware(
             return;
         }
 
-        // API KEY CHECK
-        if (apiKey != config["Internal:ApiKey"])
+        // API KEY CHECK — timing-safe to defeat side-channel enumeration.
+        var expectedKey = config["Internal:ApiKey"] ?? string.Empty;
+        var providedBytes = Encoding.UTF8.GetBytes(apiKey);
+        var expectedBytes = Encoding.UTF8.GetBytes(expectedKey);
+        if (providedBytes.Length != expectedBytes.Length
+            || !CryptographicOperations.FixedTimeEquals(providedBytes, expectedBytes))
         {
             context.Response.StatusCode = 401;
             await context.Response.WriteAsync("Invalid API key");

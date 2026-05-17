@@ -36,10 +36,15 @@ public class AccountController(GatewayProxy proxy) : ControllerBase
 
     // =========================
     // ONBOARDING
+    // Response shape from UserService:
+    //   { status: "ready", url: "https://...", retryAfterSeconds: null }   (200)
+    //   { status: "provisioning", url: null, retryAfterSeconds: 15 }       (202)
+    // The proxy just transports JSON; `object` keeps the shape generic
+    // without forcing a shared-Contracts type for what's a UserService concern.
     // =========================
     [HttpGet("onboarding/{businessId:guid}")]
-    public Task<Response<string>> GetOnboardingLink(Guid businessId)
-        => proxy.ProxyAsync<string>(HttpContext);
+    public Task<Response<object>> GetOnboardingLink(Guid businessId)
+        => proxy.ProxyAsync<object>(HttpContext);
 
     // =========================
     // CREATE / UPDATE (multipart)

@@ -1,4 +1,4 @@
-﻿version: '3.9'
+version: '3.9'
 
 services:
   df.menuservice.api:
@@ -27,7 +27,7 @@ services:
       POSTGRES_PASSWORD: MenuService2025!
       POSTGRES_DB: MenuServiceDb
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - menu_service_data:/var/lib/postgresql/data
     networks:

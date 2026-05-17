@@ -16,6 +16,9 @@ public class GatewayProxy(
         "Content-Length",
 
         "X-Internal-UserId",
+        "X-Internal-Role",
+        "X-Internal-AccountId",
+        "X-Internal-AccountType",
         "X-Internal-Timestamp",
         "X-Internal-Nonce",
         "X-Internal-Signature",
@@ -50,9 +53,6 @@ public class GatewayProxy(
             var responseBody =
                 await response.Content.ReadAsStringAsync(
                     context.RequestAborted);
-
-            // DEBUG
-            Console.WriteLine(responseBody);
 
             if (response.IsSuccessStatusCode)
             {
@@ -184,6 +184,36 @@ public class GatewayProxy(
             request.Headers.TryAddWithoutValidation(
                 "X-Internal-UserId",
                 userId);
+        }
+
+        var role =
+            context.User.FindFirst("role")?.Value
+            ?? context.User.FindFirst(ClaimTypes.Role)?.Value;
+
+        if (!string.IsNullOrWhiteSpace(role))
+        {
+            request.Headers.TryAddWithoutValidation(
+                "X-Internal-Role",
+                role);
+        }
+
+        // Forward the caller's active account so downstream services can authorize
+        // mutations against it (e.g. TrackingService verifies the business owns the
+        // location being modified).
+        var accountId = context.User.FindFirst("account_id")?.Value;
+        if (!string.IsNullOrWhiteSpace(accountId))
+        {
+            request.Headers.TryAddWithoutValidation(
+                "X-Internal-AccountId",
+                accountId);
+        }
+
+        var accountType = context.User.FindFirst("account_type")?.Value;
+        if (!string.IsNullOrWhiteSpace(accountType))
+        {
+            request.Headers.TryAddWithoutValidation(
+                "X-Internal-AccountType",
+                accountType);
         }
 
         return request;

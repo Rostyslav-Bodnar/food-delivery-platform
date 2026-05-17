@@ -1,9 +1,9 @@
-using System.Text;
 using System.Text.Json;
 using DF.Contracts.RPC.Requests.MenuService;
 using DF.Contracts.RPC.Responses.MenuService;
 using DF.MenuService.Application.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
@@ -11,91 +11,150 @@ namespace DF.MenuService.Application.Messaging.Consumers;
 
 public class GetDishConsumer : IConsumer
 {
+    private const string QueueName = "menu.getdish";
+
     private readonly IConnection _connection;
-    private readonly IChannel _channel;
     private readonly IServiceScopeFactory _scopeFactory;
-    
-    public GetDishConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    private readonly ILogger<GetDishConsumer> _logger;
+    private IChannel? _channel;
+    private string? _consumerTag;
+
+    public GetDishConsumer(
+        IConnection connection,
+        IServiceScopeFactory scopeFactory,
+        ILogger<GetDishConsumer> logger)
     {
         _connection = connection;
         _scopeFactory = scopeFactory;
-        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        _logger = logger;
+    }
 
-        _channel.QueueDeclareAsync(
-            queue: "menu.getdish",
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
+        await MessagingTopology.EnsureDeadLetterAsync(_channel, cancellationToken);
+
+        await _channel.QueueDeclareAsync(
+            queue: QueueName,
             durable: false,
             exclusive: false,
             autoDelete: false,
-            arguments: null
-        ).GetAwaiter().GetResult();
+            arguments: MessagingTopology.DeadLetterArgs(QueueName),
+            cancellationToken: cancellationToken);
+
+        var consumer = new AsyncEventingBasicConsumer(_channel);
+        consumer.ReceivedAsync += HandleAsync;
+
+        _consumerTag = await _channel.BasicConsumeAsync(
+            queue: QueueName,
+            autoAck: false,
+            consumer: consumer,
+            cancellationToken: cancellationToken);
     }
 
-    public void Start()
+    private async Task HandleAsync(object sender, BasicDeliverEventArgs ea)
     {
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += async (model, ea) =>
+        if (_channel is null) return;
+
+        var replyTo = ea.BasicProperties.ReplyTo;
+        var correlationId = ea.BasicProperties.CorrelationId;
+
+        try
         {
-            using var scope = _scopeFactory.CreateScope();
+            var request = JsonSerializer.Deserialize<GetDishRequest>(ea.Body.Span)
+                ?? throw new InvalidOperationException("Empty GetDishRequest payload");
+
+            if (request.DishId == Guid.Empty)
+                throw new ArgumentException("DishId must not be empty");
+
+            await using var scope = _scopeFactory.CreateAsyncScope();
             var dishRepository = scope.ServiceProvider.GetRequiredService<IDishRepository>();
             var ingredientRepository = scope.ServiceProvider.GetRequiredService<IIngredientRepository>();
-            
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
 
-            // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetDishRequest>(message);
+            var dish = await dishRepository.Get(request.DishId)
+                       ?? throw new KeyNotFoundException($"Dish {request.DishId} not found");
 
-            // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.DishId != null)
+            var ingredients = await ingredientRepository.GetAllIngredientsByDishId(dish.Id);
+
+            var response = new GetDishResponse(
+                DishId: dish.Id,
+                Name: dish.Name,
+                Description: dish.Description ?? string.Empty,
+                Image: dish.Image ?? string.Empty,
+                Price: dish.Price,
+                CategoryId: (int)dish.Category,
+                CategoryName: dish.Category.ToString(),
+                CookingTime: dish.CookingTime,
+                BusinessId: dish.BusinessId,
+                Ingredients: new GetIngredientsResponse(
+                    ingredients
+                        .Select(i => new GetIngredientResponse(
+                            IngredientId: i.Id,
+                            DishId: i.DishId,
+                            Name: i.Name,
+                            Weight: i.Weight))
+                        .ToList()));
+
+            await PublishReplyAsync(replyTo, correlationId, response);
+            await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex,
+                "Failed to handle GetDishRequest (CorrelationId={CorrelationId})", correlationId);
+
+            // Poison message: don't requeue. The caller's RPC timeout will release it.
+            try
             {
-                var dish = await dishRepository.Get(request.DishId);
-                
-                var ingredients = await ingredientRepository.GetAllIngredientsByDishId(dish.Id);
-
-                var response = new GetDishResponse(
-                        DishId: dish.Id,
-                        Name: dish.Name,
-                        Description: dish.Description,
-                        Image: dish.Image,
-                        Price: dish.Price,
-                        CategoryId: (int)dish.Category,
-                        CategoryName: dish.Category.ToString(),
-                        CookingTime: dish.CookingTime,
-                        BusinessId: dish.BusinessId,
-                        Ingredients: new GetIngredientsResponse(
-                            ingredients
-                                .Select(i => new GetIngredientResponse(
-                                    IngredientId: i.Id,
-                                    DishId: i.DishId,
-                                    Name: i.Name,
-                                    Weight: i.Weight
-                                )).ToList()
-                        )
-                    );
-
-                var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
-
-                var props = new BasicProperties
-                {
-                    CorrelationId = ea.BasicProperties.CorrelationId
-                };
-
-                await _channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: ea.BasicProperties.ReplyTo,
-                    mandatory: false,
-                    basicProperties: props,
-                    body: responseBytes
-                );
+                await _channel.BasicNackAsync(ea.DeliveryTag, multiple: false, requeue: false);
             }
-
-        };
-
-        _channel.BasicConsumeAsync(
-            queue: "menu.getdish",
-            autoAck: true,
-            consumer: consumer
-        ).GetAwaiter().GetResult();
+            catch (Exception nackEx)
+            {
+                _logger.LogWarning(nackEx, "Failed to nack message {DeliveryTag}", ea.DeliveryTag);
+            }
+        }
     }
 
+    private async Task PublishReplyAsync<T>(string? replyTo, string? correlationId, T payload)
+    {
+        if (_channel is null || string.IsNullOrEmpty(replyTo)) return;
+
+        var props = new BasicProperties { CorrelationId = correlationId };
+        var body = JsonSerializer.SerializeToUtf8Bytes(payload);
+
+        await _channel.BasicPublishAsync(
+            exchange: string.Empty,
+            routingKey: replyTo,
+            mandatory: false,
+            basicProperties: props,
+            body: body);
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_channel is null) return;
+
+        try
+        {
+            if (!string.IsNullOrEmpty(_consumerTag))
+            {
+                await _channel.BasicCancelAsync(_consumerTag, noWait: false, cancellationToken: cancellationToken);
+            }
+            await _channel.CloseAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Error while stopping GetDishConsumer");
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_channel is not null)
+        {
+            await _channel.DisposeAsync();
+            _channel = null;
+        }
+    }
 }

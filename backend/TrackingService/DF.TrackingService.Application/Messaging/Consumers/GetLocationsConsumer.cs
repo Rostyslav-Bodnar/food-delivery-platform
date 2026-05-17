@@ -1,98 +1,50 @@
-﻿using System.Text;
-using System.Text.Json;
 using DF.Contracts.RPC.Requests.TrackingService;
 using DF.Contracts.RPC.Responses.TrackingService;
 using DF.TrackingService.Application.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace DF.TrackingService.Application.Messaging.Consumers;
 
-public class GetLocationsConsumer(
+public sealed class GetLocationsConsumer(
     IConnection connection,
-    IServiceScopeFactory scopeFactory)
-    : IConsumer
+    IServiceScopeFactory scopeFactory,
+    ILogger<GetLocationsConsumer> logger)
+    : RpcConsumerBase<GetLocationRequest, GetLocationsResponse>(
+        connection, scopeFactory, logger, "tracking.getlocations")
 {
-    private IChannel _channel = null!;
-
-    public void Start()
+    protected override async Task<GetLocationsResponse> HandleRequestAsync(
+        GetLocationRequest request,
+        IServiceProvider services)
     {
-        _channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
-
-        _channel.QueueDeclareAsync(
-            queue: "tracking.getlocations",
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        ).GetAwaiter().GetResult();
-
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += Handle;
-
-        _channel.BasicConsumeAsync(
-            queue: "tracking.getlocations",
-            autoAck: true,
-            consumer: consumer
-        ).GetAwaiter().GetResult();
-
-        Console.WriteLine("GetLocationsConsumer started");
-    }
-
-    private async Task Handle(object sender, BasicDeliverEventArgs ea)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var locationRepository = scope.ServiceProvider.GetRequiredService<ILocationRepository>();
-
-        var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-        var request = JsonSerializer.Deserialize<GetLocationRequest>(json);
-
-        if (request == null)
-            return;
+        var locationRepository = services.GetRequiredService<ILocationRepository>();
 
         var deliverTo = await locationRepository.Get(request.DeliverToId);
         var deliverFrom = await locationRepository.Get(request.DeliverFromId);
 
-        if (deliverTo == null || deliverFrom == null)
-            return;
-
-        var response = new GetLocationsResponse(
-            DeliverTo: new LocationDTO(
-                deliverTo.Id,
-                deliverTo.FullAddress,
-                deliverTo.City,
-                deliverTo.Street,
-                deliverTo.House,
-                deliverTo.GeoPoint!.Y, // latitude
-                deliverTo.GeoPoint!.X  // longitude
-            ),
-            DeliverFrom: new LocationDTO(
-                deliverFrom.Id,
-                deliverFrom.FullAddress,
-                deliverFrom.City,
-                deliverFrom.Street,
-                deliverFrom.House,
-                deliverFrom.GeoPoint!.Y,
-                deliverFrom.GeoPoint!.X
-            )
-        );
-
-        var responseBytes = Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(response)
-        );
-
-        var props = new BasicProperties
+        if (deliverTo is null || deliverFrom is null)
         {
-            CorrelationId = ea.BasicProperties.CorrelationId
-        };
+            return CreateDefaultResponse();
+        }
 
-        await _channel.BasicPublishAsync(
-            exchange: "",
-            routingKey: ea.BasicProperties.ReplyTo!,
-            mandatory: false,
-            basicProperties: props,
-            body: responseBytes
-        );
+        return new GetLocationsResponse(
+            DeliverTo: ToDto(deliverTo),
+            DeliverFrom: ToDto(deliverFrom));
     }
+
+    protected override GetLocationsResponse CreateDefaultResponse() =>
+        new(EmptyDto(), EmptyDto());
+
+    private static LocationDTO ToDto(Domain.Entities.Location l) => new(
+        l.Id,
+        l.FullAddress,
+        l.City,
+        l.Street,
+        l.House,
+        l.GeoPoint?.Y ?? 0,
+        l.GeoPoint?.X ?? 0);
+
+    private static LocationDTO EmptyDto() =>
+        new(Guid.Empty, string.Empty, string.Empty, string.Empty, string.Empty, 0, 0);
 }

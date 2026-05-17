@@ -45,6 +45,10 @@ namespace DF.MenuService.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)");
 
+                    b.Property<string>("ImagePublicId")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -53,9 +57,50 @@ namespace DF.MenuService.Infrastructure.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.ToTable("Dishes", (string)null);
+                });
+
+            modelBuilder.Entity("DF.MenuService.Domain.Entities.IdempotencyKey", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ResponseBody")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Key");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.ToTable("IdempotencyKeys", (string)null);
                 });
 
             modelBuilder.Entity("DF.MenuService.Domain.Entities.Ingredient", b =>
@@ -85,12 +130,17 @@ namespace DF.MenuService.Infrastructure.Migrations
             modelBuilder.Entity("DF.MenuService.Domain.Entities.Ingredient", b =>
                 {
                     b.HasOne("DF.MenuService.Domain.Entities.Dish", "Dish")
-                        .WithMany()
+                        .WithMany("Ingredients")
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Dish");
+                });
+
+            modelBuilder.Entity("DF.MenuService.Domain.Entities.Dish", b =>
+                {
+                    b.Navigation("Ingredients");
                 });
 #pragma warning restore 612, 618
         }

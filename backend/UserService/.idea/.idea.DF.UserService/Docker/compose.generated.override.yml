@@ -3,8 +3,8 @@ version: "3.9"
 services:
   df.userservice.api:
     build:
-      context: "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\\
-        UserService"
+      context: "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\\
+        backend\\UserService"
       dockerfile: "DF.UserService.API/Dockerfile"
       target: "base"
     command: []
@@ -16,8 +16,9 @@ services:
     image: "df.userservice.api:dev"
     ports: []
     volumes:
-    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\UserService\\\
-      DF.UserService.API:/app:rw"
-    - "C:\\Users\\User\\Desktop\\Я\\Projects\\food-delivery-platform\\backend\\UserService:/src:rw"
-    - "C:\\Users\\User\\.nuget\\packages:/home/app/.nuget/packages"
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      UserService\\DF.UserService.API:/app:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\RiderProjects\\food-delivery-platform\\backend\\\
+      UserService:/src:rw"
+    - "C:\\Users\\DmytroStrembetskyi\\.nuget\\packages:/root/.nuget/packages"
     working_dir: "/app"
