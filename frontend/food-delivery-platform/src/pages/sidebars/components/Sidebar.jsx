@@ -3,7 +3,6 @@ import { NavLink } from "react-router-dom";
 import "./styles/Sidebar.css";
 
 export default function Sidebar({
-                                    logo,
                                     title,
                                     items = [],
                                     disabled = false,
@@ -13,7 +12,6 @@ export default function Sidebar({
         <aside className="app-sidebar">
 
             <div className="sidebar-header">
-                {logo && <div className="sidebar-logo">{logo}</div>}
                 {title && <div className="sidebar-title">{title}</div>}
             </div>
 

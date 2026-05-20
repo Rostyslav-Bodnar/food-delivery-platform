@@ -4,11 +4,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 1rem 2rem;
-    background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-    backdrop-filter: blur(12px) saturate(120%);
-    border-bottom: 1px solid var(--glass-border);
-    border-radius: 0;
-    box-shadow: var(--card-shadow);
+    background: transparent;
     position: sticky;
     top: 0;
     z-index: 1000;

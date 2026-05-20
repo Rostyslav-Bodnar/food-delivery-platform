@@ -12,7 +12,6 @@ export default function BusinessSidebar({ userData, disabled }) {
 
     return (
         <Sidebar
-            logo="FoodEx"
             title={userData?.currentAccount?.name}
             items={items}
             disabled={disabled}

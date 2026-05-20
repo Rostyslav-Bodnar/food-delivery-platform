@@ -44,7 +44,6 @@ export default function CourierSidebar({
 
     return (
         <Sidebar
-            logo="FoodEx Courier"
             items={items}
             footer={footer}
         />
