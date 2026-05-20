@@ -12,7 +12,7 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 
     public async Task SendLocation(CourierLocationDto dto)
     {
-        var role = GetRole();
+        var role = GetAccountType();
         var tokenOrderId = GetOrderIdClaim();
 
         if (role != "Courier")
@@ -39,10 +39,10 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 
     public async Task UpdateTrackingStage(Guid orderId, string stage)
     {
-        var role = GetRole();
+        var accountType = GetAccountType();
         var tokenOrderId = GetOrderIdClaim();
 
-        if (role != "Courier")
+        if (accountType != "Courier")
             throw new HubException("Only courier can update tracking stage");
 
         if (!HasScope("tracking:write"))
@@ -54,11 +54,19 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
         if (!OrderTrackingStages.IsValid(stage))
             throw new HubException("Unsupported tracking stage");
 
+        var requestedStage = OrderTrackingStages.Normalize(stage);
         var snapshot = await snapshotStore.ReadAsync(orderId);
+
+        if (requestedStage == OrderTrackingStages.ToCustomer
+            && snapshot.Stage != OrderTrackingStages.ToCustomer)
+        {
+            throw new HubException("Pickup must be confirmed by the business");
+        }
+
         snapshot = snapshot with
         {
             CourierId = snapshot.CourierId ?? GetSubjectId(),
-            Stage = OrderTrackingStages.Normalize(stage),
+            Stage = requestedStage,
             UpdatedAtUtc = DateTime.UtcNow
         };
 
@@ -96,9 +104,9 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
         return Guid.TryParse(value, out var subjectId) ? subjectId : null;
     }
 
-    private string? GetRole()
+    private string? GetAccountType()
     {
-        return Context.User?.FindFirst("role")?.Value;
+        return Context.User?.FindFirst("account_type")?.Value;
     }
 
     private bool HasScope(string scope)
@@ -117,6 +125,12 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
             await Clients.Group(GetGroupName(snapshot.OrderId))
                 .SendAsync("CourierLocationUpdated", snapshot.CourierLocation);
         }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.OrderStatus))
+        {
+            await Clients.Group(GetGroupName(snapshot.OrderId))
+                .SendAsync("OrderStatusUpdated", snapshot.OrderStatus);
+        }
     }
 
     private async Task SendSnapshotToCallerAsync(OrderTrackingSnapshotDto snapshot)
@@ -126,6 +140,11 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
         if (snapshot.CourierLocation != null)
         {
             await Clients.Caller.SendAsync("CourierLocationUpdated", snapshot.CourierLocation);
+        }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.OrderStatus))
+        {
+            await Clients.Caller.SendAsync("OrderStatusUpdated", snapshot.OrderStatus);
         }
     }
 

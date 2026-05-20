@@ -26,30 +26,31 @@ public sealed class OrderTrackingController(
         if (order is null)
             return NotFound();
 
-        var userId = userContext.UserId;
-        var role = userContext.Role ?? string.Empty;
+        var accountId = userContext.AccountId;
+        var accountType = userContext.AccountType ?? string.Empty;
 
-        var allowed = role switch
+        var allowed = accountType switch
         {
-            "Customer" => order.OrderedBy == userId,
-            "Courier"  => order.DeliveredById == userId,
-            "Business" => order.BusinessId == userId,
+            "Customer" => order.OrderedBy == accountId,
+            "Courier"  => order.DeliveredById == accountId,
+            "Business" => order.BusinessId == accountId,
             _ => false
         };
 
         if (!allowed)
             return Forbid();
 
-        var scopes = role == "Courier"
+        var scopes = accountType == "Courier"
             ? new[] { "tracking:read", "tracking:write" }
             : new[] { "tracking:read" };
 
         var lifetime = TimeSpan.FromMinutes(10);
 
         var token = trackingTokenService.CreateTrackingToken(
-            subjectId: userId,
-            role: role,
+            subjectId: accountId,
+            accountType: accountType,
             orderId: orderId,
+            accountId: accountId,
             scopes: scopes,
             lifetime: lifetime);
 

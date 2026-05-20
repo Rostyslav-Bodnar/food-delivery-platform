@@ -24,6 +24,7 @@ using System.Threading.RateLimiting;
 using DF.TrackingService.API.Extensions;
 using DF.TrackingService.API.Hubs.Filters;
 using DF.TrackingService.API.Middlewares;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.SignalR;
 
@@ -83,7 +84,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5229") // адреса фронтенду
+        policy.WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:4173",
+                "http://localhost:5173",
+                "http://localhost:5229")
             .AllowAnyHeader()                     // дозволяємо всі заголовки
             .AllowAnyMethod()                   // дозволяємо всі HTTP методи
             .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
@@ -179,6 +184,7 @@ builder.Services.AddSingleton<IEventPublisher>(sp =>
 
 //Consumers
 builder.Services.AddSingleton<IConsumer, OrderCreatedConsumer>();
+builder.Services.AddSingleton<IConsumer, OrderPickedUpConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderDeliveredConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderCancelledConsumer>();
 builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
@@ -202,7 +208,11 @@ var defaultIssuer = jwtSection["Issuer"];
 var defaultAudience = jwtSection["Audience"];
 
 builder.Services
-    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -239,11 +249,13 @@ builder.Services
             {
                 var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
-                if (!string.IsNullOrEmpty(accessToken)
-                    && path.StartsWithSegments("/hubs/"))
+
+                if (!string.IsNullOrEmpty(accessToken) &&
+                    path.StartsWithSegments("/hubs/courier-tracking"))
                 {
                     context.Token = accessToken;
                 }
+
                 return Task.CompletedTask;
             }
         };
@@ -347,10 +359,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-
-app.MapHub<CourierTrackingHub>("/hubs/courier-tracking");
-
-
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -374,6 +382,8 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<CourierTrackingHub>("/hubs/courier-tracking");
 
 // /health/live = process aliveness; /health/ready = DB + RabbitMQ + Redis checks.
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions

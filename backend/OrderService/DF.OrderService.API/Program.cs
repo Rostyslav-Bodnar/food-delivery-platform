@@ -120,7 +120,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
             BackoffType = DelayBackoffType.Exponential,
             UseJitter = true,
             Delay = TimeSpan.FromSeconds(2),
-            MaxDelay = TimeSpan.FromSeconds(30),
+            MaxDelay = TimeSpan.FromSeconds(60),
             OnRetry = args =>
             {
                 logger.LogWarning(args.Outcome.Exception,

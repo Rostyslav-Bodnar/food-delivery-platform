@@ -13,8 +13,23 @@ public sealed class TrackingNotifier(IHubContext<CourierTrackingHub> hubContext)
     public Task SnapshotUpdatedAsync(OrderTrackingSnapshotDto snapshot, CancellationToken cancellationToken = default)
     {
         var groupName = $"order:{snapshot.OrderId}";
-        return hubContext.Clients
-            .Group(groupName)
-            .SendAsync("TrackingSnapshotUpdated", snapshot, cancellationToken);
+
+        var group = hubContext.Clients.Group(groupName);
+        var tasks = new List<Task>
+        {
+            group.SendAsync("TrackingSnapshotUpdated", snapshot, cancellationToken)
+        };
+
+        if (snapshot.CourierLocation is not null)
+        {
+            tasks.Add(group.SendAsync("CourierLocationUpdated", snapshot.CourierLocation, cancellationToken));
+        }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.OrderStatus))
+        {
+            tasks.Add(group.SendAsync("OrderStatusUpdated", snapshot.OrderStatus, cancellationToken));
+        }
+
+        return Task.WhenAll(tasks);
     }
 }
