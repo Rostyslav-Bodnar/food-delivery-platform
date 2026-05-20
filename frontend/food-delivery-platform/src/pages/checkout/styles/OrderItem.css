@@ -12,12 +12,6 @@
     transition: all 0.2s ease;
 }
 
-.order-item:hover {
-    border-color: rgba(124,92,255,0.35);
-    background: rgba(124,92,255,0.08);
-}
-
-
 /* ✅ IMAGE smaller */
 .order-item img {
     width: 64px;

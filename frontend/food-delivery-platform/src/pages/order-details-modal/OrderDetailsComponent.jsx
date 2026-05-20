@@ -27,7 +27,7 @@ export default function OrderDetailsComponent({ order, statusMap, onClose }) {
         eta: "18:15",
         notes: "Будь ласка, без цибулі у піці 🍕",
     };
-
+    console.log("Order data: ", mockOrder);
     return (
         <div className="od-overlay" onClick={onClose}>
             <div className="od-modal wide" onClick={e => e.stopPropagation()}>
@@ -40,13 +40,12 @@ export default function OrderDetailsComponent({ order, statusMap, onClose }) {
                     <div className="od-col">
                         <ClientInfoCard order={mockOrder} />
                         <CourierInfoCard courier={mockOrder.courier} />
-                        <NotesSection notes={mockOrder.notes} />
+                        <DeliverySection order={mockOrder} />
                     </div>
 
                     <div className="od-col">
                         <OrderItemsSection items={mockOrder.items} />
                         <PaymentSection order={mockOrder} />
-                        <DeliverySection order={mockOrder} />
                     </div>
                 </div>
 

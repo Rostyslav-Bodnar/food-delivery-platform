@@ -121,6 +121,8 @@
     display: inline-flex;
     align-items: center;
     gap: 10px;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .track-order-btn {
@@ -143,6 +145,7 @@
     background: none;
     border: none;
     cursor: pointer;
+    justify-content: center;
 }
 
 @media (max-width: 768px) {

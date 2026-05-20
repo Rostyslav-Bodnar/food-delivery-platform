@@ -39,10 +39,6 @@ export default function ActiveOrderCard({
                         <MapPin size={14} />
                         {order.address}
                     </div>
-                    <div className="order-meta-pill">
-                        <Wallet size={14} />
-                        {formatCurrency(order.total)}
-                    </div>
                 </div>
 
                 <div className="order-items-list">
