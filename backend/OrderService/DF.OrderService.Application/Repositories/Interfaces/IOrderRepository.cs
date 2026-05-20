@@ -14,4 +14,7 @@ public interface IOrderRepository : IRepository<Order>
     Task<(IReadOnlyList<Order> items, int total)> GetAllPagedAsync(int skip, int take);
 
     Task<Order?> GetWithDishesAsync(Guid id);
+    Task<bool> CreateRangeWithDishesAsync(
+        IEnumerable<Order> orders,
+        IEnumerable<OrderedDish> dishes);
 }

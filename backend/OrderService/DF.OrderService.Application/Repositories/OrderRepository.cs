@@ -103,4 +103,36 @@ public class OrderRepository(AppDbContext dbContext) : IOrderRepository
             .ToListAsync();
         return (items, total);
     }
+    public async Task<bool> CreateRangeWithDishesAsync(
+        IEnumerable<Order> orders,
+        IEnumerable<OrderedDish> dishes)
+    {
+        if (orders == null || !orders.Any())
+            return false;
+
+        var orderList = orders.ToList();
+        var dishList = dishes.ToList();
+
+        // 1. Add all orders in one batch
+        await dbContext.Orders.AddRangeAsync(orderList);
+
+        // 2. Map dishes to orders (O(1) lookup, no nested loops)
+        var orderIds = orderList.ToDictionary(x => x.Id);
+
+        foreach (var dish in dishList)
+        {
+            if (dish.OrderId == Guid.Empty)
+                throw new InvalidOperationException("OrderedDish must have OrderId before saving");
+
+            if (!orderIds.ContainsKey(dish.OrderId))
+                throw new InvalidOperationException($"Order {dish.OrderId} not found in batch");
+
+            dbContext.OrderedDishes.Add(dish);
+        }
+
+        // 3. Single DB transaction
+        await dbContext.SaveChangesAsync();
+
+        return true;
+    }
 }

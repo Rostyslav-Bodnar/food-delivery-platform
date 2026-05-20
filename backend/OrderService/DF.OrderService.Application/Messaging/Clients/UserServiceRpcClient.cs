@@ -19,6 +19,16 @@ public sealed class UserServiceRpcClient : IAsyncDisposable
     public Task<GetBusinessAccountResponse> GetBusinessAccountAsync(GetBusinessAccountRequest request, CancellationToken ct = default)
         => _rpc.CallAsync<GetBusinessAccountRequest, GetBusinessAccountResponse>("user.getbussinessaccount", request, ct);
 
+    
+    public Task<List<GetBusinessAccountResponse>> GetBusinessAccountsBatchAsync(GetBusinessAccountsBatchRequest businessIds, CancellationToken ct = default)
+        => _rpc.CallAsync<GetBusinessAccountsBatchRequest, List<GetBusinessAccountResponse>>("user.getbusinessaccountsbatch", businessIds, ct);
+    
+    public Task<List<GetCourierAccountResponse>> GetCourierAccountsBatchAsync(GetCourierAccountsBatchRequest courierIds, CancellationToken ct = default)
+        => _rpc.CallAsync<GetCourierAccountsBatchRequest, List<GetCourierAccountResponse>>("user.getcourieraccountsbatch", courierIds, ct);
+    
+    public Task<List<GetCustomerAccountResponse>> GetCustomerAccountsBatchAsync(GetCustomerAccountsBatchRequest customerIds, CancellationToken ct = default)
+        => _rpc.CallAsync<GetCustomerAccountsBatchRequest, List<GetCustomerAccountResponse>>("user.getcustomeraccountsbatch", customerIds, ct);
+
     public Task<GetCustomerAccountResponse> GetCustomerAccountAsync(GetCustomerAccountRequest request, CancellationToken ct = default)
         => _rpc.CallAsync<GetCustomerAccountRequest, GetCustomerAccountResponse>("user.getcustomeraccount", request, ct);
 
