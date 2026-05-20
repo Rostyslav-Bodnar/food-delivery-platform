@@ -9,19 +9,30 @@ using RabbitMQ.Client.Events;
 
 namespace DF.MenuService.Application.Messaging.Consumers;
 
-public class GetDishesConsumer(
+public class GetDishesBatchConsumer(
     IConnection connection,
     IServiceScopeFactory scopeFactory,
-    ILogger<GetDishesConsumer> logger)
+    ILogger<GetDishesBatchConsumer> logger)
     : RpcConsumerBase(connection, scopeFactory, logger)
 {
-    protected override string QueueName => "menu.getdishes";
+    protected override string QueueName => "menu.getdishesbatch";
 
     protected override async Task ConsumeAsync(BasicDeliverEventArgs ea)
     {
-        var request = JsonSerializer.Deserialize<GetDishesRequest>(ea.Body.Span)
-                      ?? throw new InvalidOperationException(
-                          "Empty GetDishesRequest payload");
+        var request = JsonSerializer.Deserialize<GetDishesBatchRequest>(
+            ea.Body.Span)
+            ?? throw new InvalidOperationException(
+                "Empty GetDishesBatchRequest payload");
+
+        if (request.DishIds.Count == 0)
+        {
+            await PublishReplyAsync(
+                ea.BasicProperties.ReplyTo,
+                ea.BasicProperties.CorrelationId,
+                new GetDishesResponse([]));
+
+            return;
+        }
 
         await using var scope = ScopeFactory.CreateAsyncScope();
 
@@ -31,14 +42,24 @@ public class GetDishesConsumer(
         var ingredientRepository =
             scope.ServiceProvider.GetRequiredService<IIngredientRepository>();
 
-        var dishes = request.BusinessId == Guid.Empty
-            ? []
-            : (await dishRepository
-                .GetByBusinessIdAsync(request.BusinessId))
+        var uniqueDishIds = request.DishIds
+            .Where(x => x != Guid.Empty)
+            .Distinct()
+            .ToList();
+
+        var dishTasks = uniqueDishIds.ToDictionary(
+            id => id,
+            id => dishRepository.Get(id));
+
+        await Task.WhenAll(dishTasks.Values);
+
+        var dishes = dishTasks.Values
+            .Select(x => x.Result)
+            .Where(x => x is not null)
             .ToList();
 
         var responseItems = await Task.WhenAll(
-            dishes.Select(d => MapDishAsync(d, ingredientRepository)));
+            dishes.Select(d => MapDishAsync(d!, ingredientRepository)));
 
         var response = new GetDishesResponse(
             responseItems.ToList());
