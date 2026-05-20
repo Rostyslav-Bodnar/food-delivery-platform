@@ -3,7 +3,6 @@ import { api } from "./apiClient";
 // PaymentService is now proxied via the Gateway (same baseURL as Order).
 // Backend wraps responses as { success, data, errorMassage }.
 export async function getPaymentByOrderId(orderId) {
-    debugger;
     const res = await api.get(`/payments/${orderId}`);
     return res.data.data;
 }

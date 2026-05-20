@@ -307,6 +307,17 @@
     justify-content: flex-end;
 }
 
+.courier-status-note {
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 184, 107, 0.22);
+    background: rgba(255, 184, 107, 0.08);
+    color: var(--accent-2);
+    font-weight: 700;
+    text-align: center;
+}
+
 .courier-history-item {
     align-items: center;
     padding: 14px 16px;

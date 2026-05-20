@@ -76,6 +76,12 @@ export const calculateDistanceKm = (start, end) => {
     return earthRadiusKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
+const normalizeStatusKey = (value) =>
+    String(value ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z]/g, "");
+
 const readStageMap = () => {
     try {
         return JSON.parse(localStorage.getItem(STAGE_STORAGE_KEY) ?? "{}");
@@ -84,14 +90,34 @@ const readStageMap = () => {
     }
 };
 
-export const getCourierDeliveryStage = (orderId, orderStatus) => {
+export const getCourierDeliveryStage = (orderId, orderStatus, liveStage) => {
+    const normalizedLiveStage = String(liveStage ?? "").trim().toLowerCase();
+
+    if (normalizedLiveStage === "to-customer") {
+        return "dropoff";
+    }
+
+    if (normalizedLiveStage === "to-restaurant") {
+        return "pickup";
+    }
+
+    const normalizedStatus = normalizeStatusKey(orderStatus);
+
+    if (normalizedStatus === "pickedup" || normalizedStatus === "delivered") {
+        return "dropoff";
+    }
+
+    if (["outfordelivery", "ready", "preparing"].includes(normalizedStatus)) {
+        return "pickup";
+    }
+
     const stages = readStageMap();
 
     if (stages[orderId]) {
         return stages[orderId];
     }
 
-    return orderStatus === "outfordelivery" ? "dropoff" : "pickup";
+    return "pickup";
 };
 
 export const setCourierDeliveryStage = (orderId, stage) => {
