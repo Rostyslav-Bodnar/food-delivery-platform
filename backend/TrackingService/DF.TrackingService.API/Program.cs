@@ -210,21 +210,20 @@ var defaultIssuer = jwtSection["Issuer"];
 var defaultAudience = jwtSection["Audience"];
 
 builder.Services
-    .AddAuthentication(options =>
-    {
-        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    })
-    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    .AddAuthentication()
+    .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidIssuer = defaultIssuer,
+
             ValidateAudience = true,
             ValidAudience = defaultAudience,
+
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(jwtKeyBytes),
+
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
@@ -235,27 +234,35 @@ builder.Services
         {
             ValidateIssuer = true,
             ValidIssuer = "df.orderservice",
+
             ValidateAudience = true,
             ValidAudience = "df.tracking",
+
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(jwtKeyBytes),
+
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
         };
 
-        // SignalR WebSocket clients can't set the Authorization header on the
-        // upgrade request, so the JS client supplies the token as ?access_token=.
         options.Events = new JwtBearerEvents
         {
             OnMessageReceived = context =>
             {
-                var accessToken = context.Request.Query["access_token"];
                 var path = context.HttpContext.Request.Path;
 
-                if (!string.IsNullOrEmpty(accessToken) &&
-                    path.StartsWithSegments("/hubs/courier-tracking"))
+                if (path.StartsWithSegments("/hubs/courier-tracking"))
                 {
-                    context.Token = accessToken;
+                    var token =
+                        context.Request.Query["access_token"].FirstOrDefault()
+                        ?? context.Request.Headers["Authorization"]
+                            .FirstOrDefault()?
+                            .Replace("Bearer ", "");
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        context.Token = token;
+                    }
                 }
 
                 return Task.CompletedTask;
@@ -263,7 +270,14 @@ builder.Services
         };
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("TrackingHubPolicy", policy =>
+    {
+        policy.AddAuthenticationSchemes("TrackingHub");
+        policy.RequireAuthenticatedUser();
+    });
+});
 
 builder.Services.AddMemoryCache();
 
@@ -385,7 +399,10 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.MapHub<CourierTrackingHub>("/hubs/courier-tracking");
+
+
+app.MapHub<CourierTrackingHub>("/hubs/courier-tracking")
+    .RequireAuthorization("TrackingHubPolicy");
 
 // /health/live = process aliveness; /health/ready = DB + RabbitMQ + Redis checks.
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
