@@ -99,13 +99,13 @@ const useOrderSubmit = (
         e.preventDefault();
 
         if (!formData.name || !formData.phone) {
-            alert("Будь ласка, заповніть імʼя та телефон");
+            alert("Please enter your name and phone number");
             return;
         }
 
         const orderedByRaw = localStorage.getItem("currentAccountId");
         if (!orderedByRaw) {
-            alert("Не знайдено ідентифікатор користувача");
+            alert("User ID not found");
             return;
         }
 
@@ -126,7 +126,7 @@ const useOrderSubmit = (
 
                 if (!customerLocation?.latitude || !customerLocation?.longitude) {
                     throw new Error(
-                        `Адреса клієнта не має координат (restaurant=${restaurant})`
+                        `The customer's address does not include coordinates (restaurant=${restaurant})`
                     );
                 }
 
@@ -138,7 +138,7 @@ const useOrderSubmit = (
                     );
 
                 if (normalized.length === 0) {
-                    throw new Error(`У закладу ${restaurant} немає валідних локацій`);
+                    throw new Error(`The restaurant ${restaurant} has no valid locations`);
                 }
 
                 let best = normalized[0];
@@ -164,7 +164,7 @@ const useOrderSubmit = (
 
                     const customerLocation = normalizeLocation(mapAddress);
                     if (settings.deliveryType === "delivery" && !customerLocation) {
-                        throw new Error(`Адреса доставки не вибрана для ${restaurant}`);
+                        throw new Error(`No shipping address has been selected for ${restaurant}`);
                     }
 
                     const businessLocation = await resolveBusinessLocation(
@@ -210,7 +210,7 @@ const useOrderSubmit = (
             /* -------- create orders -------- */
 
             const createdOk = await createOrders(ordersPayload);
-            if (!createdOk) throw new Error("Помилка створення замовлення");
+            if (!createdOk) throw new Error("Order creation error");
 
             /* -------- fetch fresh orders -------- */
 
@@ -273,7 +273,7 @@ const useOrderSubmit = (
             setPaymentState(nextPaymentState);
         } catch (err) {
             console.error(err);
-            alert(err.message || "Помилка при оформленні замовлення");
+            alert(err.message || "An error occurred while placing your order");
         }
     };
 

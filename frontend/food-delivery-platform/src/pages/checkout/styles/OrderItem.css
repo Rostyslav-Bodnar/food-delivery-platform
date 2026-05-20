@@ -1,66 +1,104 @@
 ﻿.order-item {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08);
-    width: 100%;
-    box-sizing: border-box;
-}
+    position: relative;
 
-    .order-item:last-child {
-        border-bottom: none;
-    }
-    
-    .order-item img {
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-        border-radius: 16px;
-        flex-shrink: 0;
-    }
-    
-.order-item-info .name {
-    font-size: 19px;
-    font-weight: 600;
-}
-
-.order-item-info .quantity {
-    font-size: 15px;
-    color: #97a0a9;
-}
-
-.order-item-price {
-    margin-left: auto;
-    font-size: 20px;
-    font-weight: 700;
     display: flex;
     align-items: center;
     gap: 12px;
-    flex-shrink: 0;
+
+    padding: 5px;
+
+    border-radius: 16px;
+
+    transition: all 0.2s ease;
 }
 
-@media (max-width: 640px) {
-    .order-item {
-        flex-direction: column;
-        text-align: center;
-        gap: 12px;
-    }
-
-    .order-item-price {
-        margin: 8px 0 0 0;
-        justify-content: center;
-    }
+.order-item:hover {
+    border-color: rgba(124,92,255,0.35);
+    background: rgba(124,92,255,0.08);
 }
 
-.remove-btn {
-    width: 42px;
-    height: 42px;
-    background: rgba(255,107,107,0.15);
-    color: #ff6b6b;
+
+/* ✅ IMAGE smaller */
+.order-item img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
     border-radius: 12px;
     flex-shrink: 0;
+}
+
+
+/* ✅ MAIN */
+.order-item-main {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+}
+
+
+/* ✅ NAME компактніше */
+.order-item-main .name {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0px;
+    color: #e6eef6;
+
+    line-height: 1.3;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* ✅ quantity + price в 1 ряд */
+.order-meta {
+    display: flex;
+    align-items: start;
+    font-size: 13.5px;
+}
+
+.quantity {
+    border-radius: 10px;
+    color: #c8d0ff;
+    font-size: 1rem;
+}
+
+.price {
+    font-size: 1rem !important;
+    color: #c8d0ff !important;
+}
+
+
+/* ✅ компактна delete кнопка */
+.remove-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+
+    width: 26px;
+    height: 26px;
+
+    border-radius: 8px;
+
+    background: rgba(255,107,107,0.15);
+    border: 1px solid rgba(255,107,107,0.25);
+
+    color: #ff6b6b;
+
     display: flex;
     align-items: center;
     justify-content: center;
+
+    cursor: pointer;
+
+    opacity: 0.7;
+    transition: all 0.2s ease;
+}
+
+.remove-btn:hover {
+    opacity: 1;
+    background: rgba(255,107,107,0.25);
+    transform: scale(1.1);
 }
