@@ -18,7 +18,7 @@ function useLockBodyScroll(isLocked) {
     }, [isLocked]);
 }
 
-const ConfirmButton = ({ label = "Сплатити", onSuccess }) => {
+const ConfirmButton = ({ label = "Pay", onSuccess }) => {
     const stripe = useStripe();
     const elements = useElements();
     const [loading, setLoading] = React.useState(false);
@@ -33,7 +33,7 @@ const ConfirmButton = ({ label = "Сплатити", onSuccess }) => {
         });
         setLoading(false);
         if (error) {
-            alert(error.message || "Оплату відхилено. Спробуйте іншу картку або метод оплати.");
+            alert(error.message || "Your payment was declined. Please try a different card or payment method.");
         } else {
             onSuccess?.();
         }
@@ -41,7 +41,7 @@ const ConfirmButton = ({ label = "Сплатити", onSuccess }) => {
 
     return (
         <button className="spm-btn spm-btn-primary" onClick={handlePay} disabled={!stripe || loading}>
-            {loading ? "Опрацьовуємо..." : label}
+            {loading ? "Processing..." : label}
         </button>
     );
 };
@@ -50,7 +50,7 @@ const StripePaymentModal = ({
                                 open,
                                 onClose,
                                 clientSecret,
-                                title = "Оплата карткою",
+                                title = "Payment by card",
                                 subtitle,
                                 onPaid
                             }) => {
@@ -143,7 +143,7 @@ const StripePaymentModal = ({
                         aria-modal="true"
                         aria-labelledby="spm-title"
                     >
-                        <button className="spm-close" onClick={onClose} aria-label="Закрити">
+                        <button className="spm-close" onClick={onClose} aria-label="Close">
                             <X size={20} />
                         </button>
 
@@ -164,7 +164,7 @@ const StripePaymentModal = ({
                                     {/* Sticky панель дій */}
                                     <div className="spm-actions">
                                         <button type="button" className="spm-btn spm-btn-ghost" onClick={onClose}>
-                                            Скасувати
+                                            Cancel
                                         </button>
                                         <ConfirmButton label="Сплатити" onSuccess={onPaid} />
                                     </div>
@@ -174,7 +174,7 @@ const StripePaymentModal = ({
 
                         <div className="spm-footer">
                             <div className="spm-badges">
-                                <span className="spm-badge">Захищено Stripe</span>
+                                <span className="spm-badge">Secured Stripe</span>
                                 <span className="spm-dot" />
                                 <span className="spm-badge">3D Secure</span>
                                 <span className="spm-dot" />

@@ -71,17 +71,15 @@
 .order-meta-stack {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 0px;
     margin-bottom: 16px;
 }
 
 .order-meta-pill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.04);
+    gap: 0px;
+    padding: 4px 12px;
     color: var(--muted-2);
     font-size: 0.9rem;
 }
@@ -165,6 +163,10 @@
     cursor: pointer;
     transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
     padding: 0 18px;
+}
+
+.details-btn {
+    justify-content: center;
 }
 
 .track-btn {

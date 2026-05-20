@@ -6,17 +6,32 @@ import "../styles/OrderItem.css";
 
 const OrderItem = ({ item, removeItem }) => {
     return (
-        <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, x: -50 }} className="order-item">
+        <motion.div
+            layout
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, x: -40 }}
+            className="order-item"
+        >
+            <button
+                type="button"
+                onClick={() => removeItem(item.id)}
+                className="remove-btn"
+            >
+                <Trash2 size={14} />
+            </button>
+
             <img src={item.image} alt={item.name} />
-            <div className="order-item-info">
+
+            <div className="order-item-main">
                 <p className="name">{item.name}</p>
-                <p className="quantity">Quantity: {item.quantity}</p>
-            </div>
-            <div className="order-item-price">
-                <span>{item.price * item.quantity} ₴</span>
-                <button type="button" onClick={() => removeItem(item.id)} className="remove-btn">
-                    <Trash2 size={20} />
-                </button>
+
+                <div className="order-meta">
+                    <span className="price">
+                        {item.price * item.quantity} ₴
+                    </span>
+                    <span className="quantity">x{item.quantity}</span>
+                </div>
             </div>
         </motion.div>
     );
