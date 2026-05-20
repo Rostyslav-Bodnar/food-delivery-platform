@@ -180,6 +180,9 @@ builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetCustomerAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetCourierAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessAccountsBatchConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCourierAccountsBatchConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCustomerAccountsBatchConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 

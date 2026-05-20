@@ -140,6 +140,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
 // Consumers
 builder.Services.AddSingleton<IConsumer, GetDishesConsumer>();
 builder.Services.AddSingleton<IConsumer, GetDishConsumer>();
+builder.Services.AddSingleton<IConsumer, GetDishesBatchConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 

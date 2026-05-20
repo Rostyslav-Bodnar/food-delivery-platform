@@ -15,6 +15,8 @@ public sealed class MenuServiceRpcClient : IAsyncDisposable
 
     public Task<GetDishesResponse> GetDishesAsync(GetDishesRequest request, CancellationToken ct = default)
         => _rpc.CallAsync<GetDishesRequest, GetDishesResponse>("menu.getdishes", request, ct);
+    public Task<GetDishesResponse> GetDishesBatchAsync(GetDishesBatchRequest request, CancellationToken ct = default)
+        => _rpc.CallAsync<GetDishesBatchRequest, GetDishesResponse>("menu.getdishesbatch", request, ct);
 
     public Task<GetDishResponse> GetDishAsync(GetDishRequest request, CancellationToken ct = default)
         => _rpc.CallAsync<GetDishRequest, GetDishResponse>("menu.getdish", request, ct);

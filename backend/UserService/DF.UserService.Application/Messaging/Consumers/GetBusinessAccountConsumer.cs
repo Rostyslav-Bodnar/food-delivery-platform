@@ -1,5 +1,6 @@
 using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.UserService;
+using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,19 +26,7 @@ public sealed class GetBusinessAccountConsumer(
             return CreateDefaultResponse();
         }
 
-        return new GetBusinessAccountResponse(
-            account.Id,
-            account.UserId,
-            account.AccountType.ToString(),
-            account.ImageUrl ?? string.Empty,
-            account.Name,
-            account.Description ?? string.Empty,
-            string.Empty, // TODO: phone number on business account
-            new List<string>(), // TODO: addresses on business account
-            account.StripeChargesEnabled ?? false,
-            account.StripePayoutsEnabled ?? false,
-            account.StripeRequirementsDue ?? string.Empty,
-            account.StripeAccountId ?? string.Empty);
+        return AccountResponseMapper.ToBusinessResponse(account);
     }
 
     protected override GetBusinessAccountResponse CreateDefaultResponse() =>
