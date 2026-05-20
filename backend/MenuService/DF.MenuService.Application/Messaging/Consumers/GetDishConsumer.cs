@@ -123,7 +123,10 @@ public class GetDishConsumer : IConsumer
         var props = new BasicProperties { CorrelationId = correlationId };
         var body = JsonSerializer.SerializeToUtf8Bytes(payload);
 
-        await _channel.BasicPublishAsync(
+        await using var publishChannel =
+            await _connection.CreateChannelAsync();
+        
+        await publishChannel.BasicPublishAsync(
             exchange: string.Empty,
             routingKey: replyTo,
             mandatory: false,

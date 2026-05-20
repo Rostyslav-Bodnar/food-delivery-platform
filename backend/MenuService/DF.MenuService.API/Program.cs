@@ -110,7 +110,7 @@ builder.Services.AddSingleton<IConnection>(sp =>
         AutomaticRecoveryEnabled = true,
         TopologyRecoveryEnabled = true,
         NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
-        RequestedHeartbeat = TimeSpan.FromSeconds(30),
+        RequestedHeartbeat = TimeSpan.FromSeconds(60),
         ClientProvidedName = "MenuService"
     };
 
