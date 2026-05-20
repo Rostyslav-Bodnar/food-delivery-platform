@@ -11,8 +11,12 @@ namespace DF.UserService.API.Controllers;
 public class ProfileController(
     IAccountService accountService,
     IUserService userService,
-    IUserContext userContext) : ControllerBase
+    IUserContext userContext,
+    IConfiguration configuration,
+    ITokenService tokenService) : ControllerBase
 {
+    private const string RefreshTokenCookieName = "refreshToken";
+    
     [HttpGet]
     public async Task<ActionResult<ProfileResponse>> GetProfile()
     {
@@ -32,10 +36,10 @@ public class ProfileController(
     }
 
     [HttpPut("switch/{accountId:guid}")]
-    public async Task<IActionResult> SwitchAccount(Guid accountId)
+    public async Task<ActionResult<TokenResponse>> SwitchAccount(Guid accountId)
     {
         var userId = userContext.UserId;
-        if(userId == null)
+        if(userId == Guid.Empty)
             throw new UnauthorizedAccessException("User is not authenticated");
 
         var user = await userService.GetUserEntityAsync(userId)
@@ -47,12 +51,31 @@ public class ProfileController(
             throw new NotFoundException("Account not found or not owned by user");
 
         user.AccountId = accountId;
+
         await userService.UpdateUserAsync(user);
 
-        return Ok(new
-        {
-            message = "Active account switched successfully",
-            newAccountId = accountId
-        });
+        // 🔥 generate NEW JWT with new account_id/account_type
+        var tokens = await tokenService.GenerateTokensAsync(user);
+
+        SetRefreshTokenCookie(tokens.RefreshToken);
+
+        return Ok(tokens);
+    }
+    
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        var refreshDays = configuration.GetValue<int>("Jwt:RefreshTokenExpirationDays");
+
+        Response.Cookies.Append(
+            RefreshTokenCookieName,
+            refreshToken,
+            new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = DateTime.UtcNow.AddDays(refreshDays)
+            }
+        );
     }
 }

@@ -58,7 +58,7 @@ export async function logout(): Promise<void> {
 // =========================
 // TOKEN STORAGE
 // =========================
-function saveTokens(tokens: TokenResponse): void {
+export function saveTokens(tokens: TokenResponse): void {
     localStorage.setItem("accessToken", tokens.accessToken)
     localStorage.setItem(
         "accessTokenExpiresAt",
