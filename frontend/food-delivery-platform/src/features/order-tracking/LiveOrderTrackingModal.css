@@ -1,152 +1,471 @@
+/* =========================================
+   LIVE ORDER TRACKING MODAL — ULTRA PREMIUM UI
+   ========================================= */
+
 .tracking-live-modal__overlay {
     position: fixed;
     inset: 0;
-    z-index: 1100;
+    z-index: 9999;
+
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 24px;
+
+    padding: 18px;
+
+    overflow: hidden;
+
     background:
-        radial-gradient(circle at top left, rgba(124, 92, 255, 0.18), transparent 32%),
-        radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.12), transparent 28%),
-        rgba(5, 10, 16, 0.82);
-    backdrop-filter: blur(16px);
+            radial-gradient(circle at top left, rgba(124, 92, 255, 0.24), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.18), transparent 24%),
+            linear-gradient(
+                    180deg,
+                    rgba(3, 8, 16, 0.84),
+                    rgba(2, 6, 14, 0.9)
+            );
+
+    backdrop-filter: blur(26px);
+    -webkit-backdrop-filter: blur(26px);
+
+    animation: trackingFadeIn 0.22s ease;
+
+    overscroll-behavior: contain;
+}
+
+@keyframes trackingFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .tracking-live-modal {
     position: relative;
-    width: min(1120px, 100%);
-    max-height: min(88vh, 920px);
-    overflow: auto;
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    background: linear-gradient(180deg, rgba(11, 15, 20, 0.98), rgba(7, 16, 20, 0.98));
+
+    width: min(1220px, 100%);
+    height: min(92vh, 920px);
+
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 34px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(12, 18, 30, 0.985),
+                    rgba(8, 13, 24, 0.99)
+            );
+
     color: var(--text);
-    box-shadow: 0 28px 80px rgba(2, 6, 23, 0.72);
+
+    box-shadow:
+            0 60px 140px rgba(0, 0, 0, 0.62),
+            0 18px 48px rgba(124, 92, 255, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+
+    animation: modalEnter 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    isolation: isolate;
 }
+
+@keyframes modalEnter {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.tracking-live-modal::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    background:
+            radial-gradient(circle at top, rgba(124, 92, 255, 0.14), transparent 36%),
+            radial-gradient(circle at bottom right, rgba(0, 212, 255, 0.1), transparent 32%);
+
+    pointer-events: none;
+}
+
+.tracking-live-modal::after {
+    content: "";
+
+    position: absolute;
+    inset: 1px;
+
+    border-radius: inherit;
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.03),
+                    transparent 12%
+            );
+
+    pointer-events: none;
+}
+
+/* =========================================
+   CONTENT SCROLL
+   ========================================= */
+
+.tracking-live-modal__content {
+    flex: 1;
+
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+
+    scrollbar-width: thin;
+    scrollbar-color: rgba(124, 92, 255, 0.8) transparent;
+}
+
+.tracking-live-modal__content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.tracking-live-modal__content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.tracking-live-modal__content::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(124, 92, 255, 0.95),
+                    rgba(0, 212, 255, 0.88)
+            );
+}
+
+/* =========================================
+   CLOSE BUTTON
+   ========================================= */
 
 .tracking-live-modal__close {
     position: absolute;
     top: 18px;
     right: 18px;
-    z-index: 2;
+    z-index: 50;
+
     width: 40px;
     height: 40px;
-    padding: 0;
-    border-radius: 12px;
-    border: 1px solid var(--glass-border);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text);
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.10);
+
+    background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.04)
+    );
+
+    color: #ffffff;
+
+    cursor: pointer;
+
+    backdrop-filter: blur(18px);
+
+    transition:
+            transform 0.2s ease,
+            background 0.2s ease,
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
+
+    /* важливо */
+    overflow: hidden;
 }
+
+/* 🔥 ВАЖЛИВО: примусово керуємо SVG */
+.tracking-live-modal__close svg {
+    width: 18px !important;
+    height: 18px !important;
+
+    display: block;
+    flex-shrink: 0;
+
+    stroke-width: 2.5; /* щоб було видно навіть маленьку іконку */
+}
+
+.tracking-live-modal__close:hover {
+    transform: translateY(-1px);
+
+    background: linear-gradient(
+            135deg,
+            rgba(124, 92, 255, 0.24),
+            rgba(0, 212, 255, 0.12)
+    );
+
+    border-color: rgba(124, 92, 255, 0.42);
+
+    box-shadow: 0 12px 28px rgba(124, 92, 255, 0.22);
+}
+/* =========================================
+   HEADER
+   ========================================= */
 
 .tracking-live-modal__header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+
     display: flex;
     justify-content: space-between;
-    gap: 24px;
-    padding: 28px 28px 12px;
+    gap: 22px;
+
+    padding: 24px 26px 18px;
+
+    backdrop-filter: blur(18px);
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(10, 15, 24, 0.92),
+                    rgba(10, 15, 24, 0.74)
+            );
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-.tracking-live-modal__header h3 {
-    margin: 10px 0 8px;
-    font-size: 30px;
-    line-height: 1.1;
-}
+.tracking-live-modal__header::after {
+    content: "";
 
-.tracking-live-modal__header p {
-    margin: 0;
-    color: var(--muted-2);
-    max-width: 640px;
+    position: absolute;
+    left: 26px;
+    right: 26px;
+    bottom: 0;
+
+    height: 1px;
+
+    background:
+            linear-gradient(
+                    90deg,
+                    rgba(124, 92, 255, 0.6),
+                    rgba(0, 212, 255, 0.24),
+                    transparent
+            );
 }
 
 .tracking-live-modal__eyebrow,
 .tracking-live-modal__label {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    gap: 7px;
+
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+
     color: var(--accent-3);
+}
+
+.tracking-live-modal__header h3 {
+    margin: 10px 0 8px;
+
+    font-size: clamp(28px, 4vw, 38px);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.04em;
+
+    color: #ffffff;
+}
+
+.tracking-live-modal__header p {
+    margin: 0;
+
+    max-width: 680px;
+
+    color: rgba(255, 255, 255, 0.64);
+
+    font-size: 14px;
+    line-height: 1.55;
 }
 
 .tracking-live-modal__header-chips {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-end;
+    align-items: flex-end;
     gap: 10px;
-    padding-right: 56px;
 }
 
 .tracking-live-modal__chip {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+
     padding: 10px 14px;
+
     border-radius: 999px;
-    background: linear-gradient(90deg, rgba(124, 92, 255, 0.18), rgba(0, 212, 255, 0.16));
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
+
+    border: 1px solid rgba(124, 92, 255, 0.22);
+
+    background:
+            linear-gradient(
+                    135deg,
+                    rgba(124, 92, 255, 0.22),
+                    rgba(0, 212, 255, 0.12)
+            );
+
+    color: #ffffff;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    backdrop-filter: blur(10px);
+
+    box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 10px 24px rgba(124, 92, 255, 0.14);
 }
 
 .tracking-live-modal__chip--muted {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--muted-2);
+    border-color: rgba(255, 255, 255, 0.08);
+
+    background: rgba(255, 255, 255, 0.045);
+
+    color: rgba(255, 255, 255, 0.74);
+
+    box-shadow: none;
 }
+
+/* =========================================
+   BODY
+   ========================================= */
 
 .tracking-live-modal__layout {
     display: grid;
-    grid-template-columns: minmax(0, 1.55fr) minmax(320px, 0.95fr);
-    gap: 20px;
-    padding: 16px 28px 28px;
+    grid-template-columns: minmax(0, 1.8fr) minmax(310px, 0.92fr);
+
+    gap: 16px;
+
+    padding: 18px 26px 24px;
 }
+
+/* =========================================
+   MAP
+   ========================================= */
 
 .tracking-live-modal__map-shell,
 .tracking-live-modal__card {
-    border: 1px solid var(--glass-border);
-    border-radius: 18px;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.015));
-    box-shadow: 0 18px 50px rgba(2, 6, 23, 0.36);
+    position: relative;
+
+    overflow: hidden;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .tracking-live-modal__map-shell {
-    overflow: hidden;
+    min-height: 610px;
 }
 
 .tracking-live-modal__map {
     width: 100%;
-    min-height: 520px;
+    height: 610px;
+
+    z-index: 1;
 }
 
+/* =========================================
+   SIDEBAR
+   ========================================= */
+
 .tracking-live-modal__sidebar {
-    display: grid;
-    gap: 14px;
-    align-content: start;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
 }
 
 .tracking-live-modal__card {
-    padding: 18px;
+    padding: 16px;
+
+    transition:
+            transform 0.2s ease,
+            border-color 0.2s ease,
+            background 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.tracking-live-modal__card::before {
+    content: "";
+
+    position: absolute;
+    inset: 0;
+
+    pointer-events: none;
+}
+
+.tracking-live-modal__card:hover {
+    transform: translateY(-2px);
+
+    border-color: rgba(124, 92, 255, 0.22);
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(255, 255, 255, 0.055),
+                    rgba(255, 255, 255, 0.03)
+            );
+
+    box-shadow:
+            0 18px 40px rgba(124, 92, 255, 0.12);
 }
 
 .tracking-live-modal__card strong {
     display: block;
+
     margin-top: 10px;
-    font-size: 17px;
-    line-height: 1.35;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.4;
+
+    color: #ffffff;
 }
 
 .tracking-live-modal__card p {
     margin: 8px 0 0;
-    color: var(--muted-2);
-    font-size: 14px;
+
+    color: rgba(255, 255, 255, 0.62);
+
+    font-size: 13px;
+    line-height: 1.5;
 }
+
+/* =========================================
+   STEPS
+   ========================================= */
 
 .tracking-live-modal__steps {
     display: grid;
-    gap: 10px;
-    padding: 0;
+    gap: 9px;
+
     margin: 14px 0 0;
+    padding: 0;
+
     list-style: none;
 }
 
@@ -154,73 +473,240 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    color: var(--muted-2);
-    font-size: 14px;
+
+    padding: 11px 12px;
+
+    border-radius: 15px;
+
+    background: rgba(255, 255, 255, 0.03);
+
+    color: rgba(255, 255, 255, 0.6);
+
+    font-size: 13px;
+    font-weight: 600;
+
+    transition:
+            all 0.22s ease;
 }
 
 .tracking-live-modal__steps li::before {
     content: "";
-    width: 10px;
-    height: 10px;
+
+    width: 11px;
+    height: 11px;
+
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+
+    background: rgba(255, 255, 255, 0.12);
+
+    flex-shrink: 0;
 }
 
 .tracking-live-modal__steps li.is-active {
-    color: var(--text);
+    transform: translateX(2px);
+
+    background:
+            linear-gradient(
+                    90deg,
+                    rgba(124, 92, 255, 0.18),
+                    rgba(0, 212, 255, 0.08)
+            );
+
+    border: 1px solid rgba(124, 92, 255, 0.16);
+
+    color: #ffffff;
 }
 
 .tracking-live-modal__steps li.is-active::before {
-    background: linear-gradient(135deg, var(--accent-2), var(--accent-3));
-    box-shadow: 0 0 0 4px rgba(124, 92, 255, 0.12);
+    background:
+            linear-gradient(
+                    135deg,
+                    var(--accent-2),
+                    var(--accent-3)
+            );
+
+    box-shadow:
+            0 0 0 5px rgba(124, 92, 255, 0.12),
+            0 0 18px rgba(124, 92, 255, 0.42);
 }
 
-@media (max-width: 960px) {
-    .tracking-live-modal__header,
+/* =========================================
+   LEAFLET
+   ========================================= */
+
+.tracking-live-modal .leaflet-container {
+    width: 100%;
+    height: 100%;
+
+    background: #0d1523;
+
+    font-family: inherit;
+
+    outline: none;
+
+    z-index: 1;
+}
+
+.tracking-live-modal .leaflet-control-container {
+    z-index: 1000;
+}
+
+.tracking-live-modal .leaflet-control-zoom {
+    border: none !important;
+
+    margin: 14px !important;
+
+    box-shadow:
+            0 18px 40px rgba(0, 0, 0, 0.32) !important;
+}
+
+.tracking-live-modal .leaflet-control-zoom a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+
+    border: none !important;
+
+    background:
+            linear-gradient(
+                    180deg,
+                    rgba(13, 18, 28, 0.96),
+                    rgba(9, 14, 24, 0.96)
+            ) !important;
+
+    color: #ffffff !important;
+
+    font-size: 18px;
+    font-weight: 700;
+
+    transition:
+            transform 0.2s ease,
+            background 0.2s ease,
+            box-shadow 0.2s ease;
+}
+
+.tracking-live-modal .leaflet-control-zoom a:hover {
+    transform: scale(1.04);
+
+    background:
+            linear-gradient(
+                    135deg,
+                    rgba(124, 92, 255, 0.95),
+                    rgba(0, 212, 255, 0.8)
+            ) !important;
+
+    box-shadow:
+            0 10px 24px rgba(124, 92, 255, 0.3);
+}
+
+.tracking-live-modal .leaflet-tooltip {
+    padding: 10px 14px;
+
+    border-radius: 14px;
+
+    border: 1px solid rgba(255, 255, 255, 0.08);
+
+    background: rgba(10, 14, 22, 0.94);
+
+    color: #ffffff;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    box-shadow:
+            0 12px 34px rgba(0, 0, 0, 0.34);
+}
+
+.tracking-live-modal .leaflet-tooltip-top::before {
+    border-top-color: rgba(10, 14, 22, 0.94);
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+
+@media (max-width: 1100px) {
     .tracking-live-modal__layout {
         grid-template-columns: 1fr;
+    }
+
+    .tracking-live-modal__map-shell {
+        min-height: 520px;
+    }
+
+    .tracking-live-modal__map {
+        height: 520px;
+    }
+
+    .tracking-live-modal__sidebar {
         display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 860px) {
+    .tracking-live-modal {
+        height: 100vh;
+        border-radius: 0;
     }
 
     .tracking-live-modal__header {
+        flex-direction: column;
         gap: 16px;
-    }
 
-    .tracking-live-modal__header h3 {
-        font-size: 24px;
+        padding: 22px 18px 16px;
     }
 
     .tracking-live-modal__header-chips {
         justify-content: flex-start;
+
         padding-right: 0;
     }
 
+    .tracking-live-modal__layout {
+        padding: 16px 18px 22px;
+    }
+
+    .tracking-live-modal__sidebar {
+        grid-template-columns: 1fr;
+    }
+
+    .tracking-live-modal__map-shell {
+        min-height: 460px;
+    }
+
     .tracking-live-modal__map {
-        min-height: 420px;
+        height: 460px;
     }
 }
 
 @media (max-width: 640px) {
     .tracking-live-modal__overlay {
-        padding: 12px;
+        padding: 0;
     }
 
-    .tracking-live-modal__header,
-    .tracking-live-modal__layout {
-        padding-left: 16px;
-        padding-right: 16px;
+    .tracking-live-modal__header h3 {
+        font-size: 26px;
     }
 
-    .tracking-live-modal__header {
-        padding-top: 20px;
-    }
-
-    .tracking-live-modal__layout {
-        padding-bottom: 16px;
+    .tracking-live-modal__map-shell {
+        min-height: 360px;
     }
 
     .tracking-live-modal__map {
-        min-height: 340px;
+        height: 360px;
+    }
+
+    .tracking-live-modal__close {
+        top: 14px;
+        right: 14px;
+
+        width: 50px;
+        height: 50px;
+    }
+
+    .tracking-live-modal__close svg {
+        width: 22px;
+        height: 22px;
     }
 }
