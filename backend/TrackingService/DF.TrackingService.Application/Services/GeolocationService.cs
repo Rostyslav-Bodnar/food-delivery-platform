@@ -1,11 +1,22 @@
 ﻿using System.Globalization;
 using System.Text.Json;
 using DF.TrackingService.Contracts.Models.Responses;
+using Microsoft.Extensions.Configuration;
 
 namespace DF.TrackingService.Application.Services
 {
-    public class GeolocationService(HttpClient httpClient, string apiKey)
+    public class GeolocationService
     {
+        private readonly HttpClient httpClient;
+        private readonly string apiKey;
+
+        public GeolocationService(HttpClient httpClient, IConfiguration configuration)
+        {
+            this.httpClient = httpClient;
+            apiKey = configuration["Geolocation:ApiKey"]
+                     ?? throw new InvalidOperationException("Geolocation:ApiKey is not configured");
+        }
+
         /// <summary>
         /// Forward geocoding: Convert address string to coordinates
         /// </summary>

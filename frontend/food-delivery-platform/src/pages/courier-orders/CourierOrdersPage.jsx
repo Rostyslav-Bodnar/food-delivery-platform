@@ -21,6 +21,8 @@ import {
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
 import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
+import useCourierTracking from "../../hooks/useCourierTracking.jsx";
+import useCourierEta from "../../hooks/useCourierEta.js";
 import CourierRouteMap from "./components/CourierRouteMap.jsx";
 import {
     calculateDistanceKm,
@@ -56,8 +58,15 @@ export default function CourierOrdersPage() {
     const [loading, setLoading] = useState(true);
 
     const activeOrder = activeOrders[0] ?? null;
+    const { snapshot, status: trackingSubscriptionStatus } = useCourierTracking(activeOrder?.id, {
+        enabled: Boolean(activeOrder)
+    });
     const deliveryStage = activeOrder
-        ? getCourierDeliveryStage(activeOrder.id, activeOrder.orderStatus)
+        ? getCourierDeliveryStage(
+            activeOrder.id,
+            snapshot?.orderStatus ?? activeOrder.orderStatus,
+            snapshot?.stage
+        )
         : "pickup";
     const trackingStage = activeOrder
         ? deliveryStage === "pickup"
@@ -70,7 +79,13 @@ export default function CourierOrdersPage() {
         courierId,
         position: courierPosition,
         stage: trackingStage,
-        enabled: Boolean(isOnline && activeOrder)
+        enabled: Boolean(isOnline && activeOrder?.id)
+    });
+
+    const etaSeconds = useCourierEta({
+        route,
+        position: courierPosition,
+        intervalSeconds: 30
     });
 
     useEffect(() => {
@@ -99,6 +114,78 @@ export default function CourierOrdersPage() {
 
         return () => navigator.geolocation.clearWatch(watchId);
     }, []);
+
+    useEffect(() => {
+        if (!activeOrder || !snapshot) {
+            return;
+        }
+
+        const snapshotStatus = Number(snapshot.orderStatus);
+
+        if (
+            snapshot.stage === "to-customer" ||
+            snapshotStatus === OrderStatus.PickedUp
+        ) {
+            setCourierDeliveryStage(activeOrder.id, "dropoff");
+
+            setActiveOrders(current =>
+                current.map(order =>
+                    order.id === activeOrder.id
+                        ? {
+                            ...order,
+                            orderStatus: OrderStatus.PickedUp
+                        }
+                        : order
+                )
+            );
+        }
+
+        if (
+            snapshot.stage === "cancelled" ||
+            snapshotStatus === OrderStatus.Canceled
+        ) {
+            clearCourierDeliveryStage(activeOrder.id);
+            setActiveOrders([]);
+            setRoute(null);
+        }
+
+        if (
+            snapshot.stage === "delivered" ||
+            snapshotStatus === OrderStatus.Delivered
+        ) {
+            clearCourierDeliveryStage(activeOrder.id);
+
+            setHistory(current => {
+                if (current.some(order => order.id === activeOrder.id))
+                    return current;
+
+                return [
+                    {
+                        ...activeOrder,
+                        orderStatus: OrderStatus.Delivered
+                    },
+                    ...current
+                ];
+            });
+
+
+            setActiveOrders(current => {
+                const alreadyUpdated = current.some(
+                    o => o.id === activeOrder.id && o.orderStatus === OrderStatus.PickedUp
+                );
+
+                if (alreadyUpdated) return current;
+
+                return current.map(order =>
+                    order.id === activeOrder.id
+                        ? { ...order, orderStatus: OrderStatus.PickedUp }
+                        : order
+                );
+            })
+
+            setRoute(null);
+        }
+    }, [activeOrder?.id, snapshot?.stage, snapshot?.orderStatus]);
 
     useEffect(() => {
         if (!courierId) {
@@ -151,10 +238,7 @@ export default function CourierOrdersPage() {
                 return;
             }
 
-            const start =
-                deliveryStage === "pickup"
-                    ? courierPosition
-                    : activeOrder.businessLocation;
+            const start = courierPosition;
             const end =
                 deliveryStage === "pickup"
                     ? activeOrder.businessLocation
@@ -213,7 +297,7 @@ export default function CourierOrdersPage() {
 
         const markers = [];
 
-        if (deliveryStage === "pickup" && hasCoordinates(courierPosition)) {
+        if (hasCoordinates(courierPosition)) {
             markers.push({
                 key: "courier",
                 label: "Your location",
@@ -258,23 +342,6 @@ export default function CourierOrdersPage() {
         }
     };
 
-    const handlePickedUp = async () => {
-        if (!activeOrder) {
-            return;
-        }
-
-        try {
-            setActionLoading(activeOrder.id);
-            setCourierDeliveryStage(activeOrder.id, "dropoff");
-            await publishStage("to-customer");
-            setRoute(null);
-        } catch (error) {
-            console.error("Failed to update pickup status", error);
-        } finally {
-            setActionLoading("");
-        }
-    };
-
     const handleDelivered = async () => {
         if (!activeOrder) {
             return;
@@ -296,15 +363,16 @@ export default function CourierOrdersPage() {
     };
 
     const routeSummary = route
-        ? `${formatRouteDistance(route.distanceMeters)} | ${formatRouteDuration(route.durationSeconds)}`
+        ? `${formatRouteDistance(route.distanceMeters)} | ${formatRouteDuration(etaSeconds ?? route.durationSeconds)}`
         : "Route will appear once coordinates are available";
 
     const trackingStatusLabel = activeOrder
-        ? trackingConnectionStatus === "connected"
+        ? trackingConnectionStatus === "connected" && trackingSubscriptionStatus === "connected"
             ? "Live tracking broadcasting"
-            : trackingConnectionStatus === "connecting"
+            : trackingConnectionStatus === "connecting" || trackingSubscriptionStatus === "connecting"
                 ? "Connecting live tracking"
                 : trackingConnectionStatus === "error"
+                    || trackingSubscriptionStatus === "error"
                     ? "Live tracking unavailable"
                     : "Live tracking paused"
         : "Location synced";
@@ -469,7 +537,7 @@ export default function CourierOrdersPage() {
                                             <strong>
                                                 {deliveryStage === "pickup"
                                                     ? "Courier -> Restaurant"
-                                                    : "Restaurant -> Customer"}
+                                                    : "Courier -> Customer"}
                                             </strong>
                                         </div>
                                         <div>
@@ -510,14 +578,9 @@ export default function CourierOrdersPage() {
 
                                     <div className="courier-active-actions">
                                         {deliveryStage === "pickup" ? (
-                                            <button
-                                                type="button"
-                                                className="courier-primary-btn"
-                                                onClick={handlePickedUp}
-                                                disabled={actionLoading === activeOrder.id}
-                                            >
-                                                {actionLoading === activeOrder.id ? "Updating..." : "Order picked up"}
-                                            </button>
+                                            <div className="courier-status-note">
+                                                Waiting for the restaurant to confirm pickup.
+                                            </div>
                                         ) : (
                                             <button
                                                 type="button"

@@ -135,11 +135,15 @@ namespace DF.UserService.Infrastructure.Migrations
 
                     b.Property<string>("WebhookId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("ProcessedWebhooks");
+                    b.HasIndex("WebhookId")
+                        .IsUnique();
+
+                    b.ToTable("ProcessedWebhooks", (string)null);
                 });
 
             modelBuilder.Entity("DF.UserService.Domain.Entities.RefreshToken", b =>
@@ -148,17 +152,37 @@ namespace DF.UserService.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<DateTime>("Expires")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("ReplacedByHash")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<DateTime?>("RevokedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -408,8 +432,22 @@ namespace DF.UserService.Infrastructure.Migrations
                     b.Property<bool?>("StripePayoutsEnabled")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("StripeProvisioningAttempts")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("StripeProvisioningLastAttemptUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("StripeProvisioningLastError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
                     b.Property<string>("StripeRequirementsDue")
                         .HasColumnType("text");
+
+                    b.HasIndex("StripeAccountId");
+
+                    b.HasIndex("StripeProvisioningLastAttemptUtc");
 
                     b.ToTable("BusinessAccounts", (string)null);
                 });
@@ -507,7 +545,7 @@ namespace DF.UserService.Infrastructure.Migrations
                     b.HasOne("DF.UserService.Domain.Entities.Account", "CurrentAccount")
                         .WithMany()
                         .HasForeignKey("AccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CurrentAccount");
                 });

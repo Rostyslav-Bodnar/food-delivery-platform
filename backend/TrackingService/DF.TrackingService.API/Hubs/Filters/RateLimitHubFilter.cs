@@ -3,17 +3,10 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace DF.TrackingService.API.Hubs.Filters;
 
-public class RateLimitHubFilter : IHubFilter
+public class RateLimitHubFilter(IMemoryCache cache) : IHubFilter
 {
-    private readonly IMemoryCache _cache;
-
     // ✅ 1 update / 3 seconds
     private static readonly TimeSpan Window = TimeSpan.FromSeconds(3);
-
-    public RateLimitHubFilter(IMemoryCache cache)
-    {
-        _cache = cache;
-    }
 
     public async ValueTask<object?> InvokeMethodAsync(
         HubInvocationContext invocationContext,
@@ -24,22 +17,22 @@ public class RateLimitHubFilter : IHubFilter
             return await next(invocationContext);
         }
 
-        var userId = invocationContext.Context.User?.FindFirst("sub")?.Value;
+        var accountId = invocationContext.Context.User?.FindFirst("account_id")?.Value;
         var orderId = invocationContext.Context.User?.FindFirst("order_id")?.Value;
 
-        if (string.IsNullOrWhiteSpace(userId) || string.IsNullOrWhiteSpace(orderId))
+        if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(orderId))
         {
             throw new HubException("Unauthorized");
         }
 
-        var key = $"ratelimit:{userId}:{orderId}";
+        var key = $"ratelimit:{accountId}:{orderId}";
 
-        if (_cache.TryGetValue(key, out _))
+        if (cache.TryGetValue(key, out _))
         {
             throw new HubException("Rate limit exceeded");
         }
 
-        _cache.Set(key, true, Window);
+        cache.Set(key, true, Window);
 
         return await next(invocationContext);
     }

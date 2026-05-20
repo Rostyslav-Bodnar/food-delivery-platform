@@ -5,7 +5,7 @@ namespace DF.UserService.Application.Services.Interfaces;
 public interface IStripeConnectService
 {
     /// <summary>Створити Connected Account (Express)</summary>
-    Task<string> CreateExpressAccountAsync(string email, string country, CancellationToken ct = default);
+    Task<string> CreateExpressAccountAsync(string email, string country, string? idempotencyKey = null, CancellationToken ct = default);
 
     /// <summary>Згенерувати hosted onboarding link для завершення KYC/банківських реквізитів</summary>
     Task<string> CreateOnboardingLinkAsync(string accountId, string returnUrl, string refreshUrl, CancellationToken ct = default);

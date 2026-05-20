@@ -86,28 +86,36 @@ public class RabbitMQEventBus : IEventBus, IDisposable
         _ = SubscribeAsync(handler);
     }
 
+    // Dedicated channels per subscriber so a handler crash that kills the channel
+    // can't take publish + every other consumer down with it.
+    private readonly List<IChannel> _subscriberChannels = new();
+
     public async Task SubscribeAsync<TEvent>(Func<TEvent, Task> handler, string? queueName = null, CancellationToken cancellationToken = default)
         where TEvent : class
     {
         var eventName = typeof(TEvent).Name;
         queueName ??= $"{eventName}.queue";
 
-        await _channel.QueueDeclareAsync(queueName, durable: true, exclusive: false, autoDelete: false);
-        await _channel.QueueBindAsync(queueName, _exchangeName, routingKey: eventName);
+        var subscriberChannel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        await subscriberChannel.BasicQosAsync(0, _prefetchCount, false, cancellationToken: cancellationToken);
+        lock (_subscriberChannels) { _subscriberChannels.Add(subscriberChannel); }
+
+        await subscriberChannel.QueueDeclareAsync(queueName, durable: true, exclusive: false, autoDelete: false, cancellationToken: cancellationToken);
+        await subscriberChannel.QueueBindAsync(queueName, _exchangeName, routingKey: eventName, cancellationToken: cancellationToken);
 
         var retryQueue = $"{queueName}.retry";
-        await _channel.QueueDeclareAsync(retryQueue, durable: true, exclusive: false, autoDelete: false, arguments: new Dictionary<string, object?>
+        await subscriberChannel.QueueDeclareAsync(retryQueue, durable: true, exclusive: false, autoDelete: false, arguments: new Dictionary<string, object?>
         {
             ["x-dead-letter-exchange"] = _exchangeName,
             ["x-dead-letter-routing-key"] = eventName
-        });
-        await _channel.QueueBindAsync(retryQueue, _retryExchangeName, routingKey: eventName);
+        }, cancellationToken: cancellationToken);
+        await subscriberChannel.QueueBindAsync(retryQueue, _retryExchangeName, routingKey: eventName, cancellationToken: cancellationToken);
 
         var dlq = $"{queueName}.dlq";
-        await _channel.QueueDeclareAsync(dlq, durable: true, exclusive: false, autoDelete: false);
-        await _channel.QueueBindAsync(dlq, _deadExchangeName, routingKey: eventName);
+        await subscriberChannel.QueueDeclareAsync(dlq, durable: true, exclusive: false, autoDelete: false, cancellationToken: cancellationToken);
+        await subscriberChannel.QueueBindAsync(dlq, _deadExchangeName, routingKey: eventName, cancellationToken: cancellationToken);
 
-        var consumer = new AsyncEventingBasicConsumer(_channel);
+        var consumer = new AsyncEventingBasicConsumer(subscriberChannel);
 
         consumer.ReceivedAsync += async (_, ea) =>
         {
@@ -115,7 +123,6 @@ public class RabbitMQEventBus : IEventBus, IDisposable
             var headers = ea.BasicProperties?.Headers ?? new Dictionary<string, object?>();
             var retryCount = GetRetryCount(headers);
 
-            // ✅ Кожне повідомлення обробляємо у власному scope
             using var scope = _scopeFactory.CreateScope();
             var store = scope.ServiceProvider.GetRequiredService<IProcessedMessageStore>();
 
@@ -123,7 +130,7 @@ public class RabbitMQEventBus : IEventBus, IDisposable
             {
                 if (await store.ExistsAsync(messageId, cancellationToken))
                 {
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    await subscriberChannel.BasicAckAsync(ea.DeliveryTag, false);
                     return;
                 }
 
@@ -132,14 +139,14 @@ public class RabbitMQEventBus : IEventBus, IDisposable
                 if (@event is null)
                 {
                     await PublishToDeadAsync(eventName, json, ea.BasicProperties);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    await subscriberChannel.BasicAckAsync(ea.DeliveryTag, false);
                     return;
                 }
 
                 await handler(@event);
 
                 await store.MarkProcessedAsync(messageId, cancellationToken);
-                await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                await subscriberChannel.BasicAckAsync(ea.DeliveryTag, false);
             }
             catch
             {
@@ -148,17 +155,17 @@ public class RabbitMQEventBus : IEventBus, IDisposable
                 {
                     var delayMs = ComputeDelay(nextRetry);
                     await PublishToRetryAsync(eventName, ea.Body.ToArray(), ea.BasicProperties, nextRetry, delayMs);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    await subscriberChannel.BasicAckAsync(ea.DeliveryTag, false);
                 }
                 else
                 {
                     await PublishToDeadAsync(eventName, Encoding.UTF8.GetString(ea.Body.ToArray()), ea.BasicProperties);
-                    await _channel.BasicAckAsync(ea.DeliveryTag, false);
+                    await subscriberChannel.BasicAckAsync(ea.DeliveryTag, false);
                 }
             }
         };
 
-        await _channel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer);
+        await subscriberChannel.BasicConsumeAsync(queue: queueName, autoAck: false, consumer: consumer, cancellationToken: cancellationToken);
     }
 
     private static string ComputeMessageId(byte[] body)
@@ -242,11 +249,21 @@ public class RabbitMQEventBus : IEventBus, IDisposable
     {
         try
         {
+            lock (_subscriberChannels)
+            {
+                foreach (var ch in _subscriberChannels)
+                {
+                    try { ch.CloseAsync().GetAwaiter().GetResult(); } catch { }
+                    try { ch.Dispose(); } catch { }
+                }
+                _subscriberChannels.Clear();
+            }
+
             _channel?.CloseAsync().GetAwaiter().GetResult();
             _channel?.Dispose();
-            _connection.CloseAsync().GetAwaiter().GetResult();
-            _connection?.Dispose();
+            // IConnection is registered as Singleton and owned by DI — do NOT dispose it here
+            // or every other consumer/publisher dies on bus shutdown.
         }
-        catch { }
+        catch { /* best-effort */ }
     }
 }

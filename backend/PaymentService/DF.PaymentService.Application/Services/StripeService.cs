@@ -47,7 +47,7 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
     }
 
     // ✅ Виправлено: рефандимо по реальному StripePaymentIntentId
-    public async Task<string> RefundAsync(Payment payment, decimal? amount = null, CancellationToken ct = default)
+    public async Task<string> RefundAsync(Payment payment, decimal? amount = null, string? idempotencyKey = null, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
             throw new InvalidOperationException("Cannot refund: StripePaymentIntentId is missing.");
@@ -60,8 +60,13 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
             Amount = amount.HasValue ? ToMinorUnits(new Money(amount.Value, payment.Amount.Currency)) : null
         };
 
+        var requestOptions = new RequestOptions
+        {
+            IdempotencyKey = idempotencyKey ?? $"refund_{payment.Id}_{amount?.ToString() ?? "full"}"
+        };
+
         var refund = await ExecuteWithRetryAsync(
-            () => refundService.CreateAsync(options, requestOptions: null, ct),
+            () => refundService.CreateAsync(options, requestOptions, ct),
             ct);
 
         return refund.Id;
@@ -148,7 +153,7 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
     }
 
     // Рефанд для Destination: reverse_transfer = true (щоб Stripe витягнув частку з акаунта ресторану)
-    public async Task<string> RefundDestinationAsync(Payment payment, decimal? amount = null, CancellationToken ct = default)
+    public async Task<string> RefundDestinationAsync(Payment payment, decimal? amount = null, string? idempotencyKey = null, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
             throw new InvalidOperationException("Cannot refund: StripePaymentIntentId is missing.");
@@ -162,8 +167,13 @@ public sealed class StripeService(IOptions<StripeOptions> options) : IStripeServ
             ReverseTransfer = true // критично для Destination‑флоу
         };
 
+        var requestOptions = new RequestOptions
+        {
+            IdempotencyKey = idempotencyKey ?? $"refund_dest_{payment.Id}_{amount?.ToString() ?? "full"}"
+        };
+
         var refund = await ExecuteWithRetryAsync(
-            () => refundService.CreateAsync(options, requestOptions: null, ct),
+            () => refundService.CreateAsync(options, requestOptions, ct),
             ct);
 
         return refund.Id;

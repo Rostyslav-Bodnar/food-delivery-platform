@@ -1,6 +1,7 @@
 ﻿using DF.Contracts.Gateway.Responses;
 using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
@@ -34,7 +35,7 @@ public class UserController(IUserService userService, IUserContext userContext) 
         var users = await userService.GetAllUsers();
 
         if (!users.Any())
-            throw new NullReferenceException("No users found");
+            throw new NotFoundException("No users found");
 
         return Ok(users);
     }

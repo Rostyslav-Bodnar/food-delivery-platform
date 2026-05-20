@@ -22,7 +22,7 @@ public class StripeConnectService : IStripeConnectService
         _logger = logger;
     }
 
-    public async Task<string> CreateExpressAccountAsync(string email, string country, CancellationToken ct = default)
+    public async Task<string> CreateExpressAccountAsync(string email, string country, string? idempotencyKey = null, CancellationToken ct = default)
     {
         var service = new Stripe.AccountService(_client);
         var create = new AccountCreateOptions
@@ -32,7 +32,10 @@ public class StripeConnectService : IStripeConnectService
             Email = email
         };
 
-        var req = new RequestOptions { IdempotencyKey = $"acc_create_{email}_{country}".ToLowerInvariant() };
+        var req = new RequestOptions
+        {
+            IdempotencyKey = idempotencyKey ?? $"acc_create_{email}_{country}".ToLowerInvariant()
+        };
 
         var acc = await ExecuteWithRetryAsync(
             () => service.CreateAsync(create, req, ct), ct);

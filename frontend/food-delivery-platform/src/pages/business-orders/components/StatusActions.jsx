@@ -28,9 +28,21 @@ export default function StatusActions({
             )}
 
             {status === "ready" && (
-                <button onClick={() => onStatusChange(orderId, "delivered")}>
-                    Delivered
+                <span className="status-actions__note">
+                    Waiting for courier
+                </span>
+            )}
+
+            {status === "on-the-way" && (
+                <button onClick={() => onStatusChange(orderId, "picked-up")}>
+                    Picked up
                 </button>
+            )}
+
+            {status === "picked-up" && (
+                <span className="status-actions__note">
+                    Courier to customer
+                </span>
             )}
         </div>
     );

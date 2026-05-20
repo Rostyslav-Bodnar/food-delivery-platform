@@ -1,5 +1,8 @@
 using DF.Contracts.Gateway.Requests.Dish;
+using DF.MenuService.API.Filters;
 using DF.MenuService.Application.Services.Interfaces;
+using DF.MenuService.Contracts.Exceptions;
+using DF.MenuService.Contracts.Pagination;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.MenuService.API.Controllers;
@@ -9,10 +12,13 @@ namespace DF.MenuService.API.Controllers;
 public class DishController(IDishService dishService) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var dishes = await dishService.GetAllAsync();
-        return Ok(dishes);
+        var result = await dishService.GetPagedAsync(PageRequest.From(page, pageSize));
+        // Pagination still runs server-side; expose meta via headers so the wire shape
+        // stays a flat array (what the gateway + frontend currently deserialize).
+        AppendPaginationHeaders(result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        return Ok(result.Items);
     }
 
     [HttpGet("{id:guid}")]
@@ -21,7 +27,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var dish = await dishService.GetByIdAsync(id);
 
         if (dish == null)
-            throw new NullReferenceException("Dish not found");
+            throw new NotFoundException("Dish not found");
 
         return Ok(dish);
     }
@@ -32,27 +38,33 @@ public class DishController(IDishService dishService) : ControllerBase
         var result = await dishService.GetDishForCustomerAsync(id);
         
         if (result == null)
-            throw new NullReferenceException("Dish not found");
+            throw new NotFoundException("Dish not found");
 
         return Ok(result);
     }
 
     [HttpGet("customer")]
-    public async Task<IActionResult> GetAllForCustomer()
+    public async Task<IActionResult> GetAllForCustomer([FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var dishes = await dishService.GetAllDishForCustomerAsync();
-        return Ok(dishes);
+        var result = await dishService.GetAllForCustomerPagedAsync(PageRequest.From(page, pageSize));
+        AppendPaginationHeaders(result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        return Ok(result.Items);
     }
 
     [HttpGet("customer/{businessId:guid}/dish")]
-    public async Task<IActionResult> GetByBusinessIdForCustomer(Guid businessId)
+    public async Task<IActionResult> GetByBusinessIdForCustomer(Guid businessId, [FromQuery] int? page, [FromQuery] int? pageSize)
     {
-        var result =  await dishService.GetDishesForCustomerByBusinessIdAsync(businessId);
-        
-        if (result == null)
-            throw new NullReferenceException("Dish not found");
+        var result = await dishService.GetForCustomerByBusinessPagedAsync(businessId, PageRequest.From(page, pageSize));
+        AppendPaginationHeaders(result.Page, result.PageSize, result.TotalCount, result.TotalPages);
+        return Ok(result.Items);
+    }
 
-        return Ok(result);
+    private void AppendPaginationHeaders(int page, int pageSize, int totalCount, int totalPages)
+    {
+        Response.Headers["X-Pagination-Page"] = page.ToString();
+        Response.Headers["X-Pagination-PageSize"] = pageSize.ToString();
+        Response.Headers["X-Pagination-TotalCount"] = totalCount.ToString();
+        Response.Headers["X-Pagination-TotalPages"] = totalPages.ToString();
     }
 
     [HttpGet("{businessId:guid}/dish")]
@@ -61,7 +73,7 @@ public class DishController(IDishService dishService) : ControllerBase
         var result =  await dishService.GetByBusinessId(businessId);
         
         if (result == null)
-            throw new NullReferenceException("Dish not found");
+            throw new NotFoundException("Dish not found");
 
         return Ok(result);
     }
@@ -74,6 +86,7 @@ public class DishController(IDishService dishService) : ControllerBase
     }
     
     [HttpPost("create")]
+    [Idempotent]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> CreateDish([FromForm] CreateDishRequest request)
     {

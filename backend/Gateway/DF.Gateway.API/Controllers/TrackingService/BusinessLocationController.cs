@@ -34,8 +34,7 @@ public class BusinessLocationController(GatewayProxy proxy) : ControllerBase
     // CREATE BUSINESS LOCATION
     // =========================
     [HttpPost]
-    public Task<Response<BusinessLocationResponse>> CreateBusinessLocation(
-        [FromBody] CreateBusinessLocationRequest request)
+    public Task<Response<BusinessLocationResponse>> CreateBusinessLocation()
         => proxy.ProxyAsync<BusinessLocationResponse>(HttpContext);
 
     // =========================

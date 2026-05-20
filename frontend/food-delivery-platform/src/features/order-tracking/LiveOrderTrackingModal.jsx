@@ -139,6 +139,7 @@ export default function LiveOrderTrackingModal({
     order,
     onClose
 }) {
+
     const { snapshot, status } = useCourierTracking(order?.id, {
         enabled: Boolean(order?.id)
     });
@@ -169,10 +170,8 @@ export default function LiveOrderTrackingModal({
             ? order.courierLocation
             : null;
 
-    const trackingStage = resolveTrackingStage(
-        order?.rawStatus ?? order?.orderStatus,
-        snapshot?.stage
-    );
+    const effectiveOrderStatus = snapshot?.orderStatus ?? order?.rawStatus ?? order?.orderStatus;
+    const trackingStage = resolveTrackingStage(effectiveOrderStatus, snapshot?.stage);
     const trackingMeta = getTrackingStageMeta(trackingStage);
 
     const routeDestination =
@@ -281,8 +280,9 @@ export default function LiveOrderTrackingModal({
 
     const preparingActive =
         ![TRACKING_STAGE.cancelled].includes(trackingStage) &&
-        String(order.rawStatus ?? order.orderStatus ?? "").toLowerCase() !== "new";
+        String(effectiveOrderStatus ?? "").toLowerCase() !== "new";
     const pickupActive = [TRACKING_STAGE.toRestaurant, TRACKING_STAGE.toCustomer, TRACKING_STAGE.delivered].includes(trackingStage);
+    const pickedUpActive = [TRACKING_STAGE.toCustomer, TRACKING_STAGE.delivered].includes(trackingStage);
     const dropoffActive = [TRACKING_STAGE.toCustomer, TRACKING_STAGE.delivered].includes(trackingStage);
     const deliveredActive = trackingStage === TRACKING_STAGE.delivered;
 
@@ -413,6 +413,7 @@ export default function LiveOrderTrackingModal({
                             <ul className="tracking-live-modal__steps">
                                 <li className={preparingActive ? "is-active" : ""}>Order in progress</li>
                                 <li className={pickupActive ? "is-active" : ""}>Courier to restaurant</li>
+                                <li className={pickedUpActive ? "is-active" : ""}>Picked up</li>
                                 <li className={dropoffActive ? "is-active" : ""}>Courier to customer</li>
                                 <li className={deliveredActive ? "is-active" : ""}>Delivered</li>
                             </ul>

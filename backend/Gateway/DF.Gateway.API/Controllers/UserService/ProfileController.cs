@@ -24,6 +24,6 @@ public class ProfileController(GatewayProxy proxy) : ControllerBase
     // SWITCH ACCOUNT
     // =========================
     [HttpPut("switch/{accountId:guid}")]
-    public Task<Response<object>> SwitchAccount(Guid accountId)
-        => proxy.ProxyAsync<object>(HttpContext);
+    public Task<Response<TokenResponse>> SwitchAccount(Guid accountId)
+        => proxy.ProxyAsync<TokenResponse>(HttpContext);
 }

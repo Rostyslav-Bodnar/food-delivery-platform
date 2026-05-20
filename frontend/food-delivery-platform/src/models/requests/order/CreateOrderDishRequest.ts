@@ -1,4 +1,5 @@
-﻿export interface CreateOrderDishRequest {
-    orderId : string
-    dishId : string
+export interface CreateOrderDishRequest {
+    orderId: string
+    dishId: string
+    quantity?: number
 }

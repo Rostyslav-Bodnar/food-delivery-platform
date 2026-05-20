@@ -8,15 +8,69 @@ using DF.OrderService.Application.Repositories;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services;
 using DF.OrderService.Application.Services.Interfaces;
+using DF.OrderService.Application.Validation;
 using DF.OrderService.Infrastructure.Data;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Polly;
+using Polly.Retry;
 using RabbitMQ.Client;
+using Serilog;
+using Serilog.Formatting.Compact;
+using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
+
+const string ServiceName = "OrderService";
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("service", ServiceName)
+    .WriteTo.Console(new CompactJsonFormatter())
+    .CreateBootstrapLogger();
+
+try
+{
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("service", ServiceName)
+    .WriteTo.Console(new CompactJsonFormatter()));
+
+var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+                   ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(ServiceName))
+    .WithTracing(t =>
+    {
+        t.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation();
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            t.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint));
+    })
+    .WithMetrics(m =>
+    {
+        m.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation();
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            m.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint));
+    });
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// FluentValidation — register all validators from the Application assembly, run automatically.
+builder.Services.AddValidatorsFromAssemblyContaining<CreateOrderRequestValidator>();
+builder.Services.AddFluentValidationAutoValidation();
 
 // 🔹 Swagger
 // Swagger / OpenAPI
@@ -41,26 +95,63 @@ builder.Services.AddDbContext<AppDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")
     ));
 
-// RabbitMQ connection
+// RabbitMQ connection — auto-recovering, retried on startup
 builder.Services.AddSingleton<IConnection>(sp =>
 {
+    var rabbitUrl = builder.Configuration["RabbitMQ:Url"];
+    if (string.IsNullOrWhiteSpace(rabbitUrl))
+        throw new InvalidOperationException("RabbitMQ:Url is missing or empty in configuration");
+
     var factory = new ConnectionFactory
     {
-        Uri = new Uri(builder.Configuration["RabbitMQ:Url"]
-                      ?? throw new InvalidOperationException("RabbitMQ Url is missing"))
+        Uri = new Uri(rabbitUrl),
+        AutomaticRecoveryEnabled = true,
+        TopologyRecoveryEnabled = true,
+        NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
+        RequestedHeartbeat = TimeSpan.FromSeconds(30),
+        ClientProvidedName = "OrderService"
     };
-    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    var retry = new ResiliencePipelineBuilder()
+        .AddRetry(new RetryStrategyOptions
+        {
+            MaxRetryAttempts = 8,
+            BackoffType = DelayBackoffType.Exponential,
+            UseJitter = true,
+            Delay = TimeSpan.FromSeconds(2),
+            MaxDelay = TimeSpan.FromSeconds(60),
+            OnRetry = args =>
+            {
+                logger.LogWarning(args.Outcome.Exception,
+                    "RabbitMQ connect attempt {Attempt} failed; retrying in {Delay}",
+                    args.AttemptNumber + 1, args.RetryDelay);
+                return ValueTask.CompletedTask;
+            }
+        })
+        .Build();
+
+    return retry.ExecuteAsync(async ct => await factory.CreateConnectionAsync(ct))
+        .AsTask().GetAwaiter().GetResult();
 });
 
-// RPC clients
-builder.Services.AddSingleton<UserServiceRpcClient>();
-builder.Services.AddSingleton<MenuServiceRpcClient>();
-builder.Services.AddSingleton<TrackingServiceRpcClient>();
+// RPC clients — async factories so the channel + reply queue are set up without blocking the constructor
+builder.Services.AddSingleton(sp =>
+    UserServiceRpcClient.CreateAsync(sp.GetRequiredService<IConnection>()).GetAwaiter().GetResult());
+builder.Services.AddSingleton(sp =>
+    MenuServiceRpcClient.CreateAsync(sp.GetRequiredService<IConnection>()).GetAwaiter().GetResult());
+builder.Services.AddSingleton(sp =>
+    TrackingServiceRpcClient.CreateAsync(sp.GetRequiredService<IConnection>()).GetAwaiter().GetResult());
 builder.Services.Configure<CourierCompensationOptions>(
     builder.Configuration.GetSection("CourierCompensation"));
 
-//EventPublishers
-builder.Services.AddSingleton<IEventPublisher, OrderEventPublisher>();
+//EventPublishers — async factory so the exchange is declared before the first publish
+builder.Services.AddSingleton<IEventPublisher>(sp =>
+    OrderEventPublisher.CreateAsync(sp.GetRequiredService<IConnection>()).GetAwaiter().GetResult());
+
+// Outbox — writer is scoped (shares AppDbContext with the request); publisher polls in the background.
+builder.Services.AddScoped<OutboxWriter>();
+builder.Services.AddHostedService<OutboxPublisherHostedService>();
 
 //Consumers
 builder.Services.AddSingleton<IConsumer, LocationsCreatedConsumer>();
@@ -69,6 +160,15 @@ builder.Services.AddSingleton<IConsumer, CourierPayoutCompletedConsumer>();
 builder.Services.AddHostedService<ConsumerHostedService>();
 
 builder.Services.AddAuthorization();
+
+// Health checks — DB + RabbitMQ. /health/live is process-only, /health/ready also verifies dependencies.
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        connectionStringFactory: sp => builder.Configuration.GetConnectionString("DefaultConnection")!,
+        name: "postgres", tags: ["ready"])
+    .AddRabbitMQ(
+        sp => sp.GetRequiredService<IConnection>(),
+        name: "rabbitmq", tags: ["ready"]);
 
 //Repositories
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
@@ -85,13 +185,14 @@ builder.Services.AddHttpClient<IDistanceService, OsrmDistanceService>();
 
 var app = builder.Build();
 
-app.UseCustomExceptionMiddleware();
-
+// Apply database migrations on startup.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate(); 
+    await db.Database.MigrateAsync();
 }
+
+app.UseCustomExceptionMiddleware();
 
 // Configure middleware pipeline
 if (app.Environment.IsDevelopment())
@@ -110,4 +211,28 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-app.Run();
+// /health/live -> just process aliveness; /health/ready -> includes DB + RabbitMQ checks.
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+
+app.UseSerilogRequestLogging();
+
+await app.RunAsync();
+return 0;
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "OrderService terminated unexpectedly");
+    return 1;
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}

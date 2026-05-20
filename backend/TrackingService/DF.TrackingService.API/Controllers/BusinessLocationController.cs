@@ -1,10 +1,12 @@
 ﻿using DF.Contracts.Gateway.Requests.Tracking;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DF.TrackingService.Application.Services.Interfaces;
 
 namespace DF.TrackingService.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class BusinessLocationController(IBusinessLocationService businessLocationService) : ControllerBase
 {

@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-//import { getTrackingAccessToken } from "../api/Order.jsx";
+import { getTrackingAccessToken } from "../api/Order";
 import { TRACKING_HUB_URL } from "../config/api.js";
+
+const COURIER_WRITABLE_STAGES = new Set(["to-restaurant", "delivered"]);
 
 export default function useCourierLocationSender({
     orderId,
@@ -34,7 +36,13 @@ export default function useCourierLocationSender({
         const connection = connectionRef.current;
         const currentOrderId = latestRef.current.orderId;
 
-        if (!connection || connection.state !== signalR.HubConnectionState.Connected || !currentOrderId || !nextStage) {
+        if (
+            !connection ||
+            connection.state !== signalR.HubConnectionState.Connected ||
+            !currentOrderId ||
+            !nextStage ||
+            !COURIER_WRITABLE_STAGES.has(nextStage)
+        ) {
             return;
         }
 
@@ -50,6 +58,7 @@ export default function useCourierLocationSender({
         let cancelled = false;
 
         const sendLocation = async () => {
+            
             const connection = connectionRef.current;
             const current = latestRef.current;
 
@@ -78,7 +87,11 @@ export default function useCourierLocationSender({
             try {
                 setConnectionStatus("connecting");
 
-                const { token } = "token"//await getTrackingAccessToken(orderId);
+                const { token } = await getTrackingAccessToken(orderId);
+
+                console.log("RAW TOKEN:", token);
+                console.log("DECODED:", JSON.parse(atob(token.split('.')[1])))
+
                 if (cancelled) {
                     return;
                 }

@@ -17,10 +17,45 @@ namespace DF.OrderService.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.11")
+                .HasAnnotation("ProductVersion", "10.0.5")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("DF.OrderService.Domain.Entities.IdempotencyKey", b =>
+                {
+                    b.Property<string>("Key")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Method")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Path")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("ResponseBody")
+                        .HasColumnType("text");
+
+                    b.Property<int>("StatusCode")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Key");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.ToTable("IdempotencyKeys", (string)null);
+                });
 
             modelBuilder.Entity("DF.OrderService.Domain.Entities.Order", b =>
                 {
@@ -43,11 +78,11 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid?>("DeliverToId")
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("DeliveryFee")
-                        .HasColumnType("decimal(10,2)");
-
                     b.Property<Guid?>("DeliveredById")
                         .HasColumnType("uuid");
+
+                    b.Property<decimal>("DeliveryFee")
+                        .HasColumnType("decimal(10,2)");
 
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
@@ -72,6 +107,12 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(10,2)");
 
+                    b.Property<uint>("xmin")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("xid")
+                        .HasColumnName("xmin");
+
                     b.HasKey("Id");
 
                     b.ToTable("Orders", (string)null);
@@ -86,8 +127,19 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<Guid>("DishId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("DishName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
                     b.Property<Guid>("OrderId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer");
+
+                    b.Property<decimal>("UnitPrice")
+                        .HasColumnType("decimal(10,2)");
 
                     b.HasKey("Id");
 
@@ -96,15 +148,54 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.ToTable("OrderedDishes", (string)null);
                 });
 
+            modelBuilder.Entity("DF.OrderService.Domain.Entities.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("DispatchedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("LastError")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("OccurredAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("RetryCount")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DispatchedAtUtc", "OccurredAtUtc");
+
+                    b.ToTable("OutboxMessages", (string)null);
+                });
+
             modelBuilder.Entity("DF.OrderService.Domain.Entities.OrderedDish", b =>
                 {
                     b.HasOne("DF.OrderService.Domain.Entities.Order", "Order")
-                        .WithMany()
+                        .WithMany("OrderedDishes")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Order");
+                });
+
+            modelBuilder.Entity("DF.OrderService.Domain.Entities.Order", b =>
+                {
+                    b.Navigation("OrderedDishes");
                 });
 #pragma warning restore 612, 618
         }

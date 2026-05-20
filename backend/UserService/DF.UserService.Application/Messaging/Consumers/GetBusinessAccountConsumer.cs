@@ -1,92 +1,57 @@
-﻿using System.Text;
-using System.Text.Json;
 using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.UserService;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace DF.UserService.Application.Messaging.Consumers;
 
-public class GetBusinessAccountConsumer : IConsumer
+public sealed class GetBusinessAccountConsumer(
+    IConnection connection,
+    IServiceScopeFactory scopeFactory,
+    ILogger<GetBusinessAccountConsumer> logger)
+    : RpcConsumerBase<GetBusinessAccountRequest, GetBusinessAccountResponse>(connection, scopeFactory, logger, "user.getbussinessaccount")
 {
-    private readonly IConnection _connection;
-    private readonly IChannel _channel;
-    private readonly IServiceScopeFactory _scopeFactory;
-    
-    public GetBusinessAccountConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    protected override async Task<GetBusinessAccountResponse> HandleRequestAsync(
+        GetBusinessAccountRequest request,
+        IServiceProvider services)
     {
-        _connection = connection;
-        _scopeFactory = scopeFactory;
-        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        var accounts = services.GetRequiredService<IAccountRepository>();
 
-        _channel.QueueDeclareAsync(
-            queue: "user.getbussinessaccount",
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        ).GetAwaiter().GetResult();
-    }
-
-    public void Start()
-    {
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += async (model, ea) =>
+        if (await accounts.Get(request.BusinessAccountId) is not BusinessAccount account)
         {
-            using var scope = _scopeFactory.CreateScope();
-            var accountRepository = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
-            
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
+            return CreateDefaultResponse();
+        }
 
-            // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetBusinessAccountRequest>(message);
-
-            // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.BusinessAccountId != null)
-            {
-                var account = await accountRepository.Get(request.BusinessAccountId) as BusinessAccount;
-
-                var response = new GetBusinessAccountResponse(
-                    account.Id,
-                    account.UserId,
-                    account.AccountType.ToString(),
-                    account.ImageUrl,
-                    account.Name,
-                    account.Description,
-                    string.Empty, //TODO: add phone number to business account
-                    new List<string>(), //TODO add addresses to business account
-                    account.StripeChargesEnabled.Value,
-                    account.StripePayoutsEnabled.Value,
-                    account.StripeRequirementsDue,
-                    account.StripeAccountId
-                );
-
-                var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
-
-                var props = new BasicProperties
-                {
-                    CorrelationId = ea.BasicProperties.CorrelationId
-                };
-
-                await _channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: ea.BasicProperties.ReplyTo,
-                    mandatory: false,
-                    basicProperties: props,
-                    body: responseBytes
-                );
-            }
-        };
-
-        _channel.BasicConsumeAsync(
-            queue: "user.getbussinessaccount",
-            autoAck: true,
-            consumer: consumer
-        ).GetAwaiter().GetResult();
+        return new GetBusinessAccountResponse(
+            account.Id,
+            account.UserId,
+            account.AccountType.ToString(),
+            account.ImageUrl ?? string.Empty,
+            account.Name,
+            account.Description ?? string.Empty,
+            string.Empty, // TODO: phone number on business account
+            new List<string>(), // TODO: addresses on business account
+            account.StripeChargesEnabled ?? false,
+            account.StripePayoutsEnabled ?? false,
+            account.StripeRequirementsDue ?? string.Empty,
+            account.StripeAccountId ?? string.Empty);
     }
 
+    protected override GetBusinessAccountResponse CreateDefaultResponse() =>
+        new(
+            Guid.Empty,
+            Guid.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            string.Empty,
+            new List<string>(),
+            false,
+            false,
+            string.Empty,
+            string.Empty);
 }

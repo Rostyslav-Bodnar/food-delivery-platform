@@ -4,9 +4,8 @@ import { useState } from "react";
 
 import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
 import { getBusinessLocationsByBusinessId } from "../../../api/BusinessLocation.ts";
+import { getClientSecret } from "../../../api/Payment.jsx";
 import { clearCart } from "../../../utils/CartStorage.jsx";
-
-const PAYMENT_API_BASE = "http://localhost:5003/api";
 
 /* -------------------- helpers -------------------- */
 
@@ -68,18 +67,7 @@ const useOrderSubmit = (
 
     /* -------- Stripe -------- */
 
-    const fetchClientSecret = async (orderId) => {
-        const res = await fetch(`${PAYMENT_API_BASE}/payments/${orderId}`, {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" }
-        });
-
-        if (!res.ok) throw new Error("Client secret not ready");
-
-        const json = await res.json();
-        return json.clientSecret;
-    };
+    const fetchClientSecret = (orderId) => getClientSecret(orderId);
 
     const markPaid = (restaurant) => {
         setPaymentState((prev) => {
@@ -201,10 +189,20 @@ const useOrderSubmit = (
                             fullAddress: customerLocation.fullAddress
                         },
                         paymentMethod,
-                        dishes: items.map((i) => ({
-                            orderId: "00000000-0000-0000-0000-000000000000",
-                            dishId: i.id
-                        }))
+                        // Group duplicate dish entries by dishId so the server sees one
+                        // OrderedDish row with a real Quantity rather than N duplicate rows.
+                        dishes: Object.values(items.reduce((acc, i) => {
+                            if (acc[i.id]) {
+                                acc[i.id].quantity += i.quantity ?? 1;
+                            } else {
+                                acc[i.id] = {
+                                    orderId: "00000000-0000-0000-0000-000000000000",
+                                    dishId: i.id,
+                                    quantity: i.quantity ?? 1
+                                };
+                            }
+                            return acc;
+                        }, {}))
                     };
                 })
             );
@@ -218,17 +216,17 @@ const useOrderSubmit = (
 
             const allOrders = await getCustomerOrders(orderedBy);
             const freshOrders = {};
-
+            // OrderService now recomputes TotalPrice server-side (dish subtotal only;
+            // delivery fee is added later by LocationsCreatedConsumer), so the cart's
+            // grand total no longer matches o.totalPrice. Match by businessId + recency
+            // and consume orders one at a time so multiple restaurants in the same
+            // checkout each pick a distinct row.
+            const consumedIds = new Set();
             for (const [restaurant, items] of Object.entries(groupedItems)) {
                 const bid = items[0].businessId;
-                const total = getRestaurantTotal(restaurant);
 
                 const found = (allOrders ?? [])
-                    .filter(
-                        (o) =>
-                            o.businessId === bid &&
-                            Number(o.totalPrice) === Number(total)
-                    )
+                    .filter((o) => o.businessId === bid && !consumedIds.has(o.id))
                     .sort(
                         (a, b) =>
                             new Date(b.orderDate) - new Date(a.orderDate)
@@ -236,6 +234,7 @@ const useOrderSubmit = (
 
                 if (found) {
                     freshOrders[restaurant] = found;
+                    consumedIds.add(found.id);
                 }
             }
 
@@ -266,8 +265,8 @@ const useOrderSubmit = (
 
             if (Object.keys(nextPaymentState).length === 0) {
                 clearCart();
-                alert("Замовлення успішно створені 🎉");
-                navigate("/orders");
+                //alert("Замовлення успішно створені 🎉");
+                //navigate("/orders");
                 return;
             }
 

@@ -1,19 +1,23 @@
-﻿
 namespace DF.OrderService.Application.Services;
 
-public static class ProfitService
+// Calculates the delivery fee (charged to the customer). The platform's profit is
+// computed elsewhere as DeliveryFee - CourierFee - paymentProcessingFee.
+public static class DeliveryFeeCalculator
 {
-    private static readonly double ratePerKm = 1.2;
-    
+    private const decimal RatePerKm = 1.20m;
+    private const decimal BaseSharePercent = 0.25m;
+
     public static decimal Calculate(decimal totalPrice, double distanceKm)
     {
-        // 25% від ціни замовлення
-        var baseShare = (double)(totalPrice * 0.25m);
-
-        // додаємо бонус за дистанцію
-        var distanceBonus = distanceKm * ratePerKm;
-
-        var profit = baseShare + distanceBonus;
-        return (decimal)profit;
+        var baseShare = totalPrice * BaseSharePercent;
+        var distanceBonus = RatePerKm * (decimal)distanceKm;
+        return decimal.Round(baseShare + distanceBonus, 2, MidpointRounding.AwayFromZero);
     }
+}
+
+// Back-compat alias so existing callers keep compiling while the rename rolls through.
+public static class ProfitService
+{
+    public static decimal Calculate(decimal totalPrice, double distanceKm)
+        => DeliveryFeeCalculator.Calculate(totalPrice, distanceKm);
 }

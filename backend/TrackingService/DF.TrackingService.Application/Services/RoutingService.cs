@@ -38,12 +38,4 @@ public class RoutingService(HttpClient http, IConfiguration cfg) : IRoutingServi
 
         return new RouteResult(distance, duration, geometry, legDistances, legDurations);
     }
-
-    public async Task<RouteResult?> TryRebuildIfDeviatedAsync(Guid orderId, RoutePoint currentCourier, double thresholdMeters)
-    {
-        // 1) дістаємо останню маршрутну лінію та заплановану точку збережену для orderId
-        // 2) визначаємо відстань до маршруту (snap-to або nearest service)
-        // 3) якщо > thresholdMeters — перераховуємо BuildRouteAsync з поточної позиції
-        return null;
-    }
 }

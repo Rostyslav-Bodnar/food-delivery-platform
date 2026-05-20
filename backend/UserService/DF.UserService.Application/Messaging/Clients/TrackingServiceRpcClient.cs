@@ -1,90 +1,22 @@
-﻿using System.Collections.Concurrent;
-using System.Text;
-using System.Text.Json;
 using DF.Contracts.RPC.Requests.TrackingService;
 using DF.Contracts.RPC.Responses.TrackingService;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace DF.UserService.Application.Messaging.Clients;
 
-public class TrackingServiceRpcClient : IDisposable
+public sealed class TrackingServiceRpcClient : IAsyncDisposable
 {
-    private readonly IConnection connection;
-    private readonly IChannel channel;
-    private readonly string replyQueueName;
-    private readonly AsyncEventingBasicConsumer consumer;
-    private readonly ConcurrentDictionary<string, object> callbackMapper = new();
+    private readonly RpcChannel _rpc;
 
-    public TrackingServiceRpcClient(IConnection connection)
-    {
-        this.connection = connection;
-        channel = this.connection.CreateChannelAsync().GetAwaiter().GetResult();
+    private TrackingServiceRpcClient(RpcChannel rpc) => _rpc = rpc;
 
-        var queueOk = channel.QueueDeclareAsync(queue: "",
-            durable: false,
-            exclusive: true,
-            autoDelete: true).GetAwaiter().GetResult();
-        replyQueueName = queueOk.QueueName;
+    public static async Task<TrackingServiceRpcClient> CreateAsync(IConnection connection, CancellationToken ct = default)
+        => new(await RpcChannel.CreateAsync(connection, name: "TrackingService", cancellationToken: ct));
 
-        consumer = new AsyncEventingBasicConsumer(channel);
-        consumer.ReceivedAsync += async (model, ea) =>
-        {
-            var correlationId = ea.BasicProperties.CorrelationId;
-            if (correlationId != null && callbackMapper.TryRemove(correlationId, out var tcsObj))
-            {
-                var body = ea.Body.ToArray();
-                var json = Encoding.UTF8.GetString(body);
+    public Task<UpdateBusinessLocationResponse> UpdateBusinessLocationAsync(
+        UpdateBusinessLocationRequest request, CancellationToken ct = default)
+        => _rpc.CallAsync<UpdateBusinessLocationRequest, UpdateBusinessLocationResponse>(
+            "tracking.updatebusinesslocation", request, ct);
 
-                switch (tcsObj)
-                {
-                    case TaskCompletionSource<UpdateBusinessLocationResponse> tcs3:
-                        var response3 = JsonSerializer.Deserialize<UpdateBusinessLocationResponse>(json);
-                        if (response3 != null) tcs3.SetResult(response3);
-                        break;
-                }
-            }
-
-            await Task.Yield();
-        };
-
-        channel.BasicConsumeAsync(replyQueueName, autoAck: true, consumer: consumer).GetAwaiter().GetResult();
-    }
-
-    public async Task<UpdateBusinessLocationResponse> UpdateBusinessLocationAsync(UpdateBusinessLocationRequest request)
-    {
-        var correlationId = Guid.NewGuid().ToString();
-        var props = new BasicProperties
-        {
-            CorrelationId = correlationId,
-            ReplyTo = replyQueueName
-        };
-
-        var messageBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(request));
-        var tcs = new TaskCompletionSource<UpdateBusinessLocationResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
-        callbackMapper[correlationId] = tcs;
-
-        await channel.BasicPublishAsync(
-            exchange: "",
-            routingKey: "tracking.updatebusinesslocation",
-            mandatory: false,
-            basicProperties: props,
-            body: messageBytes);
-        
-        var completedTask = await Task.WhenAny(tcs.Task, Task.Delay(TimeSpan.FromSeconds(10)));
-        if (completedTask != tcs.Task)
-        {
-            callbackMapper.TryRemove(correlationId, out _);
-            throw new TimeoutException("RPC call timed out");
-        }
-
-        return await tcs.Task;
-    }
-
-    
-    public void Dispose()
-    {
-        channel?.Dispose();
-        connection?.Dispose();
-    }
+    public ValueTask DisposeAsync() => _rpc.DisposeAsync();
 }

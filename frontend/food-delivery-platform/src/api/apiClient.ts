@@ -94,6 +94,21 @@ api.interceptors.response.use(
             ApiResponse<unknown>
         >
     ) => {
+        // Suppress toast/error for canceled or aborted requests. These are
+        // typically caused by React StrictMode double-mount in dev or
+        // component unmount during navigation — not real failures.
+        // axios.isCancel covers CancelToken / AbortController paths;
+        // ECONNABORTED with message "Request aborted" covers the
+        // browser-level xhr.onabort case (e.g. user navigates away).
+        const isAbort =
+            axios.isCancel(error) ||
+            (error.code === "ECONNABORTED" &&
+                error.message === "Request aborted");
+
+        if (isAbort) {
+            return Promise.reject(error);
+        }
+
         const message =
             error.response?.data
                 ?.errorMassage ||

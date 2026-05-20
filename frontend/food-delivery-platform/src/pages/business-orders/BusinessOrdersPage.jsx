@@ -23,6 +23,7 @@ const STATUS_MAP = {
     preparing: { label: "Preparing", color: "#ffb86b", icon: Clock },
     ready: { label: "Ready", color: "#00d4ff", icon: CheckCircle },
     "on-the-way": { label: "On the way", color: "#00d4ff", icon: Bike },
+    "picked-up": { label: "Picked up", color: "#50fa7b", icon: Bike },
     delivered: { label: "Delivered", color: "#50fa7b", icon: CheckCircle },
     cancelled: { label: "Cancelled", color: "#ff6b6b", icon: XCircle }
 };

@@ -1,10 +1,12 @@
 ﻿using DF.Contracts.Gateway.Requests.Tracking;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using DF.TrackingService.Application.Services.Interfaces;
 
 namespace DF.TrackingService.API.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
 public class LocationController(ILocationService locationService) : ControllerBase
 {
@@ -19,11 +21,14 @@ public class LocationController(ILocationService locationService) : ControllerBa
         return Ok(location);
     }
 
-    // GET api/location
+    // GET api/location?skip=0&take=100
     [HttpGet]
-    public async Task<IActionResult> GetLocations()
+    public async Task<IActionResult> GetLocations([FromQuery] int skip = 0, [FromQuery] int take = 100)
     {
-        var locations = await locationService.GetLocationsAsync();
+        if (skip < 0) skip = 0;
+        if (take is <= 0 or > 500) take = 100;
+
+        var locations = await locationService.GetLocationsAsync(skip, take);
         return Ok(locations);
     }
 
@@ -35,11 +40,13 @@ public class LocationController(ILocationService locationService) : ControllerBa
         return CreatedAtAction(nameof(GetLocation), new { id = created.Id }, created);
     }
 
-    // PUT api/location
-    [HttpPut]
-    public async Task<IActionResult> UpdateLocation([FromBody] UpdateLocationRequest request)
+    // PUT api/location/{id}
+    // Id travels in the route — the body request type doesn't carry one
+    // (a follow-up could add Id to the shared DF.Contracts type).
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> UpdateLocation(Guid id, [FromBody] UpdateLocationRequest request)
     {
-        var updated = await locationService.UpdateLocation(request);
+        var updated = await locationService.UpdateLocation(id, request);
         if (updated is null)
             return NotFound();
 

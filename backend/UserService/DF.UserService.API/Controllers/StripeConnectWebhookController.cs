@@ -1,5 +1,6 @@
-﻿using System.Text;
+using System.Text;
 using DF.UserService.Application.Repositories.Interfaces;
+using DF.UserService.Application.Services.Interfaces;
 using DF.UserService.Contracts.Models.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -10,10 +11,11 @@ namespace DF.UserService.API.Controllers;
 [ApiController]
 [Route("webhooks/stripe/connect")]
 public class StripeConnectWebhookController(
-    IAccountRepository accounts, 
+    IAccountRepository accounts,
+    IProcessedWebhookStore webhookStore,
     IOptions<StripeOptions> options) : ControllerBase
 {
-    private readonly string? EndpointSecret = options.Value.WebhookSecretConnect;
+    private readonly string? _endpointSecret = options.Value.WebhookSecretConnect;
 
     [HttpPost]
     public async Task<IActionResult> Handle()
@@ -24,22 +26,31 @@ public class StripeConnectWebhookController(
         Event stripeEvent;
         try
         {
-            stripeEvent = EventUtility.ConstructEvent(json, signature, EndpointSecret, throwOnApiVersionMismatch: false);
+            stripeEvent = EventUtility.ConstructEvent(
+                json, signature, _endpointSecret, throwOnApiVersionMismatch: false);
         }
         catch (StripeException)
         {
             return BadRequest();
         }
 
-        if (stripeEvent.Type == "account.updated")
+        if (await webhookStore.ExistsAsync(stripeEvent.Id, HttpContext.RequestAborted))
         {
-            if (stripeEvent.Data.Object is Account account)
+            return Ok();
+        }
+
+        try
+        {
+            if (stripeEvent.Type == "account.updated"
+                && stripeEvent.Data.Object is Account account)
             {
-                var business = await accounts.GetBusinessByStripeIdAsync(account.Id, HttpContext.RequestAborted);
+                var business = await accounts.GetBusinessByStripeIdAsync(
+                    account.Id, HttpContext.RequestAborted);
+
                 if (business is not null)
                 {
-                    business.StripeChargesEnabled  = account.ChargesEnabled;
-                    business.StripePayoutsEnabled  = account.PayoutsEnabled;
+                    business.StripeChargesEnabled = account.ChargesEnabled;
+                    business.StripePayoutsEnabled = account.PayoutsEnabled;
                     business.StripeRequirementsDue = account.Requirements?.CurrentlyDue is { Count: > 0 }
                         ? string.Join(',', account.Requirements.CurrentlyDue)
                         : string.Empty;
@@ -50,8 +61,13 @@ public class StripeConnectWebhookController(
                     await accounts.Update(business);
                 }
             }
-        }
 
-        return Ok();
+            await webhookStore.MarkProcessedAsync(stripeEvent.Id, HttpContext.RequestAborted);
+            return Ok();
+        }
+        catch
+        {
+            return StatusCode(500); // Stripe will retry
+        }
     }
 }

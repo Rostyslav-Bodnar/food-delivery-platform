@@ -1,25 +1,35 @@
-﻿using System.Text;
 using System.Text.Json;
 using DF.Contracts.EventDriven;
 using RabbitMQ.Client;
 
 namespace DF.OrderService.Application.Messaging.Publishers;
 
-public class OrderEventPublisher : IEventPublisher
+public sealed class OrderEventPublisher : IEventPublisher, IAsyncDisposable
 {
-    private readonly IChannel channel;
+    private const string ExchangeName = "df.events";
 
-    public OrderEventPublisher(IConnection connection)
+    private readonly IChannel _channel;
+
+    private OrderEventPublisher(IChannel channel) => _channel = channel;
+
+    public static async Task<OrderEventPublisher> CreateAsync(IConnection connection, CancellationToken ct = default)
     {
-        channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
-        channel.ExchangeDeclareAsync("orders", ExchangeType.Fanout, durable: true);
+        var channel = await connection.CreateChannelAsync(cancellationToken: ct);
+        await channel.ExchangeDeclareAsync(
+            exchange: ExchangeName, type: ExchangeType.Topic,
+            durable: true, autoDelete: false, cancellationToken: ct);
+        return new OrderEventPublisher(channel);
     }
 
-    public async Task PublishOrderCreatedEvent(OrderCreatedEvent evt)
+    public Task PublishOrderCreatedEvent(OrderCreatedEvent evt) => PublishAsync(evt);
+    public Task PublishOrderPickedUpEvent(OrderPickedUpEvent evt) => PublishAsync(evt);
+    public Task PublishOrderCanceledEvent(OrderCancelledEvent evt) => PublishAsync(evt);
+    public Task PublishOrderDeliveredEvent(OrderDeliveredEvent evt) => PublishAsync(evt);
+
+    private async Task PublishAsync<T>(T evt)
     {
-        var eventName = evt.GetType().Name;
-        
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
+        var eventName = typeof(T).Name;
+        var body = JsonSerializer.SerializeToUtf8Bytes(evt);
         var msgId = Guid.NewGuid().ToString("N");
 
         var props = new BasicProperties
@@ -28,74 +38,21 @@ public class OrderEventPublisher : IEventPublisher
             ContentType = "application/json",
             MessageId = msgId,
             CorrelationId = msgId,
-            Headers = new Dictionary<string, object?>()
+            Headers = new Dictionary<string, object?>
             {
                 ["x-event-name"] = eventName,
                 ["x-retry-count"] = 0
             }
         };
 
-        await channel.BasicPublishAsync(
-            exchange: "df.events",
-            routingKey: eventName,
-            mandatory: false,
-            basicProperties: props,
-            body: body);
+        await _channel.BasicPublishAsync(
+            exchange: ExchangeName, routingKey: eventName,
+            mandatory: false, basicProperties: props, body: body);
     }
 
-    public async Task PublishOrderCanceledEvent(OrderCancelledEvent evt)
+    public async ValueTask DisposeAsync()
     {
-        var eventName = evt.GetType().Name;
-        
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
-        var msgId = Guid.NewGuid().ToString("N");
-
-        var props = new BasicProperties
-        {
-            Persistent = true,
-            ContentType = "application/json",
-            MessageId = msgId,
-            CorrelationId = msgId,
-            Headers = new Dictionary<string, object?>()
-            {
-                ["x-event-name"] = eventName,
-                ["x-retry-count"] = 0
-            }
-        };
-
-        await channel.BasicPublishAsync(
-            exchange: "df.events",
-            routingKey: eventName,
-            mandatory: false,
-            basicProperties: props,
-            body: body);
-    }
-
-    public async Task PublishOrderDeliveredEvent(OrderDeliveredEvent evt)
-    {
-        var eventName = evt.GetType().Name;
-
-        var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(evt));
-        var msgId = Guid.NewGuid().ToString("N");
-
-        var props = new BasicProperties
-        {
-            Persistent = true,
-            ContentType = "application/json",
-            MessageId = msgId,
-            CorrelationId = msgId,
-            Headers = new Dictionary<string, object?>()
-            {
-                ["x-event-name"] = eventName,
-                ["x-retry-count"] = 0
-            }
-        };
-
-        await channel.BasicPublishAsync(
-            exchange: "df.events",
-            routingKey: eventName,
-            mandatory: false,
-            basicProperties: props,
-            body: body);
+        try { await _channel.CloseAsync(); } catch { /* best-effort */ }
+        await _channel.DisposeAsync();
     }
 }

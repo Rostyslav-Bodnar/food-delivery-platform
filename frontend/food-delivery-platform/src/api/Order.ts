@@ -83,7 +83,7 @@ export async function getActiveCourierOrders(
 // =========================
 export async function changeOrderStatus(
     orderId: string,
-    status: OrderStatus
+    status: OrderStatus | number
 ): Promise<OrderResponse> {
     const res = await api.patch<ApiResponse<OrderResponse>>(
         "/order/status",
@@ -189,5 +189,24 @@ export async function deliverOrder(
             { params: { orderId, courierId } }
     )
 
+    return res.data.data!
+}
+
+// =========================
+// TRACKING ACCESS TOKEN
+// =========================
+// Mints a short-lived JWT scoped to this order so the frontend can connect to
+// the SignalR tracking hub (/hubs/courier-tracking) with role + scope claims.
+export interface TrackingAccessTokenResponse {
+    token: string
+    expiresAtUtc: string
+}
+
+export async function getTrackingAccessToken(
+    orderId: string
+): Promise<TrackingAccessTokenResponse> {
+    const res = await api.post<ApiResponse<TrackingAccessTokenResponse>>(
+        `/orders/${orderId}/tracking-token`
+    )
     return res.data.data!
 }

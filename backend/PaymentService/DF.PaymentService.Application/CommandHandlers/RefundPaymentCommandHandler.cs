@@ -21,12 +21,12 @@ public class RefundPaymentCommandHandler(IPaymentRepository repo, IStripeService
         {
             if (payment.FundsFlow == FundsFlow.Destination)
             {
-                await stripe.RefundDestinationAsync(payment, cmd.Amount, ct);
+                await stripe.RefundDestinationAsync(payment, cmd.Amount, cmd.IdempotencyKey, ct);
                 return;
             }
 
             // Інакше — звичайний (SCT/standard) рефанд без reverse_transfer
-            await stripe.RefundAsync(payment, cmd.Amount, ct);
+            await stripe.RefundAsync(payment, cmd.Amount, cmd.IdempotencyKey, ct);
             return;
         }
 

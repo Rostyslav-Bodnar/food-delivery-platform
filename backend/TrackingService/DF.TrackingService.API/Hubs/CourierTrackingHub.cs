@@ -1,22 +1,18 @@
-using System.Text.Json;
+using DF.TrackingService.Application.Services.Interfaces;
 using DF.TrackingService.Contracts.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
-using StackExchange.Redis;
 
 namespace DF.TrackingService.API.Hubs;
 
-[Authorize]
-public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
+[Authorize(AuthenticationSchemes = "TrackingHub")]
+public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 {
     private const string GroupPrefix = "order:";
-    private static readonly TimeSpan SnapshotExpiry = TimeSpan.FromHours(6);
-
-    private readonly IDatabase _redis = redis.GetDatabase();
 
     public async Task SendLocation(CourierLocationDto dto)
     {
-        var role = GetRole();
+        var role = GetAccountType();
         var tokenOrderId = GetOrderIdClaim();
 
         if (role != "Courier")
@@ -28,7 +24,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         if (tokenOrderId != dto.OrderId)
             throw new HubException("Order mismatch");
 
-        var snapshot = await ReadSnapshotAsync(dto.OrderId);
+        var snapshot = await snapshotStore.ReadAsync(dto.OrderId);
         snapshot = snapshot with
         {
             CourierId = dto.CourierId,
@@ -37,16 +33,16 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
             UpdatedAtUtc = dto.TimestampUtc == default ? DateTime.UtcNow : dto.TimestampUtc
         };
 
-        await SaveSnapshotAsync(snapshot);
+        await snapshotStore.SaveAsync(snapshot);
         await BroadcastSnapshotAsync(snapshot);
     }
 
     public async Task UpdateTrackingStage(Guid orderId, string stage)
     {
-        var role = GetRole();
+        var accountType = GetAccountType();
         var tokenOrderId = GetOrderIdClaim();
 
-        if (role != "Courier")
+        if (accountType != "Courier")
             throw new HubException("Only courier can update tracking stage");
 
         if (!HasScope("tracking:write"))
@@ -58,15 +54,23 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         if (!OrderTrackingStages.IsValid(stage))
             throw new HubException("Unsupported tracking stage");
 
-        var snapshot = await ReadSnapshotAsync(orderId);
+        var requestedStage = OrderTrackingStages.Normalize(stage);
+        var snapshot = await snapshotStore.ReadAsync(orderId);
+
+        if (requestedStage == OrderTrackingStages.ToCustomer
+            && snapshot.Stage != OrderTrackingStages.ToCustomer)
+        {
+            throw new HubException("Pickup must be confirmed by the business");
+        }
+
         snapshot = snapshot with
         {
             CourierId = snapshot.CourierId ?? GetSubjectId(),
-            Stage = OrderTrackingStages.Normalize(stage),
+            Stage = requestedStage,
             UpdatedAtUtc = DateTime.UtcNow
         };
 
-        await SaveSnapshotAsync(snapshot);
+        await snapshotStore.SaveAsync(snapshot);
         await BroadcastSnapshotAsync(snapshot);
     }
 
@@ -79,7 +83,7 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, GetGroupName(orderId));
 
-        var snapshot = await ReadSnapshotAsync(orderId);
+        var snapshot = await snapshotStore.ReadAsync(orderId);
         await SendSnapshotToCallerAsync(snapshot);
     }
 
@@ -100,48 +104,15 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         return Guid.TryParse(value, out var subjectId) ? subjectId : null;
     }
 
-    private string? GetRole()
+    private string? GetAccountType()
     {
-        return Context.User?.FindFirst("role")?.Value;
+        return Context.User?.FindFirst("account_type")?.Value;
     }
 
     private bool HasScope(string scope)
     {
         var scopes = Context.User?.FindFirst("scope")?.Value;
         return scopes?.Split(' ').Contains(scope) == true;
-    }
-
-    private async Task<OrderTrackingSnapshotDto> ReadSnapshotAsync(Guid orderId)
-    {
-        var snapshotJson = await _redis.StringGetAsync(GetSnapshotKey(orderId));
-
-        if (snapshotJson.HasValue)
-        {
-            var snapshot = JsonSerializer.Deserialize<OrderTrackingSnapshotDto>((ReadOnlySpan<byte>)snapshotJson);
-            if (snapshot != null)
-            {
-                return snapshot with
-                {
-                    Stage = OrderTrackingStages.Normalize(snapshot.Stage)
-                };
-            }
-        }
-
-        return new OrderTrackingSnapshotDto(
-            OrderId: orderId,
-            CourierId: null,
-            Stage: OrderTrackingStages.AwaitingCourier,
-            CourierLocation: null,
-            UpdatedAtUtc: DateTime.UtcNow
-        );
-    }
-
-    private async Task SaveSnapshotAsync(OrderTrackingSnapshotDto snapshot)
-    {
-        await _redis.StringSetAsync(
-            GetSnapshotKey(snapshot.OrderId),
-            JsonSerializer.Serialize(snapshot),
-            expiry: SnapshotExpiry);
     }
 
     private async Task BroadcastSnapshotAsync(OrderTrackingSnapshotDto snapshot)
@@ -154,6 +125,12 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
             await Clients.Group(GetGroupName(snapshot.OrderId))
                 .SendAsync("CourierLocationUpdated", snapshot.CourierLocation);
         }
+
+        if (!string.IsNullOrWhiteSpace(snapshot.OrderStatus))
+        {
+            await Clients.Group(GetGroupName(snapshot.OrderId))
+                .SendAsync("OrderStatusUpdated", snapshot.OrderStatus);
+        }
     }
 
     private async Task SendSnapshotToCallerAsync(OrderTrackingSnapshotDto snapshot)
@@ -164,9 +141,12 @@ public class CourierTrackingHub(IConnectionMultiplexer redis) : Hub
         {
             await Clients.Caller.SendAsync("CourierLocationUpdated", snapshot.CourierLocation);
         }
-    }
 
-    private static string GetSnapshotKey(Guid orderId) => $"{GetGroupName(orderId)}:tracking";
+        if (!string.IsNullOrWhiteSpace(snapshot.OrderStatus))
+        {
+            await Clients.Caller.SendAsync("OrderStatusUpdated", snapshot.OrderStatus);
+        }
+    }
 
     private static string GetGroupName(Guid orderId) => $"{GroupPrefix}{orderId}";
 }

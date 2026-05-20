@@ -1,6 +1,8 @@
 ﻿using DF.Contracts.Enums;
 using DF.Contracts.Gateway.Requests.Order;
+using DF.OrderService.API.Filters;
 using DF.OrderService.Application.Services.Interfaces;
+using DF.OrderService.Contracts.Pagination;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.OrderService.API.Controllers;
@@ -10,8 +12,8 @@ namespace DF.OrderService.API.Controllers;
 public class OrderController(IOrderService orderService) : ControllerBase
 {
     [HttpGet("all")]
-    public async Task<IActionResult> GetAll()
-        => Ok(await orderService.GetAllOrdersAsync());
+    public async Task<IActionResult> GetAll([FromQuery] int? page, [FromQuery] int? pageSize)
+        => Ok(await orderService.GetAllOrdersPagedAsync(PageRequest.From(page, pageSize)));
 
     [HttpGet("business")]
     public async Task<IActionResult> GetByBusiness([FromQuery] Guid businessId)
@@ -50,6 +52,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
         => Ok(await orderService.GetCourierOrderHistoryAsync(courierId));
 
     [HttpPost("create")]
+    [Idempotent]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         => Ok(await orderService.CreateOrderAsync(request));
 

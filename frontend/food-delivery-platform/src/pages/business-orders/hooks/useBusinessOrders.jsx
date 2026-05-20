@@ -6,6 +6,7 @@ const BACKEND_STATUS_MAP = {
     Preparing: "preparing",
     Ready: "ready",
     OutForDelivery: "on-the-way",
+    PickedUp: "picked-up",
     Delivered: "delivered",
     Canceled: "cancelled"
 };

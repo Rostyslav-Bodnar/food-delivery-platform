@@ -17,6 +17,10 @@ export function useCustomerOrderStatusMeta() {
             return { text: "On the way", color: "#00d4ff", icon: <Bike size={15} /> };
         }
 
+        if (status === "picked-up") {
+            return { text: "Picked up", color: "#4bd68a", icon: <Bike size={15} /> };
+        }
+
         if (status === "delivered") {
             return { text: "Delivered", color: "#4bd68a", icon: <CheckCircle2 size={15} /> };
         }
