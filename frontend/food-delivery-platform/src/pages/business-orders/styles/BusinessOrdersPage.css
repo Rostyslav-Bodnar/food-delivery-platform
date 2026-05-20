@@ -107,6 +107,16 @@
     color: #ff6b6b;
 }
 
+.status-actions__note {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 10px;
+    color: var(--muted-2);
+    font-size: 13px;
+    font-weight: 700;
+}
+
 .order-footer__actions {
     display: inline-flex;
     align-items: center;

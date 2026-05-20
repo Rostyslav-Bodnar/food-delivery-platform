@@ -13,6 +13,8 @@ const mapStatus = (status) => {
         case "OnTheWay":
         case "OutForDelivery":
             return "on-the-way";
+        case "PickedUp":
+            return "picked-up";
         case "Cancelled":
         case "Canceled":
             return "cancelled";

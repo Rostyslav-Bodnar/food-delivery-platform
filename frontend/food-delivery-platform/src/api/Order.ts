@@ -83,7 +83,7 @@ export async function getActiveCourierOrders(
 // =========================
 export async function changeOrderStatus(
     orderId: string,
-    status: OrderStatus
+    status: OrderStatus | number
 ): Promise<OrderResponse> {
     const res = await api.patch<ApiResponse<OrderResponse>>(
         "/order/status",

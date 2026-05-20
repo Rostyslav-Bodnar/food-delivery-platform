@@ -82,6 +82,7 @@ const CustomerOrdersPage = () => {
                     statusMap={{
                         preparing: { label: "Preparing", icon: Clock3 },
                         "on-the-way": { label: "On the way", icon: Bike },
+                        "picked-up": { label: "Picked up", icon: Bike },
                         new: { label: "New", icon: Package },
                         cancelled: { label: "Cancelled", icon: XCircle },
                         delivered: { label: "Delivered", icon: CheckCircle2 }
