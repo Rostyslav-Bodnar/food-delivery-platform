@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace DF.Contracts.RPC.Requests.TrackingService;
 
@@ -22,3 +23,6 @@ public record CreateBusinessLocationRequest(
 public record GetBusinessLocationsRequest(
     Guid BusinessId
     );
+public record GetBusinessLocationsBatchRequest(
+    List<Guid> BusinessIds
+);
