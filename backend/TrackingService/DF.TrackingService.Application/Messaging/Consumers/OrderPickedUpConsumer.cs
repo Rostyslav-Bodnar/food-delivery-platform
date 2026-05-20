@@ -6,17 +6,17 @@ using RabbitMQ.Client;
 
 namespace DF.TrackingService.Application.Messaging.Consumers;
 
-public sealed class OrderCancelledConsumer(
+public sealed class OrderPickedUpConsumer(
     IConnection connection,
     IServiceScopeFactory scopeFactory,
-    ILogger<OrderCancelledConsumer> logger)
-    : OrderTerminalStateConsumerBase<OrderCancelledEvent>(
+    ILogger<OrderPickedUpConsumer> logger)
+    : OrderTerminalStateConsumerBase<OrderPickedUpEvent>(
         connection,
         scopeFactory,
         logger,
-        queueName: "tracking.order-cancelled",
-        terminalStage: OrderTrackingStages.Cancelled,
-        orderStatus: "Canceled")
+        queueName: "tracking.order-picked-up",
+        terminalStage: OrderTrackingStages.ToCustomer,
+        orderStatus: "PickedUp")
 {
-    protected override Guid GetOrderId(OrderCancelledEvent evt) => evt.OrderId;
+    protected override Guid GetOrderId(OrderPickedUpEvent evt) => evt.OrderId;
 }

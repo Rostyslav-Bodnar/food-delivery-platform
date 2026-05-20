@@ -15,7 +15,8 @@ public sealed class OrderDeliveredConsumer(
         scopeFactory,
         logger,
         queueName: "tracking.order-delivered",
-        terminalStage: OrderTrackingStages.Delivered)
+        terminalStage: OrderTrackingStages.Delivered,
+        orderStatus: "Delivered")
 {
     protected override Guid GetOrderId(OrderDeliveredEvent evt) => evt.OrderId;
 }

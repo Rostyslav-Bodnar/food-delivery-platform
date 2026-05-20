@@ -80,6 +80,8 @@ public sealed class OutboxPublisherHostedService(
     {
         nameof(OrderCreatedEvent) =>
             publisher.PublishOrderCreatedEvent(Deserialize<OrderCreatedEvent>(msg.Payload)),
+        nameof(OrderPickedUpEvent) =>
+            publisher.PublishOrderPickedUpEvent(Deserialize<OrderPickedUpEvent>(msg.Payload)),
         nameof(OrderCancelledEvent) =>
             publisher.PublishOrderCanceledEvent(Deserialize<OrderCancelledEvent>(msg.Payload)),
         nameof(OrderDeliveredEvent) =>

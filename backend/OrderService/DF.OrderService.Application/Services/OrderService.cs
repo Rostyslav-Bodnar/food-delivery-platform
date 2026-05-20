@@ -53,88 +53,97 @@ public class OrderService(
 
     public async Task<bool> CreateOrderAsync(CreateOrderRequest request)
     {
-        if (request == null)
-            throw new ArgumentNullException(nameof(request));
-
-        if (request.Dishes is null || request.Dishes.Count == 0)
-            throw new ArgumentException("Order must contain at least one dish");
-
-        // Resolve every dish from MenuService in parallel so we get a server-side price snapshot.
-        var distinctDishIds = request.Dishes.Select(d => d.DishId).Distinct().ToList();
-        var dishLookupTasks = distinctDishIds.ToDictionary(
-            id => id,
-            id => menuServiceRpcClient.GetDishAsync(new GetDishRequest(id)));
-        await Task.WhenAll(dishLookupTasks.Values);
-
-        var dishInfo = new Dictionary<Guid, (decimal Price, string Name, Guid BusinessId)>();
-        foreach (var (id, task) in dishLookupTasks)
+        try
         {
-            var info = await task ?? throw new NotFoundException($"Dish {id} not found");
-            dishInfo[id] = (info.Price, info.Name, info.BusinessId);
-        }
+            if (request == null)
+                throw new ArgumentNullException(nameof(request));
 
-        // Reject orders that mix businesses, or that don't match the requested business.
-        if (dishInfo.Values.Any(v => v.BusinessId != request.BusinessId))
-            throw new ArgumentException("All dishes must belong to the requested BusinessId");
+            if (request.Dishes is null || request.Dishes.Count == 0)
+                throw new ArgumentException("Order must contain at least one dish");
 
-        // Recompute the bill server-side from authoritative prices + requested quantities.
-        var orderedDishes = request.Dishes.Select(d =>
-        {
-            var info = dishInfo[d.DishId];
-            // CreateOrderDishRequest.Quantity exists in the local contract source but not yet in
-            // the published DF.Contracts NuGet package — default to 1 until the package is bumped.
-            var quantity = 1;
-            return new OrderedDish
+            // Resolve every dish from MenuService in parallel so we get a server-side price snapshot.
+            var distinctDishIds = request.Dishes.Select(d => d.DishId).Distinct().ToList();
+            var dishLookupTasks = distinctDishIds.ToDictionary(
+                id => id,
+                id => menuServiceRpcClient.GetDishAsync(new GetDishRequest(id)));
+
+            await Task.WhenAll(dishLookupTasks.Values);
+
+            var dishInfo = new Dictionary<Guid, (decimal Price, string Name, Guid BusinessId)>();
+            foreach (var (id, task) in dishLookupTasks)
             {
-                OrderId = Guid.Empty,        // set after order is added to the change tracker
-                DishId = d.DishId,
-                Quantity = quantity,
-                UnitPrice = info.Price,
-                DishName = info.Name
+                var info = await task ?? throw new NotFoundException($"Dish {id} not found");
+                dishInfo[id] = (info.Price, info.Name, info.BusinessId);
+            }
+
+            // Reject orders that mix businesses, or that don't match the requested business.
+            if (dishInfo.Values.Any(v => v.BusinessId != request.BusinessId))
+                throw new ArgumentException("All dishes must belong to the requested BusinessId");
+
+            // Recompute the bill server-side from authoritative prices + requested quantities.
+            var orderedDishes = request.Dishes.Select(d =>
+            {
+                var info = dishInfo[d.DishId];
+                // CreateOrderDishRequest.Quantity exists in the local contract source but not yet in
+                // the published DF.Contracts NuGet package — default to 1 until the package is bumped.
+                var quantity = 1;
+                return new OrderedDish
+                {
+                    OrderId = Guid.Empty,        // set after order is added to the change tracker
+                    DishId = d.DishId,
+                    Quantity = quantity,
+                    UnitPrice = info.Price,
+                    DishName = info.Name
+                };
+            }).ToList();
+
+            var subtotal = orderedDishes.Sum(od => od.UnitPrice * od.Quantity);
+
+            var order = new Order
+            {
+                Id = Guid.NewGuid(),
+                BusinessId = request.BusinessId,
+                OrderedBy = request.OrderedBy,
+                OrderDate = request.OrderDate,
+                TotalPrice = subtotal,           // server-authoritative; client value is ignored
+                OrderStatus = OrderStatus.Preparing,
+                OrderNumber = GenerateOrderNumber(),
+                DeliverToId = null,
+                DeliverFromId = null,
+                DeliveryFee = 0,
+                CourierFee = 0,
+                CourierPaid = false,
+                Profit = 0,
+                PaymentMethod = request.PaymentMethod.ToDomain()
             };
-        }).ToList();
 
-        var subtotal = orderedDishes.Sum(od => od.UnitPrice * od.Quantity);
+            var account = await userServiceRpcClient.GetBusinessAccountAsync(
+                new GetBusinessAccountRequest(order.BusinessId));
 
-        var order = new Order
+            var evt = new OrderCreatedEvent(
+                OrderId: order.Id,
+                BusinessId: order.BusinessId,
+                OrderedBy: order.OrderedBy,
+                OrderDate: order.OrderDate,
+                TotalPrice: order.TotalPrice,
+                DeliverTo: new LocationDto(request.DeliverTo.FullAddress),
+                DeliverFrom: new LocationDto(request.DeliverFrom.FullAddress),
+                Currency: "usd",
+                PaymentMethod: order.PaymentMethod.ToString(),
+                BusinessStripeAccountId: account.StripeId
+            );
+
+            // Stage the outbox row; CreateWithDishesAsync's SaveChanges commits everything atomically.
+            await outboxWriter.EnqueueAsync(evt);
+            await orderRepository.CreateWithDishesAsync(order, orderedDishes);
+
+            return true;
+        }
+        catch (Exception ex)
         {
-            Id = Guid.NewGuid(),
-            BusinessId = request.BusinessId,
-            OrderedBy = request.OrderedBy,
-            OrderDate = request.OrderDate,
-            TotalPrice = subtotal,           // server-authoritative; client value is ignored
-            OrderStatus = OrderStatus.Preparing,
-            OrderNumber = GenerateOrderNumber(),
-            DeliverToId = null,
-            DeliverFromId = null,
-            DeliveryFee = 0,
-            CourierFee = 0,
-            CourierPaid = false,
-            Profit = 0,
-            PaymentMethod = request.PaymentMethod.ToDomain()
-        };
-
-        var account = await userServiceRpcClient.GetBusinessAccountAsync(
-            new GetBusinessAccountRequest(order.BusinessId));
-
-        var evt = new OrderCreatedEvent(
-            OrderId: order.Id,
-            BusinessId: order.BusinessId,
-            OrderedBy: order.OrderedBy,
-            OrderDate: order.OrderDate,
-            TotalPrice: order.TotalPrice,
-            DeliverTo: new LocationDto(request.DeliverTo.FullAddress),
-            DeliverFrom: new LocationDto(request.DeliverFrom.FullAddress),
-            Currency: "usd",
-            PaymentMethod: order.PaymentMethod.ToString(),
-            BusinessStripeAccountId: account.StripeId
-        );
-
-        // Stage the outbox row; CreateWithDishesAsync's SaveChanges commits everything atomically.
-        await outboxWriter.EnqueueAsync(evt);
-        await orderRepository.CreateWithDishesAsync(order, orderedDishes);
-
-        return true;
+            Console.WriteLine(ex);
+            throw;
+        }
     }
 
     public async Task<PagedResponse<OrderResponse>> GetAllOrdersPagedAsync(PageRequest page)
@@ -710,21 +719,32 @@ public class OrderService(
         var order = await orderRepository.Get(orderId)
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
-        var targetStatus = status.ToDomain();
+        var targetStatus = ParseOrderStatus(status);
         OrderStatusTransitions.EnsureAllowed(order.OrderStatus, targetStatus);
 
         var shouldPublishDeliveredEvent =
             targetStatus == OrderStatus.Delivered
             && order.OrderStatus != OrderStatus.Delivered;
+        var shouldPublishPickedUpEvent =
+            targetStatus == OrderStatus.PickedUp
+            && order.OrderStatus != OrderStatus.PickedUp;
 
-        if (shouldPublishDeliveredEvent && order.DeliveredById is null)
-            throw new OrderStateException("Cannot mark order as delivered without an assigned courier.");
+        if ((shouldPublishDeliveredEvent || shouldPublishPickedUpEvent) && order.DeliveredById is null)
+            throw new OrderStateException("Cannot move delivery forward without an assigned courier.");
 
         order.OrderStatus = targetStatus;
 
         if (order.OrderStatus == OrderStatus.Canceled)
         {
             await outboxWriter.EnqueueAsync(new OrderCancelledEvent(orderId, order.PaymentMethod.ToString()));
+        }
+
+        if (shouldPublishPickedUpEvent)
+        {
+            await outboxWriter.EnqueueAsync(new OrderPickedUpEvent(
+                OrderId: order.Id,
+                CourierId: order.DeliveredById!.Value,
+                PickedUpAtUtc: DateTime.UtcNow));
         }
 
         if (shouldPublishDeliveredEvent
@@ -886,5 +906,18 @@ public class OrderService(
             Latitude: string.Empty,
             Longitude: string.Empty
         );
+    }
+
+    private static OrderStatus ParseOrderStatus(DF.Contracts.Enums.OrderStatus status)
+    {
+        var numeric = (int)status;
+
+        if (Enum.IsDefined(typeof(OrderStatus), numeric))
+        {
+            return (OrderStatus)numeric;
+        }
+
+        throw new OrderStateException(
+            $"Unsupported order status '{status}'.");
     }
 }

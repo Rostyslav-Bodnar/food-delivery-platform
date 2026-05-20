@@ -10,7 +10,8 @@ public static class OrderStatusTransitions
     {
         [OrderStatus.Preparing]      = new() { OrderStatus.Ready, OrderStatus.Canceled },
         [OrderStatus.Ready]          = new() { OrderStatus.OutForDelivery, OrderStatus.Canceled },
-        [OrderStatus.OutForDelivery] = new() { OrderStatus.Delivered },
+        [OrderStatus.OutForDelivery] = new() { OrderStatus.PickedUp, OrderStatus.Canceled },
+        [OrderStatus.PickedUp]       = new() { OrderStatus.Delivered, OrderStatus.Canceled },
         [OrderStatus.Delivered]      = new(),    // terminal
         [OrderStatus.Canceled]       = new(),    // terminal
     };

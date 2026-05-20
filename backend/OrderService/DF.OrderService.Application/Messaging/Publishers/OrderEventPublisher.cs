@@ -22,6 +22,7 @@ public sealed class OrderEventPublisher : IEventPublisher, IAsyncDisposable
     }
 
     public Task PublishOrderCreatedEvent(OrderCreatedEvent evt) => PublishAsync(evt);
+    public Task PublishOrderPickedUpEvent(OrderPickedUpEvent evt) => PublishAsync(evt);
     public Task PublishOrderCanceledEvent(OrderCancelledEvent evt) => PublishAsync(evt);
     public Task PublishOrderDeliveredEvent(OrderDeliveredEvent evt) => PublishAsync(evt);
 

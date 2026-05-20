@@ -11,7 +11,7 @@ namespace DF.TrackingService.Application.Messaging.Consumers;
 
 /// <summary>
 /// Base for event consumers that move the live tracking snapshot into a
-/// terminal stage (delivered / cancelled). Listens on df.events keyed by the
+/// specific stage. Listens on df.events keyed by the
 /// event-name routing key, decodes the OrderId, and rewrites the Redis
 /// snapshot + broadcasts to subscribed clients.
 /// </summary>
@@ -20,7 +20,8 @@ public abstract class OrderTerminalStateConsumerBase<TEvent>(
     IServiceScopeFactory scopeFactory,
     ILogger logger,
     string queueName,
-    string terminalStage) : IConsumer
+    string terminalStage,
+    string? orderStatus = null) : IConsumer
     where TEvent : class
 {
     private IChannel? _channel;
@@ -120,6 +121,7 @@ public abstract class OrderTerminalStateConsumerBase<TEvent>(
             snapshot = snapshot with
             {
                 Stage = terminalStage,
+                OrderStatus = orderStatus,
                 UpdatedAtUtc = DateTime.UtcNow
             };
 

@@ -33,6 +33,7 @@ public sealed class OrderTrackingSnapshotStore(IConnectionMultiplexer redis) : I
             CourierId: null,
             Stage: OrderTrackingStages.AwaitingCourier,
             CourierLocation: null,
+            OrderStatus: null,
             UpdatedAtUtc: DateTime.UtcNow);
     }
 
