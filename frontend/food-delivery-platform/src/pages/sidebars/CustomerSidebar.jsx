@@ -13,7 +13,6 @@ export default function CustomerSidebar() {
 
     return (
         <Sidebar
-            logo="FoodEx"
             items={items}
         />
     );

@@ -17,7 +17,6 @@ const Header = () => {
     if (loading) {
         return (
             <header className="header">
-                <h1>Foodie Delivery</h1>
                 <p>Loading...</p>
             </header>
         );
@@ -30,10 +29,6 @@ const Header = () => {
             </NavLink>
 
             <nav>
-                <NavLink className="nav-link" to="/">
-                    Home
-                </NavLink>
-
                 {!user && (
                     <>
                         <NavLink className="nav-link" to="/login">
