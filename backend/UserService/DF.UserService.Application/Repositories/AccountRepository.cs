@@ -104,4 +104,29 @@ public class AccountRepository(AppDbContext dbContext) : IAccountRepository
             .Take(take)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<List<BusinessAccount>> GetBusinessAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<BusinessAccount>()
+            .Include(a => a.User)
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+    public async Task<List<CourierAccount>> GetCourierAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<CourierAccount>()
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+    
+    public async Task<List<CustomerAccount>> GetCustomerAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<CustomerAccount>()
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+
 }

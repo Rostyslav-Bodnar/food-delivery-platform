@@ -1,5 +1,6 @@
 using DF.Contracts.RPC.Requests.UserService;
 using DF.Contracts.RPC.Responses.UserService;
+using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,16 +29,7 @@ public sealed class GetCustomerAccountConsumer(
 
         var user = await users.Get(account.UserId);
 
-        return new GetCustomerAccountResponse(
-            account.Id,
-            account.UserId,
-            account.AccountType.ToString(),
-            account.ImageUrl ?? string.Empty,
-            account.Name,
-            account.Surname,
-            account.PhoneNumber ?? string.Empty,
-            user?.Email ?? string.Empty,
-            account.Address ?? string.Empty);
+        return AccountResponseMapper.ToCustomerResponse(account, user?.Email);
     }
 
     protected override GetCustomerAccountResponse CreateDefaultResponse() =>
