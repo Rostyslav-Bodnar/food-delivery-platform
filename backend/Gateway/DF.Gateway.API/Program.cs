@@ -67,7 +67,7 @@ builder.Services.AddHttpClient<GatewayProxy>(client =>
         // RPC chain on the first request. In production this should drop to
         // ~10s once cold-start is mitigated (warm instances, prefetched RPC
         // clients, downstream caching).
-        client.Timeout = TimeSpan.FromSeconds(30);
+        client.Timeout = TimeSpan.FromSeconds(60);
 
         client.DefaultRequestHeaders.UserAgent.ParseAdd(
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
