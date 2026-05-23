@@ -1,7 +1,7 @@
 import React from "react";
 
 import "./styles/CustomerOrdersPage.css";
-import CustomerSidebar from "../sidebars/CustomerSidebar";
+import RoleSidebar from "../sidebars/RoleSidebar";
 import OrderDetailsComponent from "../order-details-modal/OrderDetailsComponent.jsx";
 import CustomerOrdersHeader from "./components/CustomerOrdersHeader";
 import CustomerOrdersContent from "./components/CustomerOrdersContent";
@@ -93,7 +93,7 @@ const CustomerOrdersPage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
 
             <main className="auth-homepage customer-orders-page">
                 <CustomerOrdersHeader

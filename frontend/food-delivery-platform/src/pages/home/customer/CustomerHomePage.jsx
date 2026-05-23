@@ -1,6 +1,6 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import CustomerSidebar from '../../sidebars/CustomerSidebar';
+import RoleSidebar from '../../sidebars/RoleSidebar';
 import { getAllDishesForCustomer } from '../../../api/Dish.ts';
 import { CategoryMap } from '../../../constants/category';
 
@@ -77,7 +77,7 @@ const CustomerHomePage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
 
             <div className="auth-homepage">
                 <div className="particles">

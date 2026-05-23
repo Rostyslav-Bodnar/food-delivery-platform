@@ -10,7 +10,7 @@ import {
     Store
 } from "lucide-react";
 
-import CourierSidebar from "../sidebars/CourierSidebar.jsx";
+import RoleSidebar from "../sidebars/RoleSidebar.jsx";
 import {
     changeOrderStatus,
     deliverOrder,
@@ -480,7 +480,7 @@ export default function CourierOrdersPage() {
 
     return (
         <div className="courier-orders-shell">
-            <CourierSidebar
+            <RoleSidebar
                 isOnline={isOnline}
                 setIsOnline={setIsOnline}
                 userData={{ name: courierName }}

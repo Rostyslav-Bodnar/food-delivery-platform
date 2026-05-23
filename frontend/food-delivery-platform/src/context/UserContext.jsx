@@ -64,11 +64,24 @@ export const UserProvider = ({ children }) => {
         try {
             setError(null);
 
+            // Capture the role we're leaving before the switch overwrites it.
+            const previousType = accounts
+                .find((a) => a.id === currentAccountId)
+                ?.accountType?.toLowerCase();
+
             await switchAccount(accountId);
             await loadUser();
 
-            // UX‑рішення — залишаємо як було
-            window.location.reload();
+            const nextType = localStorage.getItem("currentAccountType")?.toLowerCase();
+
+            // Same-role switch (e.g. business → another business) stays on the
+            // current page — RoleSidebar reactively renders the new account's
+            // shell from context. Cross-role switches navigate home because
+            // most routes are role-specific (a customer's /cart doesn't apply
+            // to a business user).
+            if (previousType && nextType && previousType !== nextType) {
+                window.location.href = "/food-delivery-platform/";
+            }
         } catch (err) {
             setError(err.message);
         }
