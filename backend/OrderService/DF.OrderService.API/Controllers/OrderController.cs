@@ -47,6 +47,10 @@ public class OrderController(IOrderService orderService) : ControllerBase
     public async Task<IActionResult> GetCustomerOrderHistory(Guid customerId)
         => Ok(await orderService.GetCustomerOrderHistoryAsync(customerId));
 
+    [HttpGet("business/{businessId}/history")]
+    public async Task<IActionResult> GetBusinessOrderHistory(Guid businessId)
+        => Ok(await orderService.GetBusinessOrderHistoryAsync(businessId));
+
     [HttpGet("courier/{courierId}/history")]
     public async Task<IActionResult> GetCourierOrderHistory(Guid courierId)
         => Ok(await orderService.GetCourierOrderHistoryAsync(courierId));
