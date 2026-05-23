@@ -76,4 +76,17 @@ public class AccountController(GatewayProxy proxy) : ControllerBase
     [HttpPut("courier")]
     public Task<Response<CourierAccountResponse>> UpdateCourier()
         => proxy.ProxyAsync<CourierAccountResponse>(HttpContext);
+
+    // =========================
+    // BUSINESS DASHBOARD (Stripe-proxy)
+    // Response is the UserService BusinessDashboardResponse aggregate;
+    // kept as `object` here so the Gateway doesn't need to import the
+    // UserService.Contracts project.
+    // =========================
+    [HttpGet("business/{businessId:guid}/dashboard")]
+    public Task<Response<object>> GetBusinessDashboard(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+        => proxy.ProxyAsync<object>(HttpContext);
 }

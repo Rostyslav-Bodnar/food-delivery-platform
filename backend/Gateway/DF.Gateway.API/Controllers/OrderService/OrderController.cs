@@ -131,4 +131,16 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
         [FromQuery] Guid orderId,
         [FromQuery] Guid courierId)
         => proxy.ProxyAsync<OrderResponse>(HttpContext);
+
+    // =========================
+    // REVENUE BY DISH (business dashboard)
+    // Returns a list of DishRevenueResponse from OrderService; typed as
+    // `object` here to avoid coupling the Gateway to OrderService.Contracts.
+    // =========================
+    [HttpGet("business/{businessId:guid}/revenue-by-dish")]
+    public Task<Response<object>> GetRevenueByDish(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+        => proxy.ProxyAsync<object>(HttpContext);
 }

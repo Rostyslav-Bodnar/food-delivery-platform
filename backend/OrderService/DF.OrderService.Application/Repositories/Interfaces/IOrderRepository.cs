@@ -17,4 +17,15 @@ public interface IOrderRepository : IRepository<Order>
     Task<bool> CreateRangeWithDishesAsync(
         IEnumerable<Order> orders,
         IEnumerable<OrderedDish> dishes);
+
+    /// <summary>
+    /// Delivered orders for a business inside [fromUtc, toUtc], with their
+    /// OrderedDishes included. Used by the dashboard's per-dish revenue
+    /// aggregation.
+    /// </summary>
+    Task<IReadOnlyList<Order>> GetDeliveredOrdersByBusinessInWindowAsync(
+        Guid businessId,
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken ct = default);
 }

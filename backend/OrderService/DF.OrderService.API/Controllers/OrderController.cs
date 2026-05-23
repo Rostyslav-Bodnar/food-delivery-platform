@@ -71,4 +71,16 @@ public class OrderController(IOrderService orderService) : ControllerBase
     [HttpPatch("courier/mark-paid")]
     public async Task<IActionResult> MarkCourierPaid([FromQuery] Guid orderId, [FromQuery] Guid courierId)
         => Ok(await orderService.MarkCourierPaidAsync(orderId, courierId));
+
+    [HttpGet("business/{businessId:guid}/revenue-by-dish")]
+    public async Task<IActionResult> GetRevenueByDish(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        var toUtc = (to ?? DateTime.UtcNow).ToUniversalTime();
+        var fromUtc = (from ?? toUtc.AddDays(-30)).ToUniversalTime();
+        return Ok(await orderService.GetRevenueByDishAsync(businessId, fromUtc, toUtc, ct));
+    }
 }

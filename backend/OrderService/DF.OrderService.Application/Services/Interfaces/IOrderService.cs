@@ -2,6 +2,7 @@
 using DF.Contracts.Gateway.Requests.Order;
 using DF.Contracts.Gateway.Responses.Order;
 using DF.OrderService.Contracts.Pagination;
+using DishRevenueResponse = DF.OrderService.Contracts.Models.Responses.DishRevenueResponse;
 
 namespace DF.OrderService.Application.Services.Interfaces;
 
@@ -25,4 +26,13 @@ public interface IOrderService
     Task<bool> CancelOrderAsync(Guid orderId);
 
     Task<OrderResponse> MarkCourierPaidAsync(Guid orderId, Guid courierId);
+
+    /// <summary>
+    /// Per-dish revenue for a business in [fromUtc, toUtc] across delivered orders.
+    /// </summary>
+    Task<IReadOnlyList<DishRevenueResponse>> GetRevenueByDishAsync(
+        Guid businessId,
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken ct = default);
 }

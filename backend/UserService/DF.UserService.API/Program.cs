@@ -125,6 +125,7 @@ builder.Services.Configure<StripeOptions>(
     builder.Configuration.GetSection("Stripe")
 );
 builder.Services.AddSingleton<IStripeConnectService, StripeConnectService>();
+builder.Services.AddSingleton<IBusinessDashboardService, BusinessDashboardService>();
 
 // =======================
 // FACTORIES
