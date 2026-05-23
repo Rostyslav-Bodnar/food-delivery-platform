@@ -4,7 +4,7 @@ namespace DF.OrderService.Application.Services;
 // computed elsewhere as DeliveryFee - CourierFee - paymentProcessingFee.
 public static class DeliveryFeeCalculator
 {
-    private const decimal RatePerKm = 1.20m;
+    private const decimal RatePerKm = 1.50m;
     private const decimal BaseSharePercent = 0.25m;
 
     public static decimal Calculate(decimal totalPrice, double distanceKm)

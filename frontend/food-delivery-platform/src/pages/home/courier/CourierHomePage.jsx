@@ -171,7 +171,7 @@ export default function CourierHomePage({ userData }) {
                                             <strong>{order.businessName}</strong>
                                             <p>{formatOrderDate(order.orderDate)}</p>
                                         </div>
-                                        <span>{formatMoney(order.profit)}</span>
+                                        <span>{formatMoney(order.courierFee)}</span>
                                     </div>
                                 ))}
                             </div>

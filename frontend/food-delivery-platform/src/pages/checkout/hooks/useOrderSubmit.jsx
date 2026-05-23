@@ -1,4 +1,4 @@
-﻿// src/hooks/useOrderSubmit.js
+// src/hooks/useOrderSubmit.js
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -60,7 +60,8 @@ const useOrderSubmit = (
     groupedItems,
     getSettingsFor,
     mapAddress,
-    getRestaurantTotal
+    getRestaurantTotal,
+    resolvedByRestaurant
 ) => {
     const navigate = useNavigate();
     const [paymentState, setPaymentState] = useState({});
@@ -120,6 +121,13 @@ const useOrderSubmit = (
                 restaurant,
                 customerLocation
             ) => {
+                // useDeliveryFees may have already resolved the nearest location for
+                // delivery-fee preview; reuse it to avoid a second roundtrip.
+                const precomputed = resolvedByRestaurant?.[restaurant]?.businessLocation;
+                if (precomputed) {
+                    return precomputed;
+                }
+
                 if (businessLocationCache[businessId]) {
                     return businessLocationCache[businessId];
                 }
