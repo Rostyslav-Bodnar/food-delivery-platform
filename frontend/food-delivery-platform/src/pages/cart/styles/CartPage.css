@@ -375,23 +375,12 @@
 
 /* -------------------- Empty cart -------------------- */
 
-.cart-empty-wrapper {
-    min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    background:
-        radial-gradient(1200px 600px at 10% 10%, rgba(124, 92, 255, 0.10), transparent 60%),
-        radial-gradient(1000px 500px at 90% 80%, rgba(0, 212, 255, 0.06), transparent 60%),
-        linear-gradient(180deg, var(--bg-900), #071014 80%);
-}
-
 .cart-empty {
     text-align: center;
     padding: 56px 40px;
     max-width: 440px;
     width: 100%;
+    margin: 32px auto;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
     border-radius: var(--radius-lg);
     border: 1px solid var(--glass-border);
