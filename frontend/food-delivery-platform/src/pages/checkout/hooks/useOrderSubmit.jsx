@@ -87,7 +87,7 @@ const useOrderSubmit = (
 
             if (allPaid) {
                 clearCart();
-                setTimeout(() => navigate("/orders"), 400);
+                setTimeout(() => navigate("/customer/orders"), 400);
             }
 
             return next;
@@ -289,9 +289,11 @@ const useOrderSubmit = (
             }
 
             if (Object.keys(nextPaymentState).length === 0) {
+                // All-cash order: nothing to settle via Stripe — orders are
+                // already on the backend, so clear the cart and send the user
+                // straight to their orders page.
                 clearCart();
-                //alert("Замовлення успішно створені 🎉");
-                //navigate("/orders");
+                navigate("/customer/orders");
                 return;
             }
 
