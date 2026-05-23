@@ -1,20 +1,48 @@
-﻿import React from "react";
+import React from "react";
+import OrdersFilterBar from "../../../global-components/orders-filter/OrdersFilterBar.jsx";
 
-export default function OrdersHeader({ filter, setFilter }) {
+const STATUSES = [
+    { key: "all",          label: "All" },
+    { key: "pending",      label: "New",        color: "#7c5cff" },
+    { key: "preparing",    label: "Preparing",  color: "#ffb86b" },
+    { key: "ready",        label: "Ready",      color: "#00d4ff" },
+    { key: "on-the-way",   label: "On the way", color: "#00d4ff" },
+    { key: "picked-up",    label: "Picked up",  color: "#50fa7b" },
+    { key: "delivered",    label: "Delivered",  color: "#4bd68a" },
+    { key: "cancelled",    label: "Cancelled",  color: "#ff6b6b" }
+];
+
+const SORT_OPTIONS = [
+    { value: "newest",     label: "Newest first" },
+    { value: "oldest",     label: "Oldest first" },
+    { value: "total-desc", label: "Total: high to low" },
+    { value: "total-asc",  label: "Total: low to high" }
+];
+
+export default function OrdersHeader({
+    filter, setFilter,
+    sort, setSort,
+    search, setSearch,
+    count
+}) {
     return (
-        <header className="bh-top">
-            <h1 className="bh-heading">Orders</h1>
+        <>
+            <header className="bh-top">
+                <h1 className="bh-heading">Orders</h1>
+            </header>
 
-            <div className="filters">
-                <select value={filter} onChange={e => setFilter(e.target.value)}>
-                    <option value="all">All</option>
-                    <option value="pending">New</option>
-                    <option value="preparing">Preparing</option>
-                    <option value="ready">Ready</option>
-                    <option value="delivered">Delivered</option>
-                    <option value="cancelled">Cancelled</option>
-                </select>
-            </div>
-        </header>
+            <OrdersFilterBar
+                statuses={STATUSES}
+                activeStatus={filter}
+                onStatusChange={setFilter}
+                sortOptions={SORT_OPTIONS}
+                sort={sort}
+                onSortChange={setSort}
+                search={search}
+                onSearchChange={setSearch}
+                searchPlaceholder="Search by order id or customer…"
+                count={count}
+            />
+        </>
     );
 }

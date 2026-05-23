@@ -10,7 +10,7 @@ const sortStrategies = {
     "total-asc": (orders) => [...orders].sort((a, b) => Number(a.total ?? 0) - Number(b.total ?? 0))
 };
 
-export function useOrderFilter(orders) {
+export function useCustomerOrderFilters(orders) {
     const [filter, setFilter] = useState("all");
     const [sort, setSort] = useState("newest");
     const [search, setSearch] = useState("");
@@ -23,9 +23,8 @@ export function useOrderFilter(orders) {
         const query = search.trim().toLowerCase();
         if (query) {
             list = list.filter((o) =>
-                String(o.id ?? "").toLowerCase().includes(query)
-                || String(o.businessName ?? "").toLowerCase().includes(query)
-                || String(o.customerName ?? "").toLowerCase().includes(query)
+                String(o.restaurant ?? "").toLowerCase().includes(query)
+                || String(o.id ?? "").toLowerCase().includes(query)
             );
         }
 

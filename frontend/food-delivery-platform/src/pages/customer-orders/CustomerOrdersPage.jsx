@@ -9,6 +9,7 @@ import CancelOrderModal from "./components/CancelOrderModal.jsx";
 import { useCustomerOrders } from "./hooks/useCustomerOrders";
 import { useCustomerOrderSelection } from "./hooks/useCustomerOrderSelection";
 import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
+import { useCustomerOrderFilters } from "./hooks/useCustomerOrderFilters";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
 import { changeOrderStatus } from "../../api/Order.ts";
 import { OrderStatus } from "../../models/enums/OrderStatus.ts";
@@ -46,6 +47,13 @@ const CustomerOrdersPage = () => {
         closeOrderDetails
     } = useCustomerOrderSelection();
     const { getStatusMeta } = useCustomerOrderStatusMeta();
+
+    const {
+        filter, setFilter,
+        sort, setSort,
+        search, setSearch,
+        filteredOrders
+    } = useCustomerOrderFilters(orders);
 
     const [orderToCancel, setOrderToCancel] = React.useState(null);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
@@ -88,12 +96,20 @@ const CustomerOrdersPage = () => {
             <CustomerSidebar />
 
             <main className="auth-homepage customer-orders-page">
-                <CustomerOrdersHeader />
+                <CustomerOrdersHeader
+                    filter={filter}
+                    setFilter={setFilter}
+                    sort={sort}
+                    setSort={setSort}
+                    search={search}
+                    setSearch={setSearch}
+                    count={filteredOrders.length}
+                />
 
                 <CustomerOrdersContent
                     loading={loading}
                     error={error}
-                    orders={orders}
+                    orders={filteredOrders}
                     getStatusMeta={getStatusMeta}
                     onOpenDetails={openOrderDetails}
                     onTrackOrder={setTrackingOrder}

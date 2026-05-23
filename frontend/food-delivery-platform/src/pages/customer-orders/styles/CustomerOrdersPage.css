@@ -7,6 +7,24 @@
     margin-bottom: 24px;
 }
 
+.customer-orders-page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.customer-orders-page-header .gradient-title {
+    margin: 0;
+    text-align: left;
+}
+
+@media (max-width: 720px) {
+    .customer-orders-page-header .gradient-title {
+        text-align: center;
+    }
+}
+
 .active-orders-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
