@@ -98,7 +98,7 @@ builder.Services.AddCors(options =>
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<SqlDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection"),
+        builder.Configuration.GetConnectionString("MenuServiceDatabase"),
         o => o.UseNetTopologySuite()
     ));
 
