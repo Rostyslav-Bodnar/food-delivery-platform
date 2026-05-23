@@ -89,7 +89,7 @@ builder.Services.AddCors(options =>
 
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("MenuServiceDatabase")));
 
 // Upstash-friendly: a full StackExchange.Redis connection string
 // (`host:port,password=...,ssl=true,abortConnect=false`) carries auth + TLS,
