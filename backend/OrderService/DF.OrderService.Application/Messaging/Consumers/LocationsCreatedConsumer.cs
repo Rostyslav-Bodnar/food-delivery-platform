@@ -83,15 +83,26 @@ public class LocationsCreatedConsumer(
                 return;
             }
 
-            var deliveryFee = DeliveryFeeCalculator.Calculate(order.TotalPrice, distanceKm);
-            var courierSharePercent = Math.Clamp(courierCompensationOptions.Value.CourierSharePercent, 0m, 1m);
-            var courierFee = decimal.Round(deliveryFee * courierSharePercent, 2, MidpointRounding.AwayFromZero);
-
             order.DeliverFromId = evt.DeliverFromId.Id;
             order.DeliverToId = evt.DeliverTo.Id;
-            order.DeliveryFee = deliveryFee;
-            order.CourierFee = courierFee;
-            order.Profit = deliveryFee - courierFee;
+
+            // Pickup: customer collects at the restaurant, so no delivery / courier fee.
+            if (order.DeliveryMethod == DF.OrderService.Domain.Entities.DeliveryMethod.Pickup)
+            {
+                order.DeliveryFee = 0m;
+                order.CourierFee = 0m;
+                order.Profit = 0m;
+            }
+            else
+            {
+                var deliveryFee = DeliveryFeeCalculator.Calculate(order.TotalPrice, distanceKm);
+                var courierSharePercent = Math.Clamp(courierCompensationOptions.Value.CourierSharePercent, 0m, 1m);
+                var courierFee = decimal.Round(deliveryFee * courierSharePercent, 2, MidpointRounding.AwayFromZero);
+
+                order.DeliveryFee = deliveryFee;
+                order.CourierFee = courierFee;
+                order.Profit = deliveryFee - courierFee;
+            }
 
             await orderRepository.Update(order);
             await _channel.BasicAckAsync(ea.DeliveryTag, multiple: false);

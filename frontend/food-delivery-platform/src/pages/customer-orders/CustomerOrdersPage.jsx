@@ -1,11 +1,4 @@
 import React from "react";
-import {
-    Bike,
-    CheckCircle2,
-    Clock3,
-    Package,
-    XCircle
-} from "lucide-react";
 
 import "./styles/CustomerOrdersPage.css";
 import CustomerSidebar from "../sidebars/CustomerSidebar";
@@ -17,6 +10,9 @@ import { useCustomerOrders } from "./hooks/useCustomerOrders";
 import { useCustomerOrderSelection } from "./hooks/useCustomerOrderSelection";
 import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
+import { changeOrderStatus } from "../../api/Order.ts";
+import { OrderStatus } from "../../models/enums/OrderStatus.ts";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 
 const CustomerOrdersPage = () => {
     const customerId = localStorage.getItem("currentAccountId");
@@ -26,8 +22,24 @@ const CustomerOrdersPage = () => {
         loading,
         error,
         cancellingOrderId,
-        cancelCustomerOrder
+        cancelCustomerOrder,
+        reloadOrders
     } = useCustomerOrders(customerId);
+
+    useOrderEventsSubscription({
+        enabled: Boolean(customerId),
+        onStatusChanged: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders?.({ silent: true })
+    });
     const {
         selectedOrder,
         openOrderDetails,
@@ -37,6 +49,20 @@ const CustomerOrdersPage = () => {
 
     const [orderToCancel, setOrderToCancel] = React.useState(null);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
+    const [confirmingDeliveryId, setConfirmingDeliveryId] = React.useState(null);
+
+    const confirmDelivered = async (order) => {
+        try {
+            setConfirmingDeliveryId(order.id);
+            await changeOrderStatus(order.id, OrderStatus.Delivered);
+            // Polling will move the order out of active and into history.
+        } catch (err) {
+            console.error("Failed to confirm delivery", err);
+            alert(err.message ?? "Failed to confirm delivery");
+        } finally {
+            setConfirmingDeliveryId(null);
+        }
+    };
 
     const confirmCancelOrder = async () => {
         if (!orderToCancel) {
@@ -72,21 +98,15 @@ const CustomerOrdersPage = () => {
                     onOpenDetails={openOrderDetails}
                     onTrackOrder={setTrackingOrder}
                     onRequestCancel={setOrderToCancel}
+                    onConfirmDelivered={confirmDelivered}
+                    confirmingDeliveryId={confirmingDeliveryId}
                     cancellingOrderId={cancellingOrderId}
                 />
             </main>
 
             {selectedOrder && (
                 <OrderDetailsComponent
-                    order={selectedOrder}
-                    statusMap={{
-                        preparing: { label: "Preparing", icon: Clock3 },
-                        "on-the-way": { label: "On the way", icon: Bike },
-                        "picked-up": { label: "Picked up", icon: Bike },
-                        new: { label: "New", icon: Package },
-                        cancelled: { label: "Cancelled", icon: XCircle },
-                        delivered: { label: "Delivered", icon: CheckCircle2 }
-                    }}
+                    orderId={selectedOrder.id}
                     onClose={closeOrderDetails}
                 />
             )}

@@ -20,6 +20,8 @@ public interface IOrderService
     Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId);
     Task<OrderResponse> ChangeOrderStatus(Guid orderId,  OrderStatus status);
     Task<OrderResponse> DeliverOrderAsync(Guid orderId, Guid courierId);
-    
+
     Task<bool> CancelOrderAsync(Guid orderId);
+
+    Task<OrderResponse> MarkCourierPaidAsync(Guid orderId, Guid courierId);
 }

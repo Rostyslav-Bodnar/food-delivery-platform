@@ -1,5 +1,5 @@
-﻿import React from "react";
-import { Truck, Clock } from "lucide-react";
+import React from "react";
+import { Truck } from "lucide-react";
 
 export default function DeliverySection({ order }) {
     return (
@@ -7,10 +7,8 @@ export default function DeliverySection({ order }) {
             <h4><Truck size={16} /> Delivery</h4>
 
             <div className="od-card">
-                <p><strong>Method:</strong> {order.deliveryMethod}</p>
-                <p className="muted">
-                    <Clock size={14} /> Estimated time: {order.eta}
-                </p>
+                <p><strong>Method:</strong> {order.deliveryMethod || "—"}</p>
+                <p className="muted">Delivery fee: {Number(order.deliveryFee ?? 0).toFixed(2)} ₴</p>
             </div>
         </section>
     );

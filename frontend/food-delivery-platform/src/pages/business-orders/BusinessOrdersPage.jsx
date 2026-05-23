@@ -17,6 +17,7 @@ import { useOrderFilter } from "./hooks/useOrderFilter";
 import { useOrderSelection } from "./hooks/useOrderSelection";
 import { useOrderStatus } from "./hooks/useOrderStatus";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 
 const STATUS_MAP = {
     pending: { label: "New", color: "#7c5cff", icon: Package },
@@ -31,11 +32,26 @@ const STATUS_MAP = {
 export default function BusinessOrdersPage({ userData }) {
     const businessId = localStorage.getItem("currentAccountId");
 
-    const { orders, setOrders, loading } = useBusinessOrders(businessId);
+    const { orders, setOrders, loading, reloadOrders } = useBusinessOrders(businessId);
     const { filter, setFilter, filteredOrders } = useOrderFilter(orders);
     const { selectedOrder, openOrder, closeOrder } = useOrderSelection();
     const { handleStatusChange } = useOrderStatus(setOrders);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
+
+    useOrderEventsSubscription({
+        enabled: Boolean(businessId),
+        onStatusChanged: (evt) => {
+            if (evt?.businessId === businessId) {
+                reloadOrders?.();
+            }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.businessId === businessId) {
+                reloadOrders?.();
+            }
+        },
+        onReconnected: () => reloadOrders?.()
+    });
 
     return (
         <div className="bh-page">
@@ -58,8 +74,7 @@ export default function BusinessOrdersPage({ userData }) {
 
             {selectedOrder && (
                 <OrderDetailsComponent
-                    order={selectedOrder}
-                    statusMap={STATUS_MAP}
+                    orderId={selectedOrder.id}
                     onClose={closeOrder}
                 />
             )}

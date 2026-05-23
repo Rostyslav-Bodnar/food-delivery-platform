@@ -193,6 +193,22 @@ export async function deliverOrder(
 }
 
 // =========================
+// MARK COURIER PAID (cash-on-delivery)
+// =========================
+export async function markCourierPaid(
+    orderId: string,
+    courierId: string
+): Promise<OrderResponse> {
+    const res = await api.patch<ApiResponse<OrderResponse>>(
+        "/order/courier/mark-paid",
+            null,
+            { params: { orderId, courierId } }
+    )
+
+    return res.data.data!
+}
+
+// =========================
 // TRACKING ACCESS TOKEN
 // =========================
 // Mints a short-lived JWT scoped to this order so the frontend can connect to

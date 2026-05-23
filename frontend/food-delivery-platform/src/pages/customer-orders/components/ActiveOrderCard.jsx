@@ -14,8 +14,13 @@ export default function ActiveOrderCard({
     onOpenDetails,
     onTrackOrder,
     onRequestCancel,
+    onConfirmDelivered,
+    confirmingDelivery,
     cancelling
 }) {
+    const canConfirmDelivered =
+        order.deliveryMethod !== "Pickup" && order.status === "picked-up";
+
     return (
         <div className="active-order-card">
             <div className="active-order-header">
@@ -65,13 +70,25 @@ export default function ActiveOrderCard({
             </div>
 
             <div className="active-order-footer">
-                <button className="track-btn" onClick={() => onTrackOrder(order)}>
-                    Track live
-                </button>
+                {order.deliveryMethod !== "Pickup" && (
+                    <button className="track-btn" onClick={() => onTrackOrder(order)}>
+                        Track live
+                    </button>
+                )}
 
                 <button className="details-btn" onClick={() => onOpenDetails(order)}>
                     Order details
                 </button>
+
+                {canConfirmDelivered && (
+                    <button
+                        className="track-btn"
+                        onClick={() => onConfirmDelivered?.(order)}
+                        disabled={confirmingDelivery}
+                    >
+                        {confirmingDelivery ? "Confirming..." : "Confirm received"}
+                    </button>
+                )}
 
                 {order.canCancel && (
                     <button

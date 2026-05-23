@@ -5,23 +5,39 @@ namespace DF.OrderService.Application.Services;
 
 public static class OrderStatusTransitions
 {
-    // Allowed forward transitions. Canceled is reachable from any non-terminal status.
-    private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> Allowed = new()
+    // Courier-delivered orders go through the full pickup-by-courier flow.
+    private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> DeliveryAllowed = new()
     {
         [OrderStatus.Preparing]      = new() { OrderStatus.Ready, OrderStatus.Canceled },
         [OrderStatus.Ready]          = new() { OrderStatus.OutForDelivery, OrderStatus.Canceled },
         [OrderStatus.OutForDelivery] = new() { OrderStatus.PickedUp, OrderStatus.Canceled },
         [OrderStatus.PickedUp]       = new() { OrderStatus.Delivered, OrderStatus.Canceled },
-        [OrderStatus.Delivered]      = new(),    // terminal
-        [OrderStatus.Canceled]       = new(),    // terminal
+        [OrderStatus.Delivered]      = new(),
+        [OrderStatus.Canceled]       = new(),
     };
 
-    public static bool IsAllowed(OrderStatus from, OrderStatus to)
-        => from == to || Allowed.GetValueOrDefault(from, [])!.Contains(to);
-
-    public static void EnsureAllowed(OrderStatus from, OrderStatus to)
+    // Customer-pickup orders have no courier — the business marks them Delivered
+    // directly from Ready when the customer collects the food.
+    private static readonly Dictionary<OrderStatus, HashSet<OrderStatus>> PickupAllowed = new()
     {
-        if (!IsAllowed(from, to))
-            throw new IllegalStatusTransitionException(from.ToString(), to.ToString());
+        [OrderStatus.Preparing] = new() { OrderStatus.Ready, OrderStatus.Canceled },
+        [OrderStatus.Ready]     = new() { OrderStatus.Delivered, OrderStatus.Canceled },
+        [OrderStatus.Delivered] = new(),
+        [OrderStatus.Canceled]  = new(),
+    };
+
+    public static bool IsAllowed(Order order, OrderStatus to)
+    {
+        var rules = order.DeliveryMethod == DeliveryMethod.Pickup
+            ? PickupAllowed
+            : DeliveryAllowed;
+        return order.OrderStatus == to
+            || rules.GetValueOrDefault(order.OrderStatus, [])!.Contains(to);
+    }
+
+    public static void EnsureAllowed(Order order, OrderStatus to)
+    {
+        if (!IsAllowed(order, to))
+            throw new IllegalStatusTransitionException(order.OrderStatus.ToString(), to.ToString());
     }
 }

@@ -5,10 +5,67 @@ using Microsoft.AspNetCore.SignalR;
 
 namespace DF.TrackingService.API.Hubs;
 
-[Authorize(AuthenticationSchemes = "TrackingHub")]
+[Authorize(AuthenticationSchemes = "TrackingHub,Bearer")]
 public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 {
     private const string GroupPrefix = "order:";
+
+    /// <summary>
+    /// User-scoped subscription used by the order list pages. Reads the
+    /// account_id + account_type claims from the user's main JWT and joins the
+    /// matching customer/business/courier group so the client receives an
+    /// OrderStatusChanged event for every order it owns/handles.
+    /// </summary>
+    public async Task SubscribeToUserOrders()
+    {
+        var accountId = Context.User?.FindFirst("account_id")?.Value;
+        var accountType = Context.User?.FindFirst("account_type")?.Value;
+
+        if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(accountType))
+            throw new HubException("Missing account_id or account_type claim");
+
+        var groupName = accountType.ToLowerInvariant() switch
+        {
+            "customer" => $"customer:{accountId}",
+            "business" => $"business:{accountId}",
+            "courier"  => $"courier:{accountId}",
+            _ => throw new HubException($"Unsupported account_type '{accountType}'")
+        };
+
+        await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+        // Every connected courier also watches the shared "available orders"
+        // feed so they all see Ready/Accepted/Cancelled transitions live.
+        if (string.Equals(accountType, "courier", StringComparison.OrdinalIgnoreCase))
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "couriers:available");
+        }
+    }
+
+    public async Task UnsubscribeFromUserOrders()
+    {
+        var accountId = Context.User?.FindFirst("account_id")?.Value;
+        var accountType = Context.User?.FindFirst("account_type")?.Value;
+
+        if (string.IsNullOrWhiteSpace(accountId) || string.IsNullOrWhiteSpace(accountType))
+            return;
+
+        var groupName = accountType.ToLowerInvariant() switch
+        {
+            "customer" => $"customer:{accountId}",
+            "business" => $"business:{accountId}",
+            "courier"  => $"courier:{accountId}",
+            _ => null
+        };
+
+        if (groupName is not null)
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+        if (string.Equals(accountType, "courier", StringComparison.OrdinalIgnoreCase))
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "couriers:available");
+        }
+    }
 
     public async Task SendLocation(CourierLocationDto dto)
     {

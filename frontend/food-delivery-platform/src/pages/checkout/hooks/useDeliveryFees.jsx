@@ -55,9 +55,10 @@ const pickNearest = (locations, customer) => {
     return best ? { location: best, distanceKm: bestDist } : null;
 };
 
-const useDeliveryFees = (groupedItems, customerLocation) => {
+const useDeliveryFees = (groupedItems, customerLocation, getSettingsFor) => {
     // Stable signature so the effect doesn't re-run on every render of useCart,
-    // which builds a fresh groupedItems object reference each time.
+    // which builds a fresh groupedItems object reference each time. Also includes
+    // the delivery type so a pickup↔delivery toggle re-runs the effect.
     const cartSignature = useMemo(() => {
         return Object.entries(groupedItems ?? {})
             .map(([restaurant, items]) => {
@@ -66,11 +67,12 @@ const useDeliveryFees = (groupedItems, customerLocation) => {
                     .map((i) => `${i.id}x${i.quantity ?? 1}@${i.price}`)
                     .sort()
                     .join(",");
-                return `${restaurant}|${businessId}|${dishes}`;
+                const deliveryType = getSettingsFor?.(restaurant)?.deliveryType ?? "delivery";
+                return `${restaurant}|${businessId}|${deliveryType}|${dishes}`;
             })
             .sort()
             .join("||");
-    }, [groupedItems]);
+    }, [groupedItems, getSettingsFor]);
 
     const customerLat = customerLocation?.latitude;
     const customerLng = customerLocation?.longitude;
@@ -81,16 +83,18 @@ const useDeliveryFees = (groupedItems, customerLocation) => {
 
     useEffect(() => {
         const restaurants = Object.keys(groupedItems ?? {});
-        const hasCustomerCoords =
-            Number.isFinite(customerLat) && Number.isFinite(customerLng);
 
-        if (!hasCustomerCoords || restaurants.length === 0) {
+        if (restaurants.length === 0) {
             setFeesByRestaurant({});
             setResolvedByRestaurant({});
             return undefined;
         }
 
-        const customer = { latitude: customerLat, longitude: customerLng };
+        const hasCustomerCoords =
+            Number.isFinite(customerLat) && Number.isFinite(customerLng);
+        const customer = hasCustomerCoords
+            ? { latitude: customerLat, longitude: customerLng }
+            : null;
         let cancelled = false;
         setLoading(true);
 
@@ -102,6 +106,15 @@ const useDeliveryFees = (groupedItems, customerLocation) => {
                 const items = groupedItems[restaurant];
                 const businessId = items?.[0]?.businessId;
                 if (!businessId) return;
+
+                // Pickup: customer collects at the restaurant, so no delivery fee.
+                // Works even when the customer hasn't dropped a delivery pin.
+                if (getSettingsFor?.(restaurant)?.deliveryType === "pickup") {
+                    fees[restaurant] = 0;
+                    return;
+                }
+
+                if (!customer) return; // delivery restaurant but no customer pin yet
 
                 try {
                     const raw = await getBusinessLocationsByBusinessId(businessId);

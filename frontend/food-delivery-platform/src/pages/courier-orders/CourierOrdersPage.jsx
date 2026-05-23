@@ -16,13 +16,15 @@ import {
     deliverOrder,
     getActiveCourierOrders,
     getOrdersByCourier,
-    getCourierOrderHistory
+    getCourierOrderHistory,
+    markCourierPaid
 } from "../../api/Order.ts";
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
 import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
 import useCourierTracking from "../../hooks/useCourierTracking.jsx";
 import useCourierEta from "../../hooks/useCourierEta.js";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 import CourierRouteMap from "./components/CourierRouteMap.jsx";
 import {
     calculateDistanceKm,
@@ -202,40 +204,65 @@ export default function CourierOrdersPage() {
             snapshot.stage === "delivered" ||
             snapshotStatus === OrderStatus.Delivered
         ) {
-            console.log("[Tracking] Order delivered");
-            clearCourierDeliveryStage(activeOrder.id);
+            // For cash-on-delivery orders, the courier still needs to confirm
+            // cash receipt — leave the order in active until that happens. The
+            // SignalR-driven reloadOrders + backend's GetActiveByCourierIdAsync
+            // filter will keep it accurate.
+            const cashPending =
+                activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid;
 
-            setHistory(current => {
-                if (current.some(order => order.id === activeOrder.id))
-                    return current;
+            if (cashPending) {
+                // Just mark the order as delivered locally so the dropoff UI
+                // (with the "Cash received" button) keeps rendering; let the
+                // next reload patch up the rest.
+                setActiveOrders(current =>
+                    current.map(order =>
+                        order.id === activeOrder.id
+                            ? { ...order, orderStatus: "delivered" }
+                            : order
+                    )
+                );
+            } else {
+                console.log("[Tracking] Order delivered");
+                clearCourierDeliveryStage(activeOrder.id);
 
-                return [
-                    {
-                        ...activeOrder,
-                        orderStatus: OrderStatus.Delivered
-                    },
-                    ...current
-                ];
-            });
+                setHistory(current => {
+                    if (current.some(order => order.id === activeOrder.id))
+                        return current;
+                    return [
+                        { ...activeOrder, orderStatus: OrderStatus.Delivered },
+                        ...current
+                    ];
+                });
 
-
-            setActiveOrders(current => {
-                const alreadyUpdated = current.some(
-                    o => o.id === activeOrder.id && o.orderStatus === OrderStatus.PickedUp
+                setActiveOrders(current =>
+                    current.filter(order => order.id !== activeOrder.id)
                 );
 
-                if (alreadyUpdated) return current;
-
-                return current.map(order =>
-                    order.id === activeOrder.id
-                        ? { ...order, orderStatus: OrderStatus.PickedUp }
-                        : order
-                );
-            })
-
-            setRoute(null);
+                setRoute(null);
+            }
         }
     }, [activeOrder?.id, snapshot?.stage, snapshot?.orderStatus]);
+
+    const reloadOrders = React.useCallback(async ({ silent = false } = {}) => {
+        if (!courierId) return;
+        try {
+            if (!silent) setLoading(true);
+            const [available, active, historyData] = await Promise.all([
+                getOrdersByCourier(courierId),
+                getActiveCourierOrders(courierId),
+                getCourierOrderHistory(courierId)
+            ]);
+
+            setAvailableOrders(available.map(mapCourierOrder));
+            setActiveOrders(active.map(mapCourierOrder));
+            setHistory(historyData.map(mapCourierOrder));
+        } catch (error) {
+            console.error("[Orders] Failed", error);
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    }, [courierId]);
 
     useEffect(() => {
         if (!courierId) {
@@ -243,51 +270,35 @@ export default function CourierOrdersPage() {
             return undefined;
         }
 
-        let isMounted = true;
+        reloadOrders();
+        const intervalId = window.setInterval(() => reloadOrders({ silent: true }), 30000);
+        return () => window.clearInterval(intervalId);
+    }, [courierId, reloadOrders]);
 
-        const loadOrders = async () => {
-            console.log("[Orders] Loading started");
-            try {
-                setLoading(true);
-                const [available, active, historyData] = await Promise.all([
-                    getOrdersByCourier(courierId),
-                    getActiveCourierOrders(courierId),
-                    getCourierOrderHistory(courierId)
-                ]);
-                console.log("[Orders] API response", {
-                    available,
-                    active,
-                    historyData
-                });
-                if (!isMounted) {
-                    return;
-                }
-
-                setAvailableOrders(available.map(mapCourierOrder));
-                setActiveOrders(active.map(mapCourierOrder));
-                setHistory(historyData.map(mapCourierOrder));
-            } catch (error) {
-                console.error(
-                    "[Orders] Failed",
-                    error
-                );
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-                console.log("[Orders] Loading finished");
+    useOrderEventsSubscription({
+        enabled: Boolean(courierId),
+        onStatusChanged: (evt) => {
+            const matchesAssigned =
+                evt?.courierId && evt.courierId === courierId;
+            // Every connected courier is in the couriers:available group, so
+            // a Ready/Canceled/Accepted transition arrives even when this
+            // courier isn't the one assigned. Always refresh the available pool
+            // when the event touched a Ready state.
+            const touchesReady =
+                evt?.newStatus === "Ready"
+                || evt?.previousStatus === "Ready"
+                || evt?.newStatus === "Canceled";
+            if (matchesAssigned || touchesReady) {
+                reloadOrders({ silent: true });
             }
-        };
-
-        loadOrders();
-        const intervalId = window.setInterval(loadOrders, 30000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-            console.log("[Orders] cleanup");
-        };
-    }, [courierId]);
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.courierId === courierId) {
+                reloadOrders({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders({ silent: true })
+    });
 
     useEffect(() => {
         let isMounted = true;
@@ -432,30 +443,21 @@ export default function CourierOrdersPage() {
         }
     };
 
-    const handleDelivered = async () => {
-        console.log(
-            "[Delivered clicked]"
-        );
-        if (!activeOrder) {
-            return;
-        }
+    const handleMarkPaid = async () => {
+        if (!activeOrder) return;
 
         try {
             setActionLoading(activeOrder.id);
-            await changeOrderStatus(activeOrder.id, OrderStatus.Delivered);
-            console.log(
-                "[Delivered status changed]"
+            await markCourierPaid(activeOrder.id, courierId);
+            // Optimistic; polling will reconcile from the API in any case.
+            setActiveOrders((current) =>
+                current.map((o) =>
+                    o.id === activeOrder.id ? { ...o, courierPaid: true } : o
+                )
             );
-            await publishStage("delivered");
-            console.log(
-                "[Delivered stage published]"
-            );
-            clearCourierDeliveryStage(activeOrder.id);
-            setHistory((current) => [{ ...activeOrder, orderStatus: "delivered" }, ...current]);
-            setActiveOrders([]);
-            setRoute(null);
         } catch (error) {
-            console.error("Failed to finish delivery", error);
+            console.error("Failed to confirm cash receipt", error);
+            alert(error.message ?? "Failed to confirm cash receipt");
         } finally {
             setActionLoading("");
         }
@@ -680,15 +682,19 @@ export default function CourierOrdersPage() {
                                             <div className="courier-status-note">
                                                 Waiting for the restaurant to confirm pickup.
                                             </div>
-                                        ) : (
+                                        ) : activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid ? (
                                             <button
                                                 type="button"
                                                 className="courier-primary-btn courier-primary-btn--success"
-                                                onClick={handleDelivered}
+                                                onClick={handleMarkPaid}
                                                 disabled={actionLoading === activeOrder.id}
                                             >
-                                                {actionLoading === activeOrder.id ? "Finishing..." : "Delivered to customer"}
+                                                {actionLoading === activeOrder.id ? "Confirming..." : "Cash received"}
                                             </button>
+                                        ) : (
+                                            <div className="courier-status-note">
+                                                Waiting for the customer to confirm delivery.
+                                            </div>
                                         )}
                                     </div>
                                 </>

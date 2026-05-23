@@ -1,10 +1,13 @@
-﻿import React from "react";
+import React from "react";
 
 export default function StatusActions({
                                           status,
                                           orderId,
+                                          deliveryMethod,
                                           onStatusChange
                                       }) {
+    const isPickup = deliveryMethod === "Pickup";
+
     return (
         <div className="status-actions">
             {status === "pending" && (
@@ -28,9 +31,15 @@ export default function StatusActions({
             )}
 
             {status === "ready" && (
-                <span className="status-actions__note">
-                    Waiting for courier
-                </span>
+                isPickup ? (
+                    <button onClick={() => onStatusChange(orderId, "delivered")}>
+                        Mark Delivered
+                    </button>
+                ) : (
+                    <span className="status-actions__note">
+                        Waiting for courier
+                    </span>
+                )
             )}
 
             {status === "on-the-way" && (

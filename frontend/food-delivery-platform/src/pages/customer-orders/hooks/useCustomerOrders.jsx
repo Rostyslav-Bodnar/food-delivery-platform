@@ -7,9 +7,10 @@ import { buildLocation, formatLocation, hasCoordinates } from "../../../utils/or
 
 const mapStatus = (status) => {
     switch (status) {
-        case "Ready":
         case "Preparing":
             return "preparing";
+        case "Ready":
+            return "ready";
         case "OnTheWay":
         case "OutForDelivery":
             return "on-the-way";
@@ -51,6 +52,9 @@ const mapOrder = (order) => {
         courierCoords: toCoords(courierLocation),
         status: mapStatus(order.orderStatus),
         rawStatus: order.orderStatus,
+        deliveryMethod: order.deliveryMethod ?? "Delivery",
+        paymentMethod: order.paymentMethod ?? "",
+        courierPaid: Boolean(order.courierPaid),
         total: order.totalPrice,
         createdAt: new Date(order.orderDate).toLocaleString(),
         createdAtRaw: order.orderDate,
@@ -71,29 +75,34 @@ export function useCustomerOrders(customerId) {
     const [error, setError] = useState("");
     const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
-    const loadOrders = useCallback(async () => {
+    const loadOrders = useCallback(async ({ silent = false } = {}) => {
         if (!customerId) {
             setOrders([]);
             setLoading(false);
             return;
         }
 
-        setLoading(true);
-        setError("");
+        if (!silent) setLoading(true);
+        if (!silent) setError("");
 
         try {
             const data = await getCustomerOrders(customerId);
             setOrders(data.map(mapOrder));
         } catch (loadError) {
             console.error("Failed to load orders", loadError);
-            setError("Failed to load active orders.");
+            if (!silent) setError("Failed to load active orders.");
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     }, [customerId]);
 
     useEffect(() => {
         loadOrders();
+        const intervalId = window.setInterval(
+            () => loadOrders({ silent: true }),
+            30000
+        );
+        return () => window.clearInterval(intervalId);
     }, [loadOrders]);
 
     const cancelCustomerOrder = async (orderId) => {

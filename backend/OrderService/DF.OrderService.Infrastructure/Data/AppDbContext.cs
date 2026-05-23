@@ -46,6 +46,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
                 .HasConversion<int>()
                 .IsRequired();
 
+            entity.Property(o => o.DeliveryMethod)
+                .HasConversion<int>()
+                .IsRequired();
+
             entity.Property(o => o.CourierPaid)
                 .IsRequired();
 

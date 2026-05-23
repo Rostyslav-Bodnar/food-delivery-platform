@@ -47,7 +47,7 @@ public class OrderService(
             {
                 OrderId = Guid.Empty,
                 DishId = d.DishId,
-                Quantity = 1,
+                Quantity = d.Quantity > 0 ? d.Quantity : 1,
                 UnitPrice = dish.Price,
                 DishName = dish.Name
             };
@@ -161,7 +161,7 @@ public class OrderService(
                 {
                     OrderId = Guid.Empty,
                     DishId = d.DishId,
-                    Quantity = 1,
+                    Quantity = d.Quantity > 0 ? d.Quantity : 1,
                     UnitPrice = dish.Price,
                     DishName = dish.Name
                 };
@@ -299,7 +299,9 @@ public class OrderService(
             CourierName: courier is null
                 ? null
                 : $"{courier.Name} {courier.Surname}",
-            CourierPhoneNumber: courier?.PhoneNumber);
+            CourierPhoneNumber: courier?.PhoneNumber,
+            DeliveryMethod: order.DeliveryMethod.ToString(),
+            PaymentMethod: order.PaymentMethod.ToString());
     }
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
@@ -353,7 +355,9 @@ public class OrderService(
                     ? string.Empty
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
-                dishes: MapDishResponses(order));
+                dishes: MapDishResponses(order),
+                DeliveryMethod: order.DeliveryMethod.ToString(),
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 
@@ -384,7 +388,8 @@ public class OrderService(
             .Where(x => x.OrderStatus == OrderStatus.Ready
                      && x.DeliveredById == null
                      && x.DeliverToId.HasValue
-                     && x.DeliverFromId.HasValue)
+                     && x.DeliverFromId.HasValue
+                     && x.DeliveryMethod != DeliveryMethod.Pickup)
             .ToList();
 
         return await BuildCourierOrdersAsync(orders);
@@ -392,9 +397,13 @@ public class OrderService(
 
     public async Task<IEnumerable<CourierOrderResponse>> GetActiveByCourierIdAsync(Guid courierId)
     {
+        // A cash-on-delivery order stays "active" for the courier until they
+        // confirm cash receipt, even after the customer marks it Delivered —
+        // otherwise the courier loses access to the "Cash received" button.
         var orders = (await orderRepository.GetOrdersByCourierIdAsync(courierId))
             .Where(x => x.OrderStatus != OrderStatus.Canceled
-                     && x.OrderStatus != OrderStatus.Delivered
+                     && (x.OrderStatus != OrderStatus.Delivered
+                         || (x.PaymentMethod == PaymentMethod.CashOnDelivery && !x.CourierPaid))
                      && x.DeliverToId.HasValue
                      && x.DeliverFromId.HasValue)
             .ToList();
@@ -404,9 +413,12 @@ public class OrderService(
 
     public async Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId)
     {
+        // Inverse of GetActiveByCourierIdAsync — cash-delivered-not-paid orders
+        // are NOT in history yet; they're still active until cash is confirmed.
         var orders = (await orderRepository.GetOrdersByCourierIdAsync(courierId))
             .Where(x => x.OrderStatus == OrderStatus.Canceled
-                     || x.OrderStatus == OrderStatus.Delivered)
+                     || (x.OrderStatus == OrderStatus.Delivered
+                         && !(x.PaymentMethod == PaymentMethod.CashOnDelivery && !x.CourierPaid)))
             .ToList();
 
         return await BuildCourierOrdersAsync(orders);
@@ -424,10 +436,9 @@ public class OrderService(
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
         var targetStatus = ParseOrderStatus(status);
+        var previousStatus = order.OrderStatus;
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            targetStatus);
+        OrderStatusTransitions.EnsureAllowed(order, targetStatus);
 
         ValidateCourierAssignment(order, targetStatus);
 
@@ -446,6 +457,9 @@ public class OrderService(
             publishPickedUp,
             publishDelivered);
 
+        if (previousStatus != targetStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
+
         await orderRepository.Update(order);
 
         var business = await SafeAwait(
@@ -463,9 +477,13 @@ public class OrderService(
         var order = await orderRepository.Get(orderId)
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            OrderStatus.OutForDelivery);
+        if (order.DeliveryMethod == DeliveryMethod.Pickup)
+        {
+            throw new OrderStateException(
+                "Pickup orders cannot be claimed by couriers; customer collects at the restaurant.");
+        }
+
+        OrderStatusTransitions.EnsureAllowed(order, OrderStatus.OutForDelivery);
 
         if (order.DeliveredById is not null
             && order.DeliveredById != courierId)
@@ -474,8 +492,12 @@ public class OrderService(
                 "Order is already assigned to another courier");
         }
 
+        var previousStatus = order.OrderStatus;
         order.DeliveredById = courierId;
         order.OrderStatus = OrderStatus.OutForDelivery;
+
+        if (previousStatus != order.OrderStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
 
         await orderRepository.Update(order);
 
@@ -492,10 +514,9 @@ public class OrderService(
         var order = await orderRepository.Get(orderId)
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            OrderStatus.Canceled);
+        OrderStatusTransitions.EnsureAllowed(order, OrderStatus.Canceled);
 
+        var previousStatus = order.OrderStatus;
         order.OrderStatus = OrderStatus.Canceled;
 
         await outboxWriter.EnqueueAsync(
@@ -503,9 +524,66 @@ public class OrderService(
                 order.Id,
                 order.PaymentMethod.ToString()));
 
+        if (previousStatus != order.OrderStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
+
         await orderRepository.Update(order);
 
         return true;
+    }
+
+    public async Task<OrderResponse> MarkCourierPaidAsync(Guid orderId, Guid courierId)
+    {
+        var order = await orderRepository.Get(orderId)
+                    ?? throw new NotFoundException($"Order {orderId} not found");
+
+        if (order.DeliveredById != courierId)
+        {
+            throw new OrderStateException(
+                "Only the assigned courier can mark this order as paid.");
+        }
+
+        if (order.PaymentMethod != PaymentMethod.CashOnDelivery)
+        {
+            throw new OrderStateException(
+                "Only cash-on-delivery orders can be marked paid manually; card payments settle via Stripe payout.");
+        }
+
+        // Courier must have at least picked up the food before confirming cash.
+        if (order.OrderStatus is not (OrderStatus.PickedUp or OrderStatus.Delivered))
+        {
+            throw new OrderStateException(
+                "Order must be picked up before the courier can confirm cash receipt.");
+        }
+
+        if (order.CourierPaid)
+        {
+            // Idempotent — return current state without throwing.
+            var existingBusiness = await SafeAwait(
+                () => userServiceRpcClient.GetBusinessAccountAsync(
+                    new GetBusinessAccountRequest(order.BusinessId)),
+                fallback: (GetBusinessAccountResponse?)null);
+            return MapToOrderResponse(order, existingBusiness);
+        }
+
+        order.CourierPaid = true;
+
+        await outboxWriter.EnqueueAsync(
+            new OrderCourierPaidEvent(
+                OrderId: order.Id,
+                BusinessId: order.BusinessId,
+                CustomerId: order.OrderedBy,
+                CourierId: courierId,
+                PaidAtUtc: DateTime.UtcNow));
+
+        await orderRepository.Update(order);
+
+        var business = await SafeAwait(
+            () => userServiceRpcClient.GetBusinessAccountAsync(
+                new GetBusinessAccountRequest(order.BusinessId)),
+            fallback: (GetBusinessAccountResponse?)null);
+
+        return MapToOrderResponse(order, business);
     }
 
     // =========================
@@ -570,7 +648,9 @@ public class OrderService(
                     ? string.Empty
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
-                dishes: MapDishResponses(order));
+                dishes: MapDishResponses(order),
+                DeliveryMethod: order.DeliveryMethod.ToString(),
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 
@@ -611,7 +691,8 @@ public class OrderService(
                 CourierFee: order.CourierFee,
                 CourierPaid: order.CourierPaid,
                 OrderStatus: order.OrderStatus.ToString(),
-                Profit: order.Profit);
+                Profit: order.Profit,
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 
@@ -839,7 +920,8 @@ public class OrderService(
             TotalPrice = dishes.Sum(x => x.UnitPrice * x.Quantity),
             OrderStatus = OrderStatus.Preparing,
             OrderNumber = GenerateOrderNumber(),
-            PaymentMethod = request.PaymentMethod.ToDomain()
+            PaymentMethod = request.PaymentMethod.ToDomain(),
+            DeliveryMethod = request.DeliveryMethod.ToDomain()
         };
     }
 
@@ -880,10 +962,28 @@ public class OrderService(
         }
     }
 
+    // Generic status-changed event for live SignalR fan-out via TrackingService.
+    private Task EnqueueStatusChangedAsync(Order order, OrderStatus previousStatus)
+    {
+        return outboxWriter.EnqueueAsync(
+            new OrderStatusChangedEvent(
+                OrderId: order.Id,
+                BusinessId: order.BusinessId,
+                CustomerId: order.OrderedBy,
+                CourierId: order.DeliveredById,
+                NewStatus: order.OrderStatus.ToString(),
+                PreviousStatus: previousStatus.ToString(),
+                ChangedAtUtc: DateTime.UtcNow));
+    }
+
     private static void ValidateCourierAssignment(
         Order order,
         OrderStatus targetStatus)
     {
+        // Pickup orders have no courier; the business marks them Delivered directly.
+        if (order.DeliveryMethod == DeliveryMethod.Pickup)
+            return;
+
         var requiresCourier =
             targetStatus == OrderStatus.PickedUp
             || targetStatus == OrderStatus.Delivered;

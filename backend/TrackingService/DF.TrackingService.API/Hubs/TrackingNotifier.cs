@@ -32,4 +32,94 @@ public sealed class TrackingNotifier(IHubContext<CourierTrackingHub> hubContext)
 
         return Task.WhenAll(tasks);
     }
+
+    public Task OrderStatusChangedAsync(
+        Guid orderId,
+        Guid businessId,
+        Guid customerId,
+        Guid? courierId,
+        string newStatus,
+        string previousStatus,
+        DateTime changedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var payload = new
+        {
+            orderId,
+            businessId,
+            customerId,
+            courierId,
+            newStatus,
+            previousStatus,
+            changedAtUtc
+        };
+
+        var tasks = new List<Task>
+        {
+            // Existing per-order subscribers (LiveOrderTrackingModal etc.) get the
+            // simple OrderStatusUpdated event for backwards compatibility.
+            hubContext.Clients.Group($"order:{orderId}")
+                .SendAsync("OrderStatusUpdated", newStatus, cancellationToken),
+            hubContext.Clients.Group($"order:{orderId}")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken),
+
+            // User-scoped subscribers (list pages) get the rich payload so they
+            // can locate the order in their local state and patch/refresh it.
+            hubContext.Clients.Group($"customer:{customerId}")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken),
+            hubContext.Clients.Group($"business:{businessId}")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken)
+        };
+
+        if (courierId.HasValue && courierId.Value != Guid.Empty)
+        {
+            tasks.Add(hubContext.Clients.Group($"courier:{courierId.Value}")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken));
+        }
+
+        // Couriers' "available orders" feed depends on Ready transitions — fan
+        // out to every connected courier so courier B sees that courier A just
+        // claimed an order (or that a new one became Ready, or was cancelled).
+        if (newStatus == "Ready"
+            || previousStatus == "Ready"
+            || newStatus == "Canceled")
+        {
+            tasks.Add(hubContext.Clients.Group("couriers:available")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken));
+        }
+
+        return Task.WhenAll(tasks);
+    }
+
+    public Task OrderCourierPaidAsync(
+        Guid orderId,
+        Guid businessId,
+        Guid customerId,
+        Guid courierId,
+        DateTime paidAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var payload = new
+        {
+            orderId,
+            businessId,
+            customerId,
+            courierId,
+            paidAtUtc
+        };
+
+        var tasks = new List<Task>
+        {
+            hubContext.Clients.Group($"order:{orderId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"customer:{customerId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"business:{businessId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"courier:{courierId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken)
+        };
+
+        return Task.WhenAll(tasks);
+    }
 }
