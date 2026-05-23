@@ -4,6 +4,8 @@
 # Rider ignored files
 /modules.xml
 /projectSettingsUpdater.xml
+/modules.xml
+/.idea.MenuService.iml
 /contentModel.xml
 /.idea.food-delivery-platform.iml
 # Editor-based HTTP Client requests
