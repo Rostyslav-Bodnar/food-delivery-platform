@@ -35,7 +35,7 @@ const CheckoutPage = () => {
         location
     } = useLocationPicker();
     const { feesByRestaurant, resolvedByRestaurant } =
-        useDeliveryFees(groupedItems, location);
+        useDeliveryFees(groupedItems, location, getSettingsFor);
 
     const {
         getRestaurantSubtotal,

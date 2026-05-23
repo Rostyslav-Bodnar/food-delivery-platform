@@ -1,11 +1,4 @@
 import React from "react";
-import {
-    Bike,
-    CheckCircle2,
-    Clock3,
-    Package,
-    XCircle
-} from "lucide-react";
 
 import "./styles/CustomerOrdersPage.css";
 import CustomerSidebar from "../sidebars/CustomerSidebar";
@@ -78,15 +71,7 @@ const CustomerOrdersPage = () => {
 
             {selectedOrder && (
                 <OrderDetailsComponent
-                    order={selectedOrder}
-                    statusMap={{
-                        preparing: { label: "Preparing", icon: Clock3 },
-                        "on-the-way": { label: "On the way", icon: Bike },
-                        "picked-up": { label: "Picked up", icon: Bike },
-                        new: { label: "New", icon: Package },
-                        cancelled: { label: "Cancelled", icon: XCircle },
-                        delivered: { label: "Delivered", icon: CheckCircle2 }
-                    }}
+                    orderId={selectedOrder.id}
                     onClose={closeOrderDetails}
                 />
             )}

@@ -18,6 +18,9 @@ export function useBusinessOrders(businessId) {
     useEffect(() => {
         if (!businessId) return;
 
+        let isMounted = true;
+        let firstLoad = true;
+
         const loadOrders = async () => {
             try {
                 const data = await getOrdersByBusiness(businessId);
@@ -45,6 +48,7 @@ export function useBusinessOrders(businessId) {
                         total: o.totalPrice,
                         status: BACKEND_STATUS_MAP[o.orderStatus] ?? "pending",
                         rawStatus: o.orderStatus,
+                        deliveryMethod: o.deliveryMethod ?? "Delivery",
                         courier: o.courierName ? { name: o.courierName } : null,
                         items: o.dishes.map((d) => ({
                             name: d.dishName,
@@ -54,15 +58,24 @@ export function useBusinessOrders(businessId) {
                     };
                 });
 
-                setOrders(mapped);
+                if (isMounted) setOrders(mapped);
             } catch (e) {
                 console.error("Failed to load business orders", e);
             } finally {
-                setLoading(false);
+                if (firstLoad && isMounted) {
+                    setLoading(false);
+                    firstLoad = false;
+                }
             }
         };
 
         loadOrders();
+        const intervalId = window.setInterval(loadOrders, 30000);
+
+        return () => {
+            isMounted = false;
+            window.clearInterval(intervalId);
+        };
     }, [businessId]);
 
     return { orders, setOrders, loading };

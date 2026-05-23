@@ -65,9 +65,11 @@ export default function ActiveOrderCard({
             </div>
 
             <div className="active-order-footer">
-                <button className="track-btn" onClick={() => onTrackOrder(order)}>
-                    Track live
-                </button>
+                {order.deliveryMethod !== "Pickup" && (
+                    <button className="track-btn" onClick={() => onTrackOrder(order)}>
+                        Track live
+                    </button>
+                )}
 
                 <button className="details-btn" onClick={() => onOpenDetails(order)}>
                     Order details

@@ -58,8 +58,7 @@ export default function BusinessOrdersPage({ userData }) {
 
             {selectedOrder && (
                 <OrderDetailsComponent
-                    order={selectedOrder}
-                    statusMap={STATUS_MAP}
+                    orderId={selectedOrder.id}
                     onClose={closeOrder}
                 />
             )}

@@ -15,7 +15,7 @@ export default function ActiveOrdersList({
                 <ActiveOrderCard
                     key={order.id}
                     order={order}
-                    statusMeta={getStatusMeta(order.status)}
+                    statusMeta={getStatusMeta(order.status, order.deliveryMethod)}
                     onOpenDetails={onOpenDetails}
                     onTrackOrder={onTrackOrder}
                     onRequestCancel={onRequestCancel}

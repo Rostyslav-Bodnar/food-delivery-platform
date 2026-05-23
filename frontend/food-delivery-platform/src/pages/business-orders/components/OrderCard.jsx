@@ -51,6 +51,7 @@ export default function OrderCard({
                 <StatusActions
                     status={order.status}
                     orderId={order.id}
+                    deliveryMethod={order.deliveryMethod}
                     onStatusChange={onStatusChange}
                 />
 

@@ -119,7 +119,8 @@ const useOrderSubmit = (
             const resolveBusinessLocation = async (
                 businessId,
                 restaurant,
-                customerLocation
+                customerLocation,
+                isPickup
             ) => {
                 // useDeliveryFees may have already resolved the nearest location for
                 // delivery-fee preview; reuse it to avoid a second roundtrip.
@@ -132,12 +133,6 @@ const useOrderSubmit = (
                     return businessLocationCache[businessId];
                 }
 
-                if (!customerLocation?.latitude || !customerLocation?.longitude) {
-                    throw new Error(
-                        `The customer's address does not include coordinates (restaurant=${restaurant})`
-                    );
-                }
-
                 const locations = await getBusinessLocationsByBusinessId(businessId);
                 const normalized = (locations ?? [])
                     .map(normalizeLocation)
@@ -147,6 +142,19 @@ const useOrderSubmit = (
 
                 if (normalized.length === 0) {
                     throw new Error(`The restaurant ${restaurant} has no valid locations`);
+                }
+
+                // Pickup: customer collects at the restaurant, so there's no
+                // customer pin to compare against — use the first available location.
+                if (isPickup) {
+                    businessLocationCache[businessId] = normalized[0];
+                    return normalized[0];
+                }
+
+                if (!customerLocation?.latitude || !customerLocation?.longitude) {
+                    throw new Error(
+                        `The customer's address does not include coordinates (restaurant=${restaurant})`
+                    );
                 }
 
                 let best = normalized[0];
@@ -169,20 +177,28 @@ const useOrderSubmit = (
             const ordersPayload = await Promise.all(
                 Object.entries(groupedItems).map(async ([restaurant, items]) => {
                     const settings = getSettingsFor(restaurant);
+                    const isPickup = settings.deliveryType === "pickup";
 
                     const customerLocation = normalizeLocation(mapAddress);
-                    if (settings.deliveryType === "delivery" && !customerLocation) {
+                    if (!isPickup && !customerLocation) {
                         throw new Error(`No shipping address has been selected for ${restaurant}`);
                     }
 
                     const businessLocation = await resolveBusinessLocation(
                         items[0].businessId,
                         restaurant,
-                        customerLocation
+                        customerLocation,
+                        isPickup
                     );
 
                     const paymentMethod =
                         settings.paymentType === "card" ? 0 : 1; // enum OK
+                    const deliveryMethod = isPickup ? 1 : 0; // Delivery=0, Pickup=1
+
+                    // For pickup, the "delivery" address is the restaurant itself.
+                    const deliverToAddress = isPickup
+                        ? businessLocation.fullAddress
+                        : customerLocation.fullAddress;
 
                     return {
                         businessId: items[0].businessId,       // Guid ✅
@@ -194,9 +210,10 @@ const useOrderSubmit = (
                             fullAddress: businessLocation.fullAddress
                         },
                         deliverTo: {
-                            fullAddress: customerLocation.fullAddress
+                            fullAddress: deliverToAddress
                         },
                         paymentMethod,
+                        deliveryMethod,
                         // Group duplicate dish entries by dishId so the server sees one
                         // OrderedDish row with a real Quantity rather than N duplicate rows.
                         dishes: Object.values(items.reduce((acc, i) => {
