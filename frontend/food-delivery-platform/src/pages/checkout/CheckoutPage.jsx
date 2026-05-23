@@ -3,7 +3,7 @@ import React from 'react';
 import { CreditCard } from 'lucide-react';
 import "./styles/CheckoutPage.css";
 import {AnimatePresence, motion} from 'framer-motion';
-import CustomerSidebar from "../sidebars/CustomerSidebar.jsx";
+import RoleSidebar from "../sidebars/RoleSidebar.jsx";
 import ParticlesBackground from "./components/ParticlesBackground.jsx";
 import ContactInfo from "./components/ContactInfo.jsx";
 import RestaurantSection from "./components/RestaurantSection.jsx";
@@ -101,7 +101,7 @@ const CheckoutPage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
             <div className="checkout-page-wrapper">
                 <ParticlesBackground />
                 <div className="checkout-container">

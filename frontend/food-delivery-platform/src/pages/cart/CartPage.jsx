@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ShoppingCart } from 'lucide-react';
 
 import "./styles/CartPage.css";
-import CustomerSidebar from "../../pages/sidebars/CustomerSidebar.jsx";
+import RoleSidebar from "../../pages/sidebars/RoleSidebar.jsx";
 import { useCart } from './hooks/useCart';
 
 import EmptyCart from './components/EmptyCart';
@@ -21,7 +21,7 @@ const CartPage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
             <div className="cart-page-wrapper">
                 <div className="cart-container">
                     <motion.h1 initial={{ opacity: 0, y: -30 }} animate={{ opacity: 1, y: 0 }} className="cart-title">

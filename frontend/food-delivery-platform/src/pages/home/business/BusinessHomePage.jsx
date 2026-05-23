@@ -1,7 +1,7 @@
 ﻿import React, { useEffect } from "react";
 import "../styles/BusinessHomePage.css";
 
-import BusinessSidebar from "../../sidebars/BusinessSidebar.jsx";
+import RoleSidebar from "../../sidebars/RoleSidebar.jsx";
 import DishComponent from "./components/dish/DishComponent";
 import BusinessHeader from "./components/BusinessHeader.jsx";
 import DishesContent from "./components/DishesContent.jsx";
@@ -62,7 +62,7 @@ export default function BusinessHomePage({ userData }) {
 
     return (
         <div className="bh-page">
-            <BusinessSidebar
+            <RoleSidebar
                 userData={userData}
                 disabled={isNotOnboarded}
             />

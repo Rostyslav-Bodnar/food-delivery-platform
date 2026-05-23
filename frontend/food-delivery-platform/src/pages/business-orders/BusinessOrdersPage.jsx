@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 import "./styles/BusinessOrdersPage.css";
-import BusinessSidebar from "../../pages/sidebars/BusinessSidebar.jsx";
+import RoleSidebar from "../../pages/sidebars/RoleSidebar.jsx";
 import OrderDetailsComponent from "../order-details-modal/OrderDetailsComponent.jsx";
 import OrdersHeader from "./components/OrdersHeader";
 import OrdersContent from "./components/OrdersContent";
@@ -60,7 +60,7 @@ export default function BusinessOrdersPage({ userData }) {
 
     return (
         <div className="bh-page">
-            <BusinessSidebar userData={userData} />
+            <RoleSidebar userData={userData} />
 
             <main className="bh-main">
                 <OrdersHeader
