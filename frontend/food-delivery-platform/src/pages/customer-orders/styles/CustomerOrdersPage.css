@@ -27,7 +27,10 @@
 
 .active-orders-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    /* auto-fill (not auto-fit) keeps empty tracks reserved, so a single order
+       card sits in its first column at ~minmax width instead of stretching
+       across the full row. */
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 24px;
     max-width: 1320px;
     padding: 0 16px;
