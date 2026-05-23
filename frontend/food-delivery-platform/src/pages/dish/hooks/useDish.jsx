@@ -1,14 +1,14 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { getDishForCustomer } from "../../../api/Dish.ts";
 import { mapDishToViewModel } from "../services/dishMapper";
 
 const mockReviews = {
     1: [
-        { id: 1, author: "Олена", rating: 5, text: "Найкраща Маргарита!", date: "2 дні тому" },
-        { id: 2, author: "Макс", rating: 4, text: "Хотілося б більше базиліку.", date: "1 тиждень тому" },
+        { id: 1, author: "Olena", rating: 5, text: "Best Margherita!", date: "2 days ago" },
+        { id: 2, author: "Max", rating: 4, text: "Would like more basil.", date: "1 week ago" },
     ],
     2: [
-        { id: 1, author: "Ігор", rating: 5, text: "Соковитий і великий бургер.", date: "3 дні тому" }
+        { id: 1, author: "Ihor", rating: 5, text: "Juicy and huge burger.", date: "3 days ago" }
     ]
 };
 
@@ -25,7 +25,7 @@ export const useDish = (id) => {
 
                 setDish(mapped);
             } catch (err) {
-                console.error("Помилка завантаження страви:", err);
+                console.error("Failed to load dish:", err);
             } finally {
                 setLoading(false);
             }

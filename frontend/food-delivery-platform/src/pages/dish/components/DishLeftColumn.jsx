@@ -14,7 +14,7 @@ const DishLeftColumn = ({ dish, reviewsList }) => {
                 />
                 {dish.popular && (
                     <div className="popular-badge">
-                        <Zap size={16} /> ХІТ
+                        <Zap size={16} /> HIT
                     </div>
                 )}
             </div>

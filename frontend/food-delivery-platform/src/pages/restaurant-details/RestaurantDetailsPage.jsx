@@ -15,7 +15,7 @@ const RestaurantDetailsPage = () => {
     const restaurant = state?.restaurant;
 
     if (!restaurant) {
-        return <div className="not-found">Ресторан не знайдено</div>;
+        return <div className="not-found">Restaurant not found</div>;
     }
     console.log(state);
 
@@ -100,7 +100,7 @@ const RestaurantDetailsPage = () => {
                                             whileHover={{ y: -5, scale: 1.0 }}
                                         >
                                             <Link to={`/dish/${dish.id}`} className="dish-card big">
-                                                {dish.popular && <div className="hit-badge"><Flame size={18} /> ХІТ</div>}
+                                                {dish.popular && <div className="hit-badge"><Flame size={18} /> HIT</div>}
                                                 <img src={dish.image} alt={dish.name} />
                                                 <div className="dish-info">
                                                     <h3>{dish.name}</h3>
