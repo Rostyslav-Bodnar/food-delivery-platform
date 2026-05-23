@@ -1,6 +1,9 @@
-﻿export type ToastPayload = {
+export type ToastType = "success" | "error" | "info" | "warning";
+
+export type ToastPayload = {
     message: string;
-    type?: string;
+    type?: ToastType;
+    title?: string | null;
     autoHideMs?: number;
 };
 
@@ -30,3 +33,23 @@ export const showToast = (
 
     toastHandler(toast);
 };
+
+export const showSuccessToast = (
+    message: string,
+    options?: Omit<ToastPayload, "message" | "type">
+): void => showToast({ message, type: "success", ...options });
+
+export const showErrorToast = (
+    message: string,
+    options?: Omit<ToastPayload, "message" | "type">
+): void => showToast({ message, type: "error", ...options });
+
+export const showInfoToast = (
+    message: string,
+    options?: Omit<ToastPayload, "message" | "type">
+): void => showToast({ message, type: "info", ...options });
+
+export const showWarningToast = (
+    message: string,
+    options?: Omit<ToastPayload, "message" | "type">
+): void => showToast({ message, type: "warning", ...options });

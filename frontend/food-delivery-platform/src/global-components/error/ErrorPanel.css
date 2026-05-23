@@ -1,35 +1,29 @@
-﻿/* =========================
-   TOAST WRAPPER
-========================= */
+/* =========================================================
+   App toast — glass card with type variants
+   Variants: is-error / is-success / is-info / is-warning
+   ========================================================= */
 
-.error-toast {
+.app-toast {
     position: relative;
     width: 100%;
-
     display: flex;
     justify-content: flex-end;
 
     opacity: 0;
     transform: translateY(14px) scale(0.96);
 
-    animation: toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-
-    transition:
-            transform 0.25s ease,
-            opacity 0.25s ease;
+    animation: app-toast-in 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    transition: transform 0.25s ease, opacity 0.25s ease;
 }
 
-/* EXIT STATE */
-.error-toast.exit {
+.app-toast.exit {
     opacity: 0;
     transform: translateY(16px) scale(0.96);
 }
 
-/* =========================
-   CARD
-========================= */
+/* -------------------- Card -------------------- */
 
-.error-card {
+.app-toast__card {
     position: relative;
     overflow: hidden;
 
@@ -37,170 +31,172 @@
     align-items: flex-start;
     gap: 14px;
 
-    padding: 18px 20px;
+    padding: 16px 18px 16px 18px;
+    padding-right: 44px;
     width: 100%;
 
-    border-radius: 18px;
+    border-radius: var(--radius-lg);
 
     background: linear-gradient(
-            180deg,
-            rgba(15, 20, 30, 0.92),
-            rgba(10, 15, 24, 0.88)
+        180deg,
+        rgba(15, 20, 30, 0.92),
+        rgba(10, 15, 24, 0.88)
     );
 
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--glass-border);
 
-    backdrop-filter: blur(18px);
-    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px) saturate(120%);
+    -webkit-backdrop-filter: blur(18px) saturate(120%);
 
     box-shadow:
-            0 24px 60px rgba(0, 0, 0, 0.55),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        0 22px 56px rgba(2, 6, 23, 0.55),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
 
     color: var(--text);
 
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
 }
 
-/* hover lift */
-.error-card:hover {
+.app-toast__card:hover {
     transform: translateY(-2px);
-
     box-shadow:
-            0 30px 70px rgba(0, 0, 0, 0.6),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        0 30px 70px rgba(2, 6, 23, 0.6),
+        inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* =========================
-   BACKGROUND GLOW LAYER
-========================= */
-
-.error-card::before {
+/* Soft accent glow behind the icon — color varies per type */
+.app-toast__card::before {
     content: "";
     position: absolute;
     inset: 0;
     z-index: 0;
-
-    background: radial-gradient(
-            700px 240px at 12% -20%,
-            rgba(255, 107, 107, 0.18),
-            transparent 65%
-    );
-
     pointer-events: none;
+    background: radial-gradient(700px 240px at 12% -20%, var(--toast-accent-glow, transparent), transparent 65%);
 }
 
-/* =========================
-   GLOBAL LAYER FIX (IMPORTANT)
-========================= */
-
-.error-card * {
+.app-toast__card > * {
     position: relative;
     z-index: 1;
 }
 
-/* =========================
-   ICON
-========================= */
+/* -------------------- Icon -------------------- */
 
-.error-icon {
+.app-toast__icon {
     flex-shrink: 0;
+    width: 40px;
+    height: 40px;
 
-    width: 42px;
-    height: 42px;
-
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    font-size: 18px;
+    border-radius: var(--radius-md);
 
-    border-radius: 14px;
-
-    background: linear-gradient(
-            135deg,
-            rgba(255, 107, 107, 0.22),
-            rgba(255, 184, 107, 0.10)
-    );
-
-    border: 1px solid rgba(255, 107, 107, 0.25);
+    background: var(--toast-icon-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--toast-icon-border, var(--glass-border));
+    color: var(--toast-accent, var(--text));
 
     box-shadow:
-            0 10px 24px rgba(255, 107, 107, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.25);
+        0 10px 24px var(--toast-icon-shadow, rgba(0, 0, 0, 0.2)),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
-/* =========================
-   CONTENT
-========================= */
+/* -------------------- Content -------------------- */
 
-.error-content {
+.app-toast__content {
     flex: 1;
-
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
 }
 
-.error-content h3 {
+.app-toast__content h3 {
     margin: 0;
-
     font-size: 14px;
     font-weight: 700;
-
     color: var(--text);
+    letter-spacing: -0.005em;
 }
 
-.error-content p {
+.app-toast__content p {
     margin: 0;
-
     font-size: 13.5px;
     line-height: 1.45;
-
-    color: var(--muted);
+    color: var(--muted-2);
+    word-break: break-word;
 }
 
-/* =========================
-   CLOSE BUTTON (FIXED CLICK AREA)
-========================= */
+/* -------------------- Close button -------------------- */
 
-.error-close {
+.app-toast__close {
     position: absolute;
     top: 10px;
     right: 10px;
 
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
 
-    display: flex;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    border-radius: 10px;
+    padding: 0;
+    border-radius: var(--radius-sm);
 
     background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-
+    border: 1px solid var(--glass-border);
     color: var(--muted);
 
     cursor: pointer;
-
     z-index: 5;
 
-    transition: all 0.2s ease;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
-.error-close:hover {
-    background: rgba(255, 107, 107, 0.15);
-    border-color: rgba(255, 107, 107, 0.35);
-    color: var(--accent-1);
+.app-toast__close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.14);
+    color: var(--text);
 }
 
-/* =========================
-   ANIMATION IN
-========================= */
+/* -------------------- Type variants -------------------- */
 
-@keyframes toast-in {
+.app-toast.is-error {
+    --toast-accent: var(--accent-1);
+    --toast-accent-glow: rgba(255, 107, 107, 0.18);
+    --toast-icon-bg: linear-gradient(135deg, rgba(255, 107, 107, 0.22), rgba(255, 184, 107, 0.10));
+    --toast-icon-border: rgba(255, 107, 107, 0.28);
+    --toast-icon-shadow: rgba(255, 107, 107, 0.22);
+}
+
+.app-toast.is-success {
+    --toast-accent: #34d399;
+    --toast-accent-glow: rgba(52, 211, 153, 0.20);
+    --toast-icon-bg: linear-gradient(135deg, rgba(52, 211, 153, 0.22), rgba(0, 212, 255, 0.10));
+    --toast-icon-border: rgba(52, 211, 153, 0.32);
+    --toast-icon-shadow: rgba(52, 211, 153, 0.22);
+}
+
+.app-toast.is-info {
+    --toast-accent: var(--accent-3);
+    --toast-accent-glow: rgba(0, 212, 255, 0.18);
+    --toast-icon-bg: linear-gradient(135deg, rgba(0, 212, 255, 0.22), rgba(124, 92, 255, 0.10));
+    --toast-icon-border: rgba(0, 212, 255, 0.30);
+    --toast-icon-shadow: rgba(0, 212, 255, 0.20);
+}
+
+.app-toast.is-warning {
+    --toast-accent: var(--gold);
+    --toast-accent-glow: rgba(245, 182, 66, 0.18);
+    --toast-icon-bg: linear-gradient(135deg, rgba(245, 182, 66, 0.22), rgba(255, 107, 107, 0.10));
+    --toast-icon-border: rgba(245, 182, 66, 0.32);
+    --toast-icon-shadow: rgba(245, 182, 66, 0.22);
+}
+
+/* -------------------- Animation -------------------- */
+
+@keyframes app-toast-in {
     from {
         opacity: 0;
         transform: translateY(16px) scale(0.96);
@@ -211,20 +207,3 @@
     }
 }
 
-/* =========================
-   ANIMATION OUT (for future use)
-========================= */
-
-@keyframes toast-out {
-    to {
-        opacity: 0;
-        transform: translateY(14px) scale(0.96);
-    }
-}
-
-.toast-container > * {
-    pointer-events: auto;
-
-    /* КЛЮЧОВЕ */
-    transition: transform 0.25s ease, opacity 0.25s ease;
-}

@@ -6,6 +6,7 @@ import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
 import { getBusinessLocationsByBusinessId } from "../../../api/BusinessLocation.ts";
 import { getClientSecret } from "../../../api/Payment.jsx";
 import { clearCart } from "../../../utils/CartStorage.jsx";
+import { showErrorToast, showSuccessToast } from "../../../global-components/toast/ToastService";
 
 /* -------------------- helpers -------------------- */
 
@@ -87,6 +88,7 @@ const useOrderSubmit = (
 
             if (allPaid) {
                 clearCart();
+                showSuccessToast("Payment confirmed — your order is on its way");
                 setTimeout(() => navigate("/customer/orders"), 400);
             }
 
@@ -100,13 +102,13 @@ const useOrderSubmit = (
         e.preventDefault();
 
         if (!formData.name || !formData.phone) {
-            alert("Please enter your name and phone number");
+            showErrorToast("Please enter your name and phone number");
             return;
         }
 
         const orderedByRaw = localStorage.getItem("currentAccountId");
         if (!orderedByRaw) {
-            alert("User ID not found");
+            showErrorToast("User ID not found");
             return;
         }
 
@@ -293,6 +295,7 @@ const useOrderSubmit = (
                 // already on the backend, so clear the cart and send the user
                 // straight to their orders page.
                 clearCart();
+                showSuccessToast("Order placed successfully");
                 navigate("/customer/orders");
                 return;
             }
@@ -300,7 +303,9 @@ const useOrderSubmit = (
             setPaymentState(nextPaymentState);
         } catch (err) {
             console.error(err);
-            alert(err.message || "An error occurred while placing your order");
+            if (!err?.toastShown) {
+                showErrorToast(err.message || "An error occurred while placing your order");
+            }
         }
     };
 

@@ -23,6 +23,17 @@ declare module "axios" {
     }
 }
 
+// Errors thrown by the response interceptor carry this flag once their
+// message has already been shown to the user via showToast, so consumer
+// catch blocks can avoid double-toasting the same failure.
+export type ToastShownError = Error & { toastShown?: boolean };
+
+const wrapError = (message: string): ToastShownError => {
+    const err: ToastShownError = new Error(message);
+    err.toastShown = true;
+    return err;
+};
+
 // =========================
 // Axios instance
 // =========================
@@ -73,16 +84,17 @@ api.interceptors.response.use(
                 body.errorMassage ||
                 "Something went wrong";
 
-            if (
-                !response.config.skipErrorToast
-            ) {
+            const skip = response.config.skipErrorToast;
+
+            if (!skip) {
                 showToast({
-                    message
+                    message,
+                    type: "error"
                 });
             }
 
             return Promise.reject(
-                new Error(message)
+                skip ? new Error(message) : wrapError(message)
             );
         }
 
@@ -115,16 +127,17 @@ api.interceptors.response.use(
             error.message ||
             "Network error";
 
-        if (
-            !error.config?.skipErrorToast
-        ) {
+        const skip = error.config?.skipErrorToast;
+
+        if (!skip) {
             showToast({
-                message
+                message,
+                type: "error"
             });
         }
 
         return Promise.reject(
-            new Error(message)
+            skip ? new Error(message) : wrapError(message)
         );
     }
 );

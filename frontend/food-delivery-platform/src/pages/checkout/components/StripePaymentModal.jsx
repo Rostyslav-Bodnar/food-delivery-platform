@@ -3,6 +3,7 @@ import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { loadStripe } from "@stripe/stripe-js";
 import { Elements, PaymentElement, useStripe, useElements } from "@stripe/react-stripe-js";
+import { showErrorToast } from "../../../global-components/toast/ToastService";
 
 const stripePromise = loadStripe(
     import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ||
@@ -33,7 +34,7 @@ const ConfirmButton = ({ label = "Pay", onSuccess }) => {
         });
         setLoading(false);
         if (error) {
-            alert(error.message || "Your payment was declined. Please try a different card or payment method.");
+            showErrorToast(error.message || "Your payment was declined. Please try a different card or payment method.");
         } else {
             onSuccess?.();
         }
