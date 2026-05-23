@@ -33,6 +33,13 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
         };
 
         await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+        // Every connected courier also watches the shared "available orders"
+        // feed so they all see Ready/Accepted/Cancelled transitions live.
+        if (string.Equals(accountType, "courier", StringComparison.OrdinalIgnoreCase))
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, "couriers:available");
+        }
     }
 
     public async Task UnsubscribeFromUserOrders()
@@ -53,6 +60,11 @@ public class CourierTrackingHub(IOrderTrackingSnapshotStore snapshotStore) : Hub
 
         if (groupName is not null)
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+
+        if (string.Equals(accountType, "courier", StringComparison.OrdinalIgnoreCase))
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, "couriers:available");
+        }
     }
 
     public async Task SendLocation(CourierLocationDto dto)

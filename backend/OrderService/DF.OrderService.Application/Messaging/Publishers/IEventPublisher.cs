@@ -9,4 +9,5 @@ public interface IEventPublisher
     Task PublishOrderCanceledEvent(OrderCancelledEvent evt);
     Task PublishOrderDeliveredEvent(OrderDeliveredEvent evt);
     Task PublishOrderStatusChangedEvent(OrderStatusChangedEvent evt);
+    Task PublishOrderCourierPaidEvent(OrderCourierPaidEvent evt);
 }

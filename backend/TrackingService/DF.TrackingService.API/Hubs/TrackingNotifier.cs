@@ -77,6 +77,49 @@ public sealed class TrackingNotifier(IHubContext<CourierTrackingHub> hubContext)
                 .SendAsync("OrderStatusChanged", payload, cancellationToken));
         }
 
+        // Couriers' "available orders" feed depends on Ready transitions — fan
+        // out to every connected courier so courier B sees that courier A just
+        // claimed an order (or that a new one became Ready, or was cancelled).
+        if (newStatus == "Ready"
+            || previousStatus == "Ready"
+            || newStatus == "Canceled")
+        {
+            tasks.Add(hubContext.Clients.Group("couriers:available")
+                .SendAsync("OrderStatusChanged", payload, cancellationToken));
+        }
+
+        return Task.WhenAll(tasks);
+    }
+
+    public Task OrderCourierPaidAsync(
+        Guid orderId,
+        Guid businessId,
+        Guid customerId,
+        Guid courierId,
+        DateTime paidAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var payload = new
+        {
+            orderId,
+            businessId,
+            customerId,
+            courierId,
+            paidAtUtc
+        };
+
+        var tasks = new List<Task>
+        {
+            hubContext.Clients.Group($"order:{orderId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"customer:{customerId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"business:{businessId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken),
+            hubContext.Clients.Group($"courier:{courierId}")
+                .SendAsync("OrderCourierPaidUpdated", payload, cancellationToken)
+        };
+
         return Task.WhenAll(tasks);
     }
 }

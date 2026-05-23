@@ -21,4 +21,12 @@ public interface ITrackingNotifier
         string previousStatus,
         DateTime changedAtUtc,
         CancellationToken cancellationToken = default);
+
+    Task OrderCourierPaidAsync(
+        Guid orderId,
+        Guid businessId,
+        Guid customerId,
+        Guid courierId,
+        DateTime paidAtUtc,
+        CancellationToken cancellationToken = default);
 }

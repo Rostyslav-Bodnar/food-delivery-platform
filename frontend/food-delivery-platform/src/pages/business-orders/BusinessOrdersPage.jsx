@@ -44,7 +44,13 @@ export default function BusinessOrdersPage({ userData }) {
             if (evt?.businessId === businessId) {
                 reloadOrders?.();
             }
-        }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.businessId === businessId) {
+                reloadOrders?.();
+            }
+        },
+        onReconnected: () => reloadOrders?.()
     });
 
     return (

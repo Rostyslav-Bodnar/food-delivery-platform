@@ -397,9 +397,13 @@ public class OrderService(
 
     public async Task<IEnumerable<CourierOrderResponse>> GetActiveByCourierIdAsync(Guid courierId)
     {
+        // A cash-on-delivery order stays "active" for the courier until they
+        // confirm cash receipt, even after the customer marks it Delivered —
+        // otherwise the courier loses access to the "Cash received" button.
         var orders = (await orderRepository.GetOrdersByCourierIdAsync(courierId))
             .Where(x => x.OrderStatus != OrderStatus.Canceled
-                     && x.OrderStatus != OrderStatus.Delivered
+                     && (x.OrderStatus != OrderStatus.Delivered
+                         || (x.PaymentMethod == PaymentMethod.CashOnDelivery && !x.CourierPaid))
                      && x.DeliverToId.HasValue
                      && x.DeliverFromId.HasValue)
             .ToList();
@@ -409,9 +413,12 @@ public class OrderService(
 
     public async Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId)
     {
+        // Inverse of GetActiveByCourierIdAsync — cash-delivered-not-paid orders
+        // are NOT in history yet; they're still active until cash is confirmed.
         var orders = (await orderRepository.GetOrdersByCourierIdAsync(courierId))
             .Where(x => x.OrderStatus == OrderStatus.Canceled
-                     || x.OrderStatus == OrderStatus.Delivered)
+                     || (x.OrderStatus == OrderStatus.Delivered
+                         && !(x.PaymentMethod == PaymentMethod.CashOnDelivery && !x.CourierPaid)))
             .ToList();
 
         return await BuildCourierOrdersAsync(orders);
@@ -560,6 +567,15 @@ public class OrderService(
         }
 
         order.CourierPaid = true;
+
+        await outboxWriter.EnqueueAsync(
+            new OrderCourierPaidEvent(
+                OrderId: order.Id,
+                BusinessId: order.BusinessId,
+                CustomerId: order.OrderedBy,
+                CourierId: courierId,
+                PaidAtUtc: DateTime.UtcNow));
+
         await orderRepository.Update(order);
 
         var business = await SafeAwait(

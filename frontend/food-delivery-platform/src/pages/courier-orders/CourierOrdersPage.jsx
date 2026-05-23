@@ -204,38 +204,43 @@ export default function CourierOrdersPage() {
             snapshot.stage === "delivered" ||
             snapshotStatus === OrderStatus.Delivered
         ) {
-            console.log("[Tracking] Order delivered");
-            clearCourierDeliveryStage(activeOrder.id);
+            // For cash-on-delivery orders, the courier still needs to confirm
+            // cash receipt — leave the order in active until that happens. The
+            // SignalR-driven reloadOrders + backend's GetActiveByCourierIdAsync
+            // filter will keep it accurate.
+            const cashPending =
+                activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid;
 
-            setHistory(current => {
-                if (current.some(order => order.id === activeOrder.id))
-                    return current;
+            if (cashPending) {
+                // Just mark the order as delivered locally so the dropoff UI
+                // (with the "Cash received" button) keeps rendering; let the
+                // next reload patch up the rest.
+                setActiveOrders(current =>
+                    current.map(order =>
+                        order.id === activeOrder.id
+                            ? { ...order, orderStatus: "delivered" }
+                            : order
+                    )
+                );
+            } else {
+                console.log("[Tracking] Order delivered");
+                clearCourierDeliveryStage(activeOrder.id);
 
-                return [
-                    {
-                        ...activeOrder,
-                        orderStatus: OrderStatus.Delivered
-                    },
-                    ...current
-                ];
-            });
+                setHistory(current => {
+                    if (current.some(order => order.id === activeOrder.id))
+                        return current;
+                    return [
+                        { ...activeOrder, orderStatus: OrderStatus.Delivered },
+                        ...current
+                    ];
+                });
 
-
-            setActiveOrders(current => {
-                const alreadyUpdated = current.some(
-                    o => o.id === activeOrder.id && o.orderStatus === OrderStatus.PickedUp
+                setActiveOrders(current =>
+                    current.filter(order => order.id !== activeOrder.id)
                 );
 
-                if (alreadyUpdated) return current;
-
-                return current.map(order =>
-                    order.id === activeOrder.id
-                        ? { ...order, orderStatus: OrderStatus.PickedUp }
-                        : order
-                );
-            })
-
-            setRoute(null);
+                setRoute(null);
+            }
         }
     }, [activeOrder?.id, snapshot?.stage, snapshot?.orderStatus]);
 
@@ -275,13 +280,24 @@ export default function CourierOrdersPage() {
         onStatusChanged: (evt) => {
             const matchesAssigned =
                 evt?.courierId && evt.courierId === courierId;
-            const matchesAvailable =
-                !evt?.courierId &&
-                (evt?.newStatus === "Ready" || evt?.previousStatus === "Ready");
-            if (matchesAssigned || matchesAvailable) {
+            // Every connected courier is in the couriers:available group, so
+            // a Ready/Canceled/Accepted transition arrives even when this
+            // courier isn't the one assigned. Always refresh the available pool
+            // when the event touched a Ready state.
+            const touchesReady =
+                evt?.newStatus === "Ready"
+                || evt?.previousStatus === "Ready"
+                || evt?.newStatus === "Canceled";
+            if (matchesAssigned || touchesReady) {
                 reloadOrders({ silent: true });
             }
-        }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.courierId === courierId) {
+                reloadOrders({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders({ silent: true })
     });
 
     useEffect(() => {

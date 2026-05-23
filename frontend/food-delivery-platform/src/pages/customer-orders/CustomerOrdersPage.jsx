@@ -32,7 +32,13 @@ const CustomerOrdersPage = () => {
             if (evt?.customerId === customerId) {
                 reloadOrders?.({ silent: true });
             }
-        }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders?.({ silent: true })
     });
     const {
         selectedOrder,

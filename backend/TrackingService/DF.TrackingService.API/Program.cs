@@ -188,6 +188,7 @@ builder.Services.AddSingleton<IConsumer, OrderPickedUpConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderDeliveredConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderCancelledConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderStatusChangedConsumer>();
+builder.Services.AddSingleton<IConsumer, OrderCourierPaidConsumer>();
 builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessLocationConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessLocationBatchConsumer>();

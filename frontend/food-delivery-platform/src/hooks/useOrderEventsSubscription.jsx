@@ -4,22 +4,34 @@ import { TRACKING_HUB_URL } from "../config/api.js";
 
 /**
  * Subscribes the current user to live order-status events via the TrackingService
- * SignalR hub. Joins customer:{id} / business:{id} / courier:{id} group based on
- * the logged-in account, and invokes `onStatusChanged` whenever any of the user's
- * orders transition status.
+ * SignalR hub. Joins customer:{id} / business:{id} / courier:{id} group (plus
+ * couriers:available if the user is a courier), and invokes the matching
+ * callback whenever an event arrives.
  *
  * @param {object} options
  * @param {boolean} options.enabled - whether the subscription is active.
- * @param {(payload: { orderId, newStatus, previousStatus, businessId, customerId, courierId, changedAtUtc }) => void} options.onStatusChanged
+ * @param {(payload) => void} [options.onStatusChanged]
+ * @param {(payload) => void} [options.onCourierPaid]
+ * @param {() => void} [options.onReconnected] - fires after the socket reconnects
+ *        so the page can refetch to catch up on missed events.
  */
-export default function useOrderEventsSubscription({ enabled, onStatusChanged }) {
+export default function useOrderEventsSubscription({
+    enabled,
+    onStatusChanged,
+    onCourierPaid,
+    onReconnected
+}) {
     const connectionRef = useRef(null);
-    const handlerRef = useRef(onStatusChanged);
+    const statusHandlerRef = useRef(onStatusChanged);
+    const paidHandlerRef = useRef(onCourierPaid);
+    const reconnectedHandlerRef = useRef(onReconnected);
 
-    // Keep the latest callback without re-running the effect on every render.
+    // Keep the latest callbacks without re-running the effect on every render.
     useEffect(() => {
-        handlerRef.current = onStatusChanged;
-    }, [onStatusChanged]);
+        statusHandlerRef.current = onStatusChanged;
+        paidHandlerRef.current = onCourierPaid;
+        reconnectedHandlerRef.current = onReconnected;
+    }, [onStatusChanged, onCourierPaid, onReconnected]);
 
     useEffect(() => {
         if (!enabled) return undefined;
@@ -40,14 +52,21 @@ export default function useOrderEventsSubscription({ enabled, onStatusChanged })
                     .build();
 
                 connection.on("OrderStatusChanged", (payload) => {
-                    handlerRef.current?.(payload);
+                    statusHandlerRef.current?.(payload);
+                });
+
+                connection.on("OrderCourierPaidUpdated", (payload) => {
+                    paidHandlerRef.current?.(payload);
                 });
 
                 // Re-join the user group on every reconnect — server-side group
                 // membership is connection-bound and resets when the socket drops.
+                // Also fire onReconnected so the page can refetch and catch up on
+                // any events that fired while we were offline.
                 connection.onreconnected(async () => {
                     try {
                         await connection.invoke("SubscribeToUserOrders");
+                        reconnectedHandlerRef.current?.();
                     } catch (err) {
                         console.warn("Failed to resubscribe after reconnect", err);
                     }
