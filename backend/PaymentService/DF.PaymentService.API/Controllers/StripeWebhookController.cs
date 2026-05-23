@@ -10,7 +10,7 @@ using Stripe;
 namespace DF.PaymentService.API.Controllers;
 
 [ApiController]
-[Route("webhooks/stripe")]
+[Route("webhooks/stripe/main")]
 public class StripeWebhookController(
     IPaymentRepository payments,
     IOptions<StripeOptions> options,
