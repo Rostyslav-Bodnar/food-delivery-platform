@@ -16,6 +16,7 @@ import useRestaurantSettings from "./hooks/useRestaurantSettings";
 import useLocationPicker from "./hooks/useLocationPicker";
 import useOrderCalculations from "./hooks/useOrderCalculations";
 import useOrderSubmit from "./hooks/useOrderSubmit";
+import useDeliveryFees from "./hooks/useDeliveryFees";
 
 // 🔹 Stripe модалка + стилі
 import StripePaymentModal from "./components/StripePaymentModal.jsx";
@@ -33,15 +34,18 @@ const CheckoutPage = () => {
         mapAddress,
         location
     } = useLocationPicker();
+    const { feesByRestaurant, resolvedByRestaurant } =
+        useDeliveryFees(groupedItems, location);
+
     const {
         getRestaurantSubtotal,
         getDeliveryCost,
         getRestaurantTotal,
         getGrandTotal
-    } = useOrderCalculations(groupedItems, getSettingsFor);
+    } = useOrderCalculations(groupedItems, feesByRestaurant);
 
     const { handleSubmit, paymentState, markPaid } =
-        useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal);
+        useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal, resolvedByRestaurant);
 
     // Яка модалка відкрита (ключ — назва ресторану)
     const [openForRestaurant, setOpenForRestaurant] = React.useState(null);
@@ -163,7 +167,7 @@ const CheckoutPage = () => {
 
                                             <SummaryBlock
                                                 getRestaurantSubtotal={() => getRestaurantSubtotal(restaurant)}
-                                                getDeliveryCost={() => getDeliveryCost(settings.paymentType)}
+                                                getDeliveryCost={() => getDeliveryCost(restaurant)}
                                                 getRestaurantTotal={() => getRestaurantTotal(restaurant)}
                                             />
 

@@ -18,7 +18,7 @@
 
     <ItemGroup>
       <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
-      <PackageReference Include="DF.Contracts" Version="1.0.2-pre-release5" />
+      <PackageReference Include="DF.Contracts" Version="1.0.2-pre-release7" />
       <PackageReference Include="FluentValidation" Version="11.*" />
       <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.3.9" />
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.7" />

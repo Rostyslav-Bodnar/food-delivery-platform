@@ -58,7 +58,7 @@ const useOrderDelivery = (userData) => {
     const activeOrder = activeOrders[0] ?? null;
 
     const stats = useMemo(() => {
-        const totalRevenue = history.reduce((sum, order) => sum + Number(order.profit ?? 0), 0);
+        const totalRevenue = history.reduce((sum, order) => sum + Number(order.courierFee ?? 0), 0);
 
         return {
             availableCount: availableOrders.length,

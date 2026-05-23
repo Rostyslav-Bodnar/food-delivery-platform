@@ -210,7 +210,7 @@ var defaultIssuer = jwtSection["Issuer"];
 var defaultAudience = jwtSection["Audience"];
 
 builder.Services
-    .AddAuthentication()
+    .AddAuthentication("Bearer")
     .AddJwtBearer("Bearer", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -398,8 +398,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
-
-
 
 app.MapHub<CourierTrackingHub>("/hubs/courier-tracking")
     .RequireAuthorization("TrackingHubPolicy");

@@ -568,7 +568,7 @@ export default function CourierOrdersPage() {
                                             </div>
 
                                             <div className="courier-order-card__footer">
-                                                <span>Courier fee: {formatMoney(order.profit)}</span>
+                                                <span>Courier fee: {formatMoney(order.courierFee)}</span>
                                                 <button
                                                     type="button"
                                                     className="courier-primary-btn"

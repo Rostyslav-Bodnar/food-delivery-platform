@@ -16,7 +16,8 @@ export const mapCourierOrder = (order) => {
         courierLocation,
         businessAddress: formatLocation(businessLocation),
         customerAddress: formatLocation(customerLocation),
-        profit: Number(order.profit ?? 0)
+        profit: Number(order.profit ?? 0),
+        courierFee: Number(order.courierFee ?? 0)
     };
 };
 
