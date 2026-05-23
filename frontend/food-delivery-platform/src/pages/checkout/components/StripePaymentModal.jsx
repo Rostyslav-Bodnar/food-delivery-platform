@@ -166,7 +166,7 @@ const StripePaymentModal = ({
                                         <button type="button" className="spm-btn spm-btn-ghost" onClick={onClose}>
                                             Cancel
                                         </button>
-                                        <ConfirmButton label="Сплатити" onSuccess={onPaid} />
+                                        <ConfirmButton label="Pay" onSuccess={onPaid} />
                                     </div>
                                 </form>
                             </Elements>

@@ -13,7 +13,7 @@ const DishCardComponent = ({ dish, isPopular = false }) => {
                 </div>
                 {dish.popular && (
                     <div className="popular-tag">
-                        <Zap size={14} /> ХІТ
+                        <Zap size={14} /> HIT
                     </div>
                 )}
             </div>

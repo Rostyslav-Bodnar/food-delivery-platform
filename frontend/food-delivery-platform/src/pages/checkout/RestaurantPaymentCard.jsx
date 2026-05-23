@@ -22,7 +22,7 @@ const ConfirmButton = ({ onSuccess }) => {
         setLoading(false);
 
         if (error) {
-            alert(error.message || "Оплату відхилено");
+            alert(error.message || "Payment declined");
         } else {
             // Фінальний статус все одно приходить у webhook; тут просто UX-успіх
             onSuccess?.();
@@ -31,7 +31,7 @@ const ConfirmButton = ({ onSuccess }) => {
 
     return (
         <button className="btn btn-primary" onClick={handlePay} disabled={!stripe || loading}>
-            {loading ? "Опрацьовуємо..." : "Сплатити"}
+            {loading ? "Processing..." : "Pay"}
         </button>
     );
 };

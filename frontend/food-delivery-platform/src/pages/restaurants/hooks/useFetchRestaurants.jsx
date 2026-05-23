@@ -22,7 +22,7 @@ const useFetchRestaurants = () => {
                     description: r.description,
                     // placeholders
                     rating: 4.8,
-                    deliveryTime: "25-40 хв",
+                    deliveryTime: "25-40 min",
                     deliveryPrice: "Free",
                     category: r.description ?? "Restaurant"
                 }))

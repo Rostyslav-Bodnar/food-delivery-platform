@@ -19,7 +19,7 @@ const StickyHeader = ({
 
                 <input
                     type="text"
-                    placeholder={`Пошук в ${restaurantName}...`}
+                    placeholder={`Search in ${restaurantName}...`}
                     value={searchQuery}
                     onChange={(e) => onSearchChange(e.target.value)}
                 />
@@ -49,7 +49,7 @@ const StickyHeader = ({
                         onClick={() => onCategorySelect(cat)}
                         className={`category-btn ${selectedCategory === cat ? "active" : ""}`}
                     >
-                        {cat === "all" ? "Усе меню" : cat}
+                        {cat === "all" ? "Whole menu" : cat}
                     </button>
                 ))}
             </div>
