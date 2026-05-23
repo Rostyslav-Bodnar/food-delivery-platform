@@ -92,7 +92,7 @@ builder.Services.AddCors(options =>
 // Database connection (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
-        builder.Configuration.GetConnectionString("DefaultConnection")
+        builder.Configuration.GetConnectionString("OrderServiceDatabase")
     ));
 
 // RabbitMQ connection — auto-recovering, retried on startup
