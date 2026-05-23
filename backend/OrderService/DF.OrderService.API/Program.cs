@@ -211,7 +211,12 @@ app.UseAuthorization();
 
 app.MapControllers();
 
-// /health/live -> just process aliveness; /health/ready -> includes DB + RabbitMQ checks.
+// /health      = what Render probes by default; aliased to liveness.
+// /health/live = process aliveness; /health/ready = DB + RabbitMQ checks.
+app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
 app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     Predicate = _ => false

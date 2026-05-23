@@ -12,7 +12,7 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
       Redis__ConnectionString: df.redis:6379
-      ConnectionStrings__DefaultConnection: Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
+      ConnectionStrings__TrackingServiceDatabase: Host=df.trackingservice.db;Port=5432;Database=TrackingServiceDb;Username=TrackingService;Password=TrackingService2025!
       RabbitMQ__Url: amqp://guest:guest@rabbitmq:5672/
     depends_on:
       - df.trackingservice.db
