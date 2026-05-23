@@ -20,6 +20,7 @@ public class Order
     public decimal Profit { get; set; }
 
     public PaymentMethod PaymentMethod { get; set; }
+    public DeliveryMethod DeliveryMethod { get; set; }
 
     public List<OrderedDish> OrderedDishes { get; set; } = new();
 }

@@ -60,4 +60,5 @@ export interface OrderDetailsResponse {
     deliveredById?: string | null;
     courierName?: string | null;
     courierPhoneNumber?: string | null;
+    deliveryMethod: string;
 }

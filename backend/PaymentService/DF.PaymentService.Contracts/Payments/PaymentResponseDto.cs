@@ -16,6 +16,9 @@ public class PaymentResponseDto
     // Видаємо client_secret ТІЛЬКИ для Online і ТІЛЬКИ коли потрібно на фронті (Pending/RequiresAction)
     public string? ClientSecret { get; init; }
 
+    // Stripe PaymentIntent id (traceability for admin/details views).
+    public string? StripePaymentIntentId { get; init; }
+
     // Коротка історія (опційно)
     public IReadOnlyCollection<RefundItemDto> Refunds { get; init; } = Array.Empty<RefundItemDto>();
 
@@ -36,6 +39,7 @@ public class PaymentResponseDto
             TotalRefunded = p.TotalRefunded.Amount,
             ExpiresAt = p.ExpiresAt,
             ClientSecret = exposeClientSecret ? p.StripeClientSecret : null,
+            StripePaymentIntentId = p.StripePaymentIntentId,
             Refunds = p.Refunds.Select(r => new RefundItemDto
             {
                 Id = r.Id,

@@ -10,5 +10,6 @@ export interface CreateOrderRequest {
     deliverTo : CreateLocationRequest
     deliverFrom : CreateLocationRequest
     paymentMethod : number
+    deliveryMethod : number
     dishes : CreateOrderDishRequest[]
 }
