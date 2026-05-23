@@ -47,7 +47,7 @@ public class OrderService(
             {
                 OrderId = Guid.Empty,
                 DishId = d.DishId,
-                Quantity = 1,
+                Quantity = d.Quantity > 0 ? d.Quantity : 1,
                 UnitPrice = dish.Price,
                 DishName = dish.Name
             };
@@ -161,7 +161,7 @@ public class OrderService(
                 {
                     OrderId = Guid.Empty,
                     DishId = d.DishId,
-                    Quantity = 1,
+                    Quantity = d.Quantity > 0 ? d.Quantity : 1,
                     UnitPrice = dish.Price,
                     DishName = dish.Name
                 };
@@ -299,7 +299,8 @@ public class OrderService(
             CourierName: courier is null
                 ? null
                 : $"{courier.Name} {courier.Surname}",
-            CourierPhoneNumber: courier?.PhoneNumber);
+            CourierPhoneNumber: courier?.PhoneNumber,
+            DeliveryMethod: order.DeliveryMethod.ToString());
     }
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
@@ -353,7 +354,8 @@ public class OrderService(
                     ? string.Empty
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
-                dishes: MapDishResponses(order));
+                dishes: MapDishResponses(order),
+                DeliveryMethod: order.DeliveryMethod.ToString());
         });
     }
 
@@ -384,7 +386,8 @@ public class OrderService(
             .Where(x => x.OrderStatus == OrderStatus.Ready
                      && x.DeliveredById == null
                      && x.DeliverToId.HasValue
-                     && x.DeliverFromId.HasValue)
+                     && x.DeliverFromId.HasValue
+                     && x.DeliveryMethod != DeliveryMethod.Pickup)
             .ToList();
 
         return await BuildCourierOrdersAsync(orders);
@@ -425,9 +428,7 @@ public class OrderService(
 
         var targetStatus = ParseOrderStatus(status);
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            targetStatus);
+        OrderStatusTransitions.EnsureAllowed(order, targetStatus);
 
         ValidateCourierAssignment(order, targetStatus);
 
@@ -463,9 +464,13 @@ public class OrderService(
         var order = await orderRepository.Get(orderId)
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            OrderStatus.OutForDelivery);
+        if (order.DeliveryMethod == DeliveryMethod.Pickup)
+        {
+            throw new OrderStateException(
+                "Pickup orders cannot be claimed by couriers; customer collects at the restaurant.");
+        }
+
+        OrderStatusTransitions.EnsureAllowed(order, OrderStatus.OutForDelivery);
 
         if (order.DeliveredById is not null
             && order.DeliveredById != courierId)
@@ -492,9 +497,7 @@ public class OrderService(
         var order = await orderRepository.Get(orderId)
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
-        OrderStatusTransitions.EnsureAllowed(
-            order.OrderStatus,
-            OrderStatus.Canceled);
+        OrderStatusTransitions.EnsureAllowed(order, OrderStatus.Canceled);
 
         order.OrderStatus = OrderStatus.Canceled;
 
@@ -570,7 +573,8 @@ public class OrderService(
                     ? string.Empty
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
-                dishes: MapDishResponses(order));
+                dishes: MapDishResponses(order),
+                DeliveryMethod: order.DeliveryMethod.ToString());
         });
     }
 
@@ -839,7 +843,8 @@ public class OrderService(
             TotalPrice = dishes.Sum(x => x.UnitPrice * x.Quantity),
             OrderStatus = OrderStatus.Preparing,
             OrderNumber = GenerateOrderNumber(),
-            PaymentMethod = request.PaymentMethod.ToDomain()
+            PaymentMethod = request.PaymentMethod.ToDomain(),
+            DeliveryMethod = request.DeliveryMethod.ToDomain()
         };
     }
 
@@ -884,6 +889,10 @@ public class OrderService(
         Order order,
         OrderStatus targetStatus)
     {
+        // Pickup orders have no courier; the business marks them Delivered directly.
+        if (order.DeliveryMethod == DeliveryMethod.Pickup)
+            return;
+
         var requiresCourier =
             targetStatus == OrderStatus.PickedUp
             || targetStatus == OrderStatus.Delivered;
