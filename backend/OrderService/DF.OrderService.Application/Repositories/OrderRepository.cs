@@ -103,6 +103,22 @@ public class OrderRepository(AppDbContext dbContext) : IOrderRepository
             .ToListAsync();
         return (items, total);
     }
+    public async Task<IReadOnlyList<Order>> GetDeliveredOrdersByBusinessInWindowAsync(
+        Guid businessId,
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken ct = default)
+    {
+        return await dbContext.Orders
+            .AsNoTracking()
+            .Include(o => o.OrderedDishes)
+            .Where(o => o.BusinessId == businessId
+                        && o.OrderStatus == OrderStatus.Delivered
+                        && o.OrderDate >= fromUtc
+                        && o.OrderDate <= toUtc)
+            .ToListAsync(ct);
+    }
+
     public async Task<bool> CreateRangeWithDishesAsync(
         IEnumerable<Order> orders,
         IEnumerable<OrderedDish> dishes)

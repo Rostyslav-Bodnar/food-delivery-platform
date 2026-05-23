@@ -16,6 +16,7 @@ using DF.OrderService.Application.Services.Interfaces;
 using DF.OrderService.Contracts.Exceptions;
 using DF.OrderService.Contracts.Pagination;
 using DF.OrderService.Domain.Entities;
+using DishRevenueResponse = DF.OrderService.Contracts.Models.Responses.DishRevenueResponse;
 using LocationDTO = DF.Contracts.RPC.Responses.TrackingService.LocationDTO;
 
 namespace DF.OrderService.Application.Services;
@@ -606,6 +607,55 @@ public class OrderService(
             fallback: (GetBusinessAccountResponse?)null);
 
         return MapToOrderResponse(order, business);
+    }
+
+    public async Task<IReadOnlyList<DishRevenueResponse>> GetRevenueByDishAsync(
+        Guid businessId,
+        DateTime fromUtc,
+        DateTime toUtc,
+        CancellationToken ct = default)
+    {
+        if (fromUtc >= toUtc)
+            throw new ArgumentException("`from` must be earlier than `to`.");
+
+        var orders = await orderRepository.GetDeliveredOrdersByBusinessInWindowAsync(
+            businessId, fromUtc, toUtc, ct);
+
+        if (orders.Count == 0)
+            return Array.Empty<DishRevenueResponse>();
+
+        // Aggregate dishes across all delivered orders. We track distinct
+        // order ids per dish so the "appeared in N orders" metric is right
+        // even when a customer ordered the same dish multiple times.
+        var byDish = new Dictionary<Guid, (string Name, int Qty, HashSet<Guid> Orders, decimal Revenue)>();
+
+        foreach (var order in orders)
+        {
+            foreach (var dish in order.OrderedDishes)
+            {
+                if (!byDish.TryGetValue(dish.DishId, out var agg))
+                {
+                    agg = (dish.DishName, 0, new HashSet<Guid>(), 0m);
+                }
+
+                agg.Qty += dish.Quantity;
+                agg.Orders.Add(order.Id);
+                agg.Revenue += dish.UnitPrice * dish.Quantity;
+                // Refresh name in case earlier entry had a stale value.
+                agg.Name = dish.DishName;
+                byDish[dish.DishId] = agg;
+            }
+        }
+
+        return byDish
+            .Select(kvp => new DishRevenueResponse(
+                DishId: kvp.Key,
+                DishName: kvp.Value.Name,
+                QuantitySold: kvp.Value.Qty,
+                OrderCount: kvp.Value.Orders.Count,
+                Revenue: kvp.Value.Revenue))
+            .OrderByDescending(r => r.Revenue)
+            .ToList();
     }
 
     // =========================

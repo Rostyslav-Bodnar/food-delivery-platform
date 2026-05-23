@@ -10,7 +10,10 @@ namespace DF.UserService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController(IAccountService accountService, IUserContext userContext) : ControllerBase
+public class AccountController(
+    IAccountService accountService,
+    IUserContext userContext,
+    IBusinessDashboardService dashboardService) : ControllerBase
 {
     [HttpGet("{userId:guid}")]
     public async Task<ActionResult<AccountResponse>> GetAccount(Guid userId)
@@ -125,5 +128,33 @@ public class AccountController(IAccountService accountService, IUserContext user
         }
 
         return Ok(result);
+    }
+
+    /// <summary>
+    /// Live financial dashboard for a business: KPI summary, daily income
+    /// series, outcome breakdown, payout history. Data is read fresh from
+    /// the business's Stripe Connect account on every call (no local
+    /// aggregation table yet).
+    /// </summary>
+    [HttpGet("business/{businessId:guid}/dashboard")]
+    public async Task<ActionResult<BusinessDashboardResponse>> GetBusinessDashboard(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var toUtc = (to ?? DateTime.UtcNow).ToUniversalTime();
+        var fromUtc = (from ?? toUtc.AddDays(-30)).ToUniversalTime();
+
+        var dashboard = await dashboardService.GetDashboardAsync(
+            businessId,
+            fromUtc,
+            toUtc,
+            HttpContext.RequestAborted);
+
+        if (dashboard is null)
+            throw new NotFoundException(
+                "Business not found or Stripe onboarding has not completed yet.");
+
+        return Ok(dashboard);
     }
 }

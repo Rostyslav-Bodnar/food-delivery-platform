@@ -18,6 +18,7 @@ import CourierOrdersPage from "./pages/courier-orders/CourierOrdersPage.jsx";
 import CustomerOrderHistoryPage from "./pages/order-history/CustomerOrderHistoryPage.jsx";
 import BusinessOrderHistoryPage from "./pages/order-history/BusinessOrderHistoryPage.jsx";
 import CourierOrderHistoryPage from "./pages/order-history/CourierOrderHistoryPage.jsx";
+import BusinessDashboardPage from "./pages/business-dashboard/BusinessDashboardPage.jsx";
 
 const AppRouter = () => {
     return (
@@ -37,6 +38,14 @@ const AppRouter = () => {
                         <Route path="/customer/orders/history" element={<CustomerOrderHistoryPage />} />
                         <Route path="/business/orders" element={<BusinessOrdersPage />} />
                         <Route path="/business/orders/history" element={<BusinessOrderHistoryPage />} />
+                        <Route
+                            path="/business/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <BusinessDashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route
                             path="/courier/orders"
                             element={
