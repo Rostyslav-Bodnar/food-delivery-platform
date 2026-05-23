@@ -33,7 +33,12 @@ export default function BusinessOrdersPage({ userData }) {
     const businessId = localStorage.getItem("currentAccountId");
 
     const { orders, setOrders, loading, reloadOrders } = useBusinessOrders(businessId);
-    const { filter, setFilter, filteredOrders } = useOrderFilter(orders);
+    const {
+        filter, setFilter,
+        sort, setSort,
+        search, setSearch,
+        filteredOrders
+    } = useOrderFilter(orders);
     const { selectedOrder, openOrder, closeOrder } = useOrderSelection();
     const { handleStatusChange } = useOrderStatus(setOrders);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
@@ -58,7 +63,15 @@ export default function BusinessOrdersPage({ userData }) {
             <BusinessSidebar userData={userData} />
 
             <main className="bh-main">
-                <OrdersHeader filter={filter} setFilter={setFilter} />
+                <OrdersHeader
+                    filter={filter}
+                    setFilter={setFilter}
+                    sort={sort}
+                    setSort={setSort}
+                    search={search}
+                    setSearch={setSearch}
+                    count={filteredOrders.length}
+                />
 
                 <section className="bh-content">
                     <OrdersContent

@@ -7,9 +7,30 @@
     margin-bottom: 24px;
 }
 
+.customer-orders-page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.customer-orders-page-header .gradient-title {
+    margin: 0;
+    text-align: left;
+}
+
+@media (max-width: 720px) {
+    .customer-orders-page-header .gradient-title {
+        text-align: center;
+    }
+}
+
 .active-orders-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    /* auto-fill (not auto-fit) keeps empty tracks reserved, so a single order
+       card sits in its first column at ~minmax width instead of stretching
+       across the full row. */
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
     gap: 24px;
     max-width: 1320px;
     padding: 0 16px;
