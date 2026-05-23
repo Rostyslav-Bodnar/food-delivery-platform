@@ -1,4 +1,4 @@
-import { Home, Package, Power } from "lucide-react";
+import { Home, Package, Power, History } from "lucide-react";
 import Sidebar from "./components/Sidebar";
 
 export default function CourierSidebar({
@@ -16,7 +16,8 @@ export default function CourierSidebar({
             icon: Package,
             path: "/courier/orders",
             badge: activeCount || availableCount || null
-        }
+        },
+        { id: "history", label: "History", icon: History, path: "/courier/orders/history" }
     ];
 
     const displayName = userData?.currentAccount?.name || userData?.name || "Courier";

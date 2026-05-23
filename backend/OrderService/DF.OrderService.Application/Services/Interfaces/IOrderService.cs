@@ -17,6 +17,7 @@ public interface IOrderService
     Task<IEnumerable<CourierOrderResponse>> GetAllByCourierIdAsync(Guid courierId);
     Task<IEnumerable<CourierOrderResponse>> GetActiveByCourierIdAsync(Guid courierId);
     Task<IEnumerable<CustomerOrderResponse>> GetCustomerOrderHistoryAsync(Guid customerId);
+    Task<IEnumerable<BusinessOrderResponse>> GetBusinessOrderHistoryAsync(Guid businessId);
     Task<IEnumerable<CourierOrderResponse>> GetCourierOrderHistoryAsync(Guid courierId);
     Task<OrderResponse> ChangeOrderStatus(Guid orderId,  OrderStatus status);
     Task<OrderResponse> DeliverOrderAsync(Guid orderId, Guid courierId);

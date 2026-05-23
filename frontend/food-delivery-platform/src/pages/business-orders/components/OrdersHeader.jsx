@@ -1,15 +1,16 @@
 import React from "react";
 import OrdersFilterBar from "../../../global-components/orders-filter/OrdersFilterBar.jsx";
 
+// Terminal statuses (Delivered/Cancelled) live on the dedicated history page
+// — the backend's active feed already filters them out, so listing them as
+// chips here would always show 0 results.
 const STATUSES = [
     { key: "all",          label: "All" },
     { key: "pending",      label: "New",        color: "#7c5cff" },
     { key: "preparing",    label: "Preparing",  color: "#ffb86b" },
     { key: "ready",        label: "Ready",      color: "#00d4ff" },
     { key: "on-the-way",   label: "On the way", color: "#00d4ff" },
-    { key: "picked-up",    label: "Picked up",  color: "#50fa7b" },
-    { key: "delivered",    label: "Delivered",  color: "#4bd68a" },
-    { key: "cancelled",    label: "Cancelled",  color: "#ff6b6b" }
+    { key: "picked-up",    label: "Picked up",  color: "#50fa7b" }
 ];
 
 const SORT_OPTIONS = [

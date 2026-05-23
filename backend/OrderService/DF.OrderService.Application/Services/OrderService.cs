@@ -306,9 +306,31 @@ public class OrderService(
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
     {
+        // "Active" feed only — terminal-state orders live on the dedicated
+        // history endpoint (GetBusinessOrderHistoryAsync), so we strip them
+        // out here. Mirrors the customer-side split.
         var orders = (await orderRepository.GetOrdersByBusinessIdAsync(businessId))
+            .Where(x => x.OrderStatus != OrderStatus.Canceled
+                     && x.OrderStatus != OrderStatus.Delivered)
             .ToList();
 
+        return await BuildBusinessOrdersAsync(businessId, orders);
+    }
+
+    public async Task<IEnumerable<BusinessOrderResponse>> GetBusinessOrderHistoryAsync(Guid businessId)
+    {
+        var orders = (await orderRepository.GetOrdersByBusinessIdAsync(businessId))
+            .Where(x => x.OrderStatus == OrderStatus.Canceled
+                     || x.OrderStatus == OrderStatus.Delivered)
+            .ToList();
+
+        return await BuildBusinessOrdersAsync(businessId, orders);
+    }
+
+    private async Task<IEnumerable<BusinessOrderResponse>> BuildBusinessOrdersAsync(
+        Guid businessId,
+        List<Order> orders)
+    {
         if (orders.Count == 0)
             return Enumerable.Empty<BusinessOrderResponse>();
 

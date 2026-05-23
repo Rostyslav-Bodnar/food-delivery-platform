@@ -149,6 +149,19 @@ export async function getCourierOrderHistory(
 }
 
 // =========================
+// GET BUSINESS HISTORY
+// =========================
+export async function getBusinessOrderHistory(
+    businessId: string
+): Promise<BusinessOrderResponse[]> {
+    const res = await api.get<ApiResponse<BusinessOrderResponse[]>>(
+        `/order/business/${businessId}/history`
+    )
+
+    return res.data.data!
+}
+
+// =========================
 // CREATE ORDER
 // =========================
 export async function createOrder(

@@ -86,6 +86,13 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
         => proxy.ProxyAsync<IEnumerable<CustomerOrderResponse>>(HttpContext);
 
     // =========================
+    // BUSINESS HISTORY
+    // =========================
+    [HttpGet("business/{businessId}/history")]
+    public Task<Response<IEnumerable<BusinessOrderResponse>>> GetBusinessHistory(Guid businessId)
+        => proxy.ProxyAsync<IEnumerable<BusinessOrderResponse>>(HttpContext);
+
+    // =========================
     // COURIER HISTORY
     // =========================
     [HttpGet("courier/{courierId}/history")]
