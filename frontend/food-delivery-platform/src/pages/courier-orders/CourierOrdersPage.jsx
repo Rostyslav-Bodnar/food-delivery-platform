@@ -38,6 +38,7 @@ import {
 } from "./courierOrderUtils.js";
 import "./styles/CourierOrdersPage.css";
 import {OrderStatus} from "../../models/enums/OrderStatus.ts";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const markerPalette = {
     courier: { fillColor: "#7c5cff", strokeColor: "#d9d2ff" },
@@ -46,6 +47,7 @@ const markerPalette = {
 };
 
 export default function CourierOrdersPage() {
+    const toast = useToast();
     const courierId = localStorage.getItem("currentAccountId");
     const courierName = localStorage.getItem("currentAccountName") ?? "Courier";
     console.log("[Courier render]", {
@@ -455,9 +457,12 @@ export default function CourierOrdersPage() {
                     o.id === activeOrder.id ? { ...o, courierPaid: true } : o
                 )
             );
+            toast.success("Cash payment confirmed");
         } catch (error) {
             console.error("Failed to confirm cash receipt", error);
-            alert(error.message ?? "Failed to confirm cash receipt");
+            if (!error?.toastShown) {
+                toast.error(error.message ?? "Failed to confirm cash receipt");
+            }
         } finally {
             setActionLoading("");
         }

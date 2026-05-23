@@ -1,6 +1,7 @@
 ﻿import React, { useMemo, useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { showErrorToast } from "../../global-components/toast/ToastService";
 
 const stripePromise = loadStripe('pk_test_51SeMlmL2Z4y20S3ELazXa1alP4LwhOeL91Jd54mZcEE4f0e5e7pKRnpMLdFh2uNNVbUhEyC8JF7jjKfyAneWhAPT00bgasYuIv');
 
@@ -22,7 +23,7 @@ const ConfirmButton = ({ onSuccess }) => {
         setLoading(false);
 
         if (error) {
-            alert(error.message || "Payment declined");
+            showErrorToast(error.message || "Payment declined");
         } else {
             // Фінальний статус все одно приходить у webhook; тут просто UX-успіх
             onSuccess?.();

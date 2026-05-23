@@ -14,8 +14,10 @@ import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrack
 import { changeOrderStatus } from "../../api/Order.ts";
 import { OrderStatus } from "../../models/enums/OrderStatus.ts";
 import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const CustomerOrdersPage = () => {
+    const toast = useToast();
     const customerId = localStorage.getItem("currentAccountId");
 
     const {
@@ -63,10 +65,13 @@ const CustomerOrdersPage = () => {
         try {
             setConfirmingDeliveryId(order.id);
             await changeOrderStatus(order.id, OrderStatus.Delivered);
+            toast.success("Delivery confirmed — enjoy your meal");
             // Polling will move the order out of active and into history.
         } catch (err) {
             console.error("Failed to confirm delivery", err);
-            alert(err.message ?? "Failed to confirm delivery");
+            if (!err?.toastShown) {
+                toast.error(err.message ?? "Failed to confirm delivery");
+            }
         } finally {
             setConfirmingDeliveryId(null);
         }
@@ -86,8 +91,11 @@ const CustomerOrdersPage = () => {
                 setTrackingOrder(null);
             }
             setOrderToCancel(null);
+            toast.success("Order cancelled");
         } catch (cancelError) {
-            alert(cancelError.message);
+            if (!cancelError?.toastShown) {
+                toast.error(cancelError.message ?? "Failed to cancel order");
+            }
         }
     };
 
