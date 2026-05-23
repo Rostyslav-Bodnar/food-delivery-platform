@@ -12,6 +12,7 @@ import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
 import { changeOrderStatus } from "../../api/Order.ts";
 import { OrderStatus } from "../../models/enums/OrderStatus.ts";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 
 const CustomerOrdersPage = () => {
     const customerId = localStorage.getItem("currentAccountId");
@@ -21,8 +22,18 @@ const CustomerOrdersPage = () => {
         loading,
         error,
         cancellingOrderId,
-        cancelCustomerOrder
+        cancelCustomerOrder,
+        reloadOrders
     } = useCustomerOrders(customerId);
+
+    useOrderEventsSubscription({
+        enabled: Boolean(customerId),
+        onStatusChanged: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        }
+    });
     const {
         selectedOrder,
         openOrderDetails,

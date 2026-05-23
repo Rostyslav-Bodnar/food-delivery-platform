@@ -86,6 +86,8 @@ public sealed class OutboxPublisherHostedService(
             publisher.PublishOrderCanceledEvent(Deserialize<OrderCancelledEvent>(msg.Payload)),
         nameof(OrderDeliveredEvent) =>
             publisher.PublishOrderDeliveredEvent(Deserialize<OrderDeliveredEvent>(msg.Payload)),
+        nameof(OrderStatusChangedEvent) =>
+            publisher.PublishOrderStatusChangedEvent(Deserialize<OrderStatusChangedEvent>(msg.Payload)),
         _ => throw new InvalidOperationException($"Unknown event type '{msg.EventType}'")
     };
 

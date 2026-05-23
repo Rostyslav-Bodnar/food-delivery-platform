@@ -187,6 +187,7 @@ builder.Services.AddSingleton<IConsumer, OrderCreatedConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderPickedUpConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderDeliveredConsumer>();
 builder.Services.AddSingleton<IConsumer, OrderCancelledConsumer>();
+builder.Services.AddSingleton<IConsumer, OrderStatusChangedConsumer>();
 builder.Services.AddSingleton<IConsumer, GetLocationsConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessLocationConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessLocationBatchConsumer>();
@@ -226,6 +227,33 @@ builder.Services
 
             ValidateLifetime = true,
             ClockSkew = TimeSpan.FromSeconds(30)
+        };
+
+        // SignalR WebSocket upgrades can't carry the Authorization header, so
+        // fall back to the access_token query string for hub paths. This lets a
+        // user-scoped subscriber connect with their main JWT.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var path = context.HttpContext.Request.Path;
+
+                if (path.StartsWithSegments("/hubs/courier-tracking"))
+                {
+                    var token =
+                        context.Request.Query["access_token"].FirstOrDefault()
+                        ?? context.Request.Headers["Authorization"]
+                            .FirstOrDefault()?
+                            .Replace("Bearer ", "");
+
+                    if (!string.IsNullOrEmpty(token))
+                    {
+                        context.Token = token;
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
         };
     })
     .AddJwtBearer("TrackingHub", options =>
@@ -272,9 +300,13 @@ builder.Services
 
 builder.Services.AddAuthorization(options =>
 {
+    // Per-order tokens (TrackingHub) or the main user JWT (Bearer) both grant
+    // access to the hub; the individual methods enforce their own auth (caller
+    // must have order_id claim for SubscribeToOrder, or account_id+account_type
+    // for SubscribeToUserOrders).
     options.AddPolicy("TrackingHubPolicy", policy =>
     {
-        policy.AddAuthenticationSchemes("TrackingHub");
+        policy.AddAuthenticationSchemes("TrackingHub", "Bearer");
         policy.RequireAuthenticatedUser();
     });
 });

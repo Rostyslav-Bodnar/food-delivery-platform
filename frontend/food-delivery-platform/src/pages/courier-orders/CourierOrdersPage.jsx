@@ -24,6 +24,7 @@ import { getRoadRoute } from "../../utils/roadRouting.js";
 import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
 import useCourierTracking from "../../hooks/useCourierTracking.jsx";
 import useCourierEta from "../../hooks/useCourierEta.js";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 import CourierRouteMap from "./components/CourierRouteMap.jsx";
 import {
     calculateDistanceKm,
@@ -238,57 +239,50 @@ export default function CourierOrdersPage() {
         }
     }, [activeOrder?.id, snapshot?.stage, snapshot?.orderStatus]);
 
+    const reloadOrders = React.useCallback(async ({ silent = false } = {}) => {
+        if (!courierId) return;
+        try {
+            if (!silent) setLoading(true);
+            const [available, active, historyData] = await Promise.all([
+                getOrdersByCourier(courierId),
+                getActiveCourierOrders(courierId),
+                getCourierOrderHistory(courierId)
+            ]);
+
+            setAvailableOrders(available.map(mapCourierOrder));
+            setActiveOrders(active.map(mapCourierOrder));
+            setHistory(historyData.map(mapCourierOrder));
+        } catch (error) {
+            console.error("[Orders] Failed", error);
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    }, [courierId]);
+
     useEffect(() => {
         if (!courierId) {
             setLoading(false);
             return undefined;
         }
 
-        let isMounted = true;
+        reloadOrders();
+        const intervalId = window.setInterval(() => reloadOrders({ silent: true }), 30000);
+        return () => window.clearInterval(intervalId);
+    }, [courierId, reloadOrders]);
 
-        const loadOrders = async () => {
-            console.log("[Orders] Loading started");
-            try {
-                setLoading(true);
-                const [available, active, historyData] = await Promise.all([
-                    getOrdersByCourier(courierId),
-                    getActiveCourierOrders(courierId),
-                    getCourierOrderHistory(courierId)
-                ]);
-                console.log("[Orders] API response", {
-                    available,
-                    active,
-                    historyData
-                });
-                if (!isMounted) {
-                    return;
-                }
-
-                setAvailableOrders(available.map(mapCourierOrder));
-                setActiveOrders(active.map(mapCourierOrder));
-                setHistory(historyData.map(mapCourierOrder));
-            } catch (error) {
-                console.error(
-                    "[Orders] Failed",
-                    error
-                );
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-                console.log("[Orders] Loading finished");
+    useOrderEventsSubscription({
+        enabled: Boolean(courierId),
+        onStatusChanged: (evt) => {
+            const matchesAssigned =
+                evt?.courierId && evt.courierId === courierId;
+            const matchesAvailable =
+                !evt?.courierId &&
+                (evt?.newStatus === "Ready" || evt?.previousStatus === "Ready");
+            if (matchesAssigned || matchesAvailable) {
+                reloadOrders({ silent: true });
             }
-        };
-
-        loadOrders();
-        const intervalId = window.setInterval(loadOrders, 30000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-            console.log("[Orders] cleanup");
-        };
-    }, [courierId]);
+        }
+    });
 
     useEffect(() => {
         let isMounted = true;

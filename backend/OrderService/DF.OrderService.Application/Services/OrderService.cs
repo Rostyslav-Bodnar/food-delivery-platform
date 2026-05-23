@@ -429,6 +429,7 @@ public class OrderService(
                     ?? throw new NotFoundException($"Order {orderId} not found");
 
         var targetStatus = ParseOrderStatus(status);
+        var previousStatus = order.OrderStatus;
 
         OrderStatusTransitions.EnsureAllowed(order, targetStatus);
 
@@ -448,6 +449,9 @@ public class OrderService(
             order,
             publishPickedUp,
             publishDelivered);
+
+        if (previousStatus != targetStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
 
         await orderRepository.Update(order);
 
@@ -481,8 +485,12 @@ public class OrderService(
                 "Order is already assigned to another courier");
         }
 
+        var previousStatus = order.OrderStatus;
         order.DeliveredById = courierId;
         order.OrderStatus = OrderStatus.OutForDelivery;
+
+        if (previousStatus != order.OrderStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
 
         await orderRepository.Update(order);
 
@@ -501,12 +509,16 @@ public class OrderService(
 
         OrderStatusTransitions.EnsureAllowed(order, OrderStatus.Canceled);
 
+        var previousStatus = order.OrderStatus;
         order.OrderStatus = OrderStatus.Canceled;
 
         await outboxWriter.EnqueueAsync(
             new OrderCancelledEvent(
                 order.Id,
                 order.PaymentMethod.ToString()));
+
+        if (previousStatus != order.OrderStatus)
+            await EnqueueStatusChangedAsync(order, previousStatus);
 
         await orderRepository.Update(order);
 
@@ -932,6 +944,20 @@ public class OrderService(
                     Currency: "usd",
                     DeliveredAtUtc: DateTime.UtcNow));
         }
+    }
+
+    // Generic status-changed event for live SignalR fan-out via TrackingService.
+    private Task EnqueueStatusChangedAsync(Order order, OrderStatus previousStatus)
+    {
+        return outboxWriter.EnqueueAsync(
+            new OrderStatusChangedEvent(
+                OrderId: order.Id,
+                BusinessId: order.BusinessId,
+                CustomerId: order.OrderedBy,
+                CourierId: order.DeliveredById,
+                NewStatus: order.OrderStatus.ToString(),
+                PreviousStatus: previousStatus.ToString(),
+                ChangedAtUtc: DateTime.UtcNow));
     }
 
     private static void ValidateCourierAssignment(
