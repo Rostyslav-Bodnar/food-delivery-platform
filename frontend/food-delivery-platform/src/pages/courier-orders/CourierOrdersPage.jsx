@@ -16,7 +16,8 @@ import {
     deliverOrder,
     getActiveCourierOrders,
     getOrdersByCourier,
-    getCourierOrderHistory
+    getCourierOrderHistory,
+    markCourierPaid
 } from "../../api/Order.ts";
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
@@ -432,30 +433,21 @@ export default function CourierOrdersPage() {
         }
     };
 
-    const handleDelivered = async () => {
-        console.log(
-            "[Delivered clicked]"
-        );
-        if (!activeOrder) {
-            return;
-        }
+    const handleMarkPaid = async () => {
+        if (!activeOrder) return;
 
         try {
             setActionLoading(activeOrder.id);
-            await changeOrderStatus(activeOrder.id, OrderStatus.Delivered);
-            console.log(
-                "[Delivered status changed]"
+            await markCourierPaid(activeOrder.id, courierId);
+            // Optimistic; polling will reconcile from the API in any case.
+            setActiveOrders((current) =>
+                current.map((o) =>
+                    o.id === activeOrder.id ? { ...o, courierPaid: true } : o
+                )
             );
-            await publishStage("delivered");
-            console.log(
-                "[Delivered stage published]"
-            );
-            clearCourierDeliveryStage(activeOrder.id);
-            setHistory((current) => [{ ...activeOrder, orderStatus: "delivered" }, ...current]);
-            setActiveOrders([]);
-            setRoute(null);
         } catch (error) {
-            console.error("Failed to finish delivery", error);
+            console.error("Failed to confirm cash receipt", error);
+            alert(error.message ?? "Failed to confirm cash receipt");
         } finally {
             setActionLoading("");
         }
@@ -680,15 +672,19 @@ export default function CourierOrdersPage() {
                                             <div className="courier-status-note">
                                                 Waiting for the restaurant to confirm pickup.
                                             </div>
-                                        ) : (
+                                        ) : activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid ? (
                                             <button
                                                 type="button"
                                                 className="courier-primary-btn courier-primary-btn--success"
-                                                onClick={handleDelivered}
+                                                onClick={handleMarkPaid}
                                                 disabled={actionLoading === activeOrder.id}
                                             >
-                                                {actionLoading === activeOrder.id ? "Finishing..." : "Delivered to customer"}
+                                                {actionLoading === activeOrder.id ? "Confirming..." : "Cash received"}
                                             </button>
+                                        ) : (
+                                            <div className="courier-status-note">
+                                                Waiting for the customer to confirm delivery.
+                                            </div>
                                         )}
                                     </div>
                                 </>

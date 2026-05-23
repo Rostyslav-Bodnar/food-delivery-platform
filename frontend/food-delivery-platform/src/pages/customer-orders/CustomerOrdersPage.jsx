@@ -10,6 +10,8 @@ import { useCustomerOrders } from "./hooks/useCustomerOrders";
 import { useCustomerOrderSelection } from "./hooks/useCustomerOrderSelection";
 import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
+import { changeOrderStatus } from "../../api/Order.ts";
+import { OrderStatus } from "../../models/enums/OrderStatus.ts";
 
 const CustomerOrdersPage = () => {
     const customerId = localStorage.getItem("currentAccountId");
@@ -30,6 +32,20 @@ const CustomerOrdersPage = () => {
 
     const [orderToCancel, setOrderToCancel] = React.useState(null);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
+    const [confirmingDeliveryId, setConfirmingDeliveryId] = React.useState(null);
+
+    const confirmDelivered = async (order) => {
+        try {
+            setConfirmingDeliveryId(order.id);
+            await changeOrderStatus(order.id, OrderStatus.Delivered);
+            // Polling will move the order out of active and into history.
+        } catch (err) {
+            console.error("Failed to confirm delivery", err);
+            alert(err.message ?? "Failed to confirm delivery");
+        } finally {
+            setConfirmingDeliveryId(null);
+        }
+    };
 
     const confirmCancelOrder = async () => {
         if (!orderToCancel) {
@@ -65,6 +81,8 @@ const CustomerOrdersPage = () => {
                     onOpenDetails={openOrderDetails}
                     onTrackOrder={setTrackingOrder}
                     onRequestCancel={setOrderToCancel}
+                    onConfirmDelivered={confirmDelivered}
+                    confirmingDeliveryId={confirmingDeliveryId}
                     cancellingOrderId={cancellingOrderId}
                 />
             </main>

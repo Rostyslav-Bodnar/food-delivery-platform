@@ -7,6 +7,8 @@ export default function ActiveOrdersList({
     onOpenDetails,
     onTrackOrder,
     onRequestCancel,
+    onConfirmDelivered,
+    confirmingDeliveryId,
     cancellingOrderId
 }) {
     return (
@@ -19,6 +21,8 @@ export default function ActiveOrdersList({
                     onOpenDetails={onOpenDetails}
                     onTrackOrder={onTrackOrder}
                     onRequestCancel={onRequestCancel}
+                    onConfirmDelivered={onConfirmDelivered}
+                    confirmingDelivery={confirmingDeliveryId === order.id}
                     cancelling={cancellingOrderId === order.id}
                 />
             ))}

@@ -300,7 +300,8 @@ public class OrderService(
                 ? null
                 : $"{courier.Name} {courier.Surname}",
             CourierPhoneNumber: courier?.PhoneNumber,
-            DeliveryMethod: order.DeliveryMethod.ToString());
+            DeliveryMethod: order.DeliveryMethod.ToString(),
+            PaymentMethod: order.PaymentMethod.ToString());
     }
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
@@ -355,7 +356,8 @@ public class OrderService(
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
                 dishes: MapDishResponses(order),
-                DeliveryMethod: order.DeliveryMethod.ToString());
+                DeliveryMethod: order.DeliveryMethod.ToString(),
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 
@@ -511,6 +513,51 @@ public class OrderService(
         return true;
     }
 
+    public async Task<OrderResponse> MarkCourierPaidAsync(Guid orderId, Guid courierId)
+    {
+        var order = await orderRepository.Get(orderId)
+                    ?? throw new NotFoundException($"Order {orderId} not found");
+
+        if (order.DeliveredById != courierId)
+        {
+            throw new OrderStateException(
+                "Only the assigned courier can mark this order as paid.");
+        }
+
+        if (order.PaymentMethod != PaymentMethod.CashOnDelivery)
+        {
+            throw new OrderStateException(
+                "Only cash-on-delivery orders can be marked paid manually; card payments settle via Stripe payout.");
+        }
+
+        // Courier must have at least picked up the food before confirming cash.
+        if (order.OrderStatus is not (OrderStatus.PickedUp or OrderStatus.Delivered))
+        {
+            throw new OrderStateException(
+                "Order must be picked up before the courier can confirm cash receipt.");
+        }
+
+        if (order.CourierPaid)
+        {
+            // Idempotent — return current state without throwing.
+            var existingBusiness = await SafeAwait(
+                () => userServiceRpcClient.GetBusinessAccountAsync(
+                    new GetBusinessAccountRequest(order.BusinessId)),
+                fallback: (GetBusinessAccountResponse?)null);
+            return MapToOrderResponse(order, existingBusiness);
+        }
+
+        order.CourierPaid = true;
+        await orderRepository.Update(order);
+
+        var business = await SafeAwait(
+            () => userServiceRpcClient.GetBusinessAccountAsync(
+                new GetBusinessAccountRequest(order.BusinessId)),
+            fallback: (GetBusinessAccountResponse?)null);
+
+        return MapToOrderResponse(order, business);
+    }
+
     // =========================
     // PRIVATE BUILDERS
     // =========================
@@ -574,7 +621,8 @@ public class OrderService(
                     : $"{courier.Name} {courier.Surname}",
                 OrderStatus: order.OrderStatus.ToString(),
                 dishes: MapDishResponses(order),
-                DeliveryMethod: order.DeliveryMethod.ToString());
+                DeliveryMethod: order.DeliveryMethod.ToString(),
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 
@@ -615,7 +663,8 @@ public class OrderService(
                 CourierFee: order.CourierFee,
                 CourierPaid: order.CourierPaid,
                 OrderStatus: order.OrderStatus.ToString(),
-                Profit: order.Profit);
+                Profit: order.Profit,
+                PaymentMethod: order.PaymentMethod.ToString());
         });
     }
 

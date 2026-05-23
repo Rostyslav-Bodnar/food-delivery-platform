@@ -115,4 +115,13 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
         [FromQuery] Guid orderId,
         [FromQuery] Guid courierId)
         => proxy.ProxyAsync<OrderResponse>(HttpContext);
+
+    // =========================
+    // MARK COURIER PAID (cash on delivery)
+    // =========================
+    [HttpPatch("courier/mark-paid")]
+    public Task<Response<OrderResponse>> MarkCourierPaid(
+        [FromQuery] Guid orderId,
+        [FromQuery] Guid courierId)
+        => proxy.ProxyAsync<OrderResponse>(HttpContext);
 }

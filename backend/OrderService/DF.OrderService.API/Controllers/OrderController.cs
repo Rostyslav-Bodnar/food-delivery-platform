@@ -63,4 +63,8 @@ public class OrderController(IOrderService orderService) : ControllerBase
     [HttpPost("courier/deliver")]
     public async Task<IActionResult> DeliverOrder([FromQuery] Guid orderId, [FromQuery] Guid courierId)
         => Ok(await orderService.DeliverOrderAsync(orderId, courierId));
+
+    [HttpPatch("courier/mark-paid")]
+    public async Task<IActionResult> MarkCourierPaid([FromQuery] Guid orderId, [FromQuery] Guid courierId)
+        => Ok(await orderService.MarkCourierPaidAsync(orderId, courierId));
 }

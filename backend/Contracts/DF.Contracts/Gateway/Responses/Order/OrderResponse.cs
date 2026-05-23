@@ -32,7 +32,8 @@ public record CustomerOrderResponse(
     string CourierName,
     string OrderStatus,
     List<DishResponse> dishes,
-    string DeliveryMethod = ""
+    string DeliveryMethod = "",
+    string PaymentMethod = ""
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record BusinessOrderResponse(
@@ -52,7 +53,8 @@ public record BusinessOrderResponse(
     string CourierName,
     string OrderStatus,
     List<DishResponse> dishes,
-    string DeliveryMethod = ""
+    string DeliveryMethod = "",
+    string PaymentMethod = ""
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record CourierOrderResponse(
@@ -69,7 +71,8 @@ public record CourierOrderResponse(
     decimal CourierFee,
     bool CourierPaid,
     string OrderStatus,
-    decimal Profit
+    decimal Profit,
+    string PaymentMethod = ""
 ) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
 
 public record OrderDetailsResponse(
@@ -91,7 +94,8 @@ public record OrderDetailsResponse(
     Guid? DeliveredById,
     string? CourierName,
     string? CourierPhoneNumber,
-    string DeliveryMethod
+    string DeliveryMethod,
+    string PaymentMethod = ""
     );
     
     public record DishResponse(
