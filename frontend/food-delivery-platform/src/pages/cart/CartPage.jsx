@@ -11,7 +11,7 @@ import CartSummary from './components/CartSummary';
 import CartItem from './components/CartItem';
 
 const CartPage = () => {
-    const { cartItems, totalPrice } = useCart();
+    const { cartItems, totalPrice, updateQuantity, removeItem } = useCart();
 
     if (cartItems.length === 0) {
         return (
@@ -31,8 +31,13 @@ const CartPage = () => {
                     <div className="cart-content">
                         <div className="cart-items">
                             <AnimatePresence>
-                                {cartItems.map((item, index) => (
-                                    <CartItem key={item.id} item={item} />
+                                {cartItems.map((item) => (
+                                    <CartItem
+                                        key={item.id}
+                                        item={item}
+                                        updateQuantity={updateQuantity}
+                                        removeItem={removeItem}
+                                    />
                                 ))}
                             </AnimatePresence>
                         </div>
