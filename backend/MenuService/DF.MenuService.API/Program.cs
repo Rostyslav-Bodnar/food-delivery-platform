@@ -91,9 +91,13 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Upstash-friendly: a full StackExchange.Redis connection string
+// (`host:port,password=...,ssl=true,abortConnect=false`) carries auth + TLS,
+// which the old Host/Port split couldn't. In production this is overridden
+// by the `Redis__ConnectionString` env var on Render.
 builder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = $"{builder.Configuration["Redis:Host"]}:{builder.Configuration["Redis:Port"]}";
+    options.Configuration = builder.Configuration["Redis:ConnectionString"];
     options.InstanceName = builder.Configuration["Redis:InstanceName"];
 });
 
