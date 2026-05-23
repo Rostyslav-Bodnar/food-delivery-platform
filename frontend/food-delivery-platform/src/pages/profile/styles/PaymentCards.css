@@ -1,74 +1,198 @@
-﻿.payment-cards {
-    margin-top: 24px;
+/* =========================================================
+   Payment cards — customer profile section
+   ========================================================= */
+
+.payment-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: clamp(18px, 2.4vw, 24px);
+    border-radius: var(--radius-lg);
+
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--soft-shadow);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
 }
 
 .payment-title {
-    color: #fff;
+    margin: 0;
+    font-size: clamp(15px, 1.7vw, 18px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.payment-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 18px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent-3));
 }
 
 .card-success {
-    color: #52c41a;
-    margin-bottom: 12px;
-    font-weight: 500;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: rgba(52, 211, 153, 0.10);
+    border: 1px solid rgba(52, 211, 153, 0.32);
+    color: #6ee7b7;
+    font-size: 13.5px;
+    font-weight: 600;
 }
 
+/* -------------------- Card item -------------------- */
+
 .payment-card {
-    margin-bottom: 12px;
-    padding: 16px;
-    background: #2d2d2d;
-    border-radius: 12px;
-    border: 1px solid #434343;
+    position: relative;
+    padding: 16px 18px;
+    border-radius: var(--radius-md);
+
+    background:
+        linear-gradient(135deg, rgba(124, 92, 255, 0.10), rgba(0, 212, 255, 0.05)),
+        rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    overflow: hidden;
+
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.payment-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent-3));
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+
+.payment-card:hover {
+    border-color: rgba(124, 92, 255, 0.35);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(2, 6, 23, 0.45);
 }
 
 .payment-card.active {
-    background: #1f3a5f;
-    border: 2px solid #1890ff;
+    border-color: rgba(124, 92, 255, 0.55);
+    background:
+        linear-gradient(135deg, rgba(124, 92, 255, 0.22), rgba(0, 212, 255, 0.10)),
+        rgba(255, 255, 255, 0.04);
+    box-shadow: 0 18px 38px rgba(124, 92, 255, 0.22), inset 0 0 0 1px rgba(124, 92, 255, 0.18);
 }
 
+.payment-card.active::before {
+    opacity: 1;
+}
+
+/* -------------------- Card number row -------------------- */
+
 .card-number {
-    margin: 0 0 8px 0;
-    font-size: 16px;
-    font-weight: 500;
-    color: #fff;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 8px;
+    font-size: clamp(0.95rem, 1.4vw, 1.05rem);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
 }
 
 .card-meta {
-    margin: 4px 0;
-    color: #d0d0d0;
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted-2);
+    letter-spacing: 0.01em;
 }
+
+/* -------------------- Inline action buttons -------------------- */
 
 .card-edit-btn,
 .card-delete-btn {
-    background: none;
-    border: none;
-    font-size: 14px;
+    margin-left: auto;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    font-size: 12.5px;
+    font-weight: 600;
     cursor: pointer;
-    margin-left: 12px;
+    transition: background var(--transition), border-color var(--transition), color var(--transition);
 }
 
-.card-edit-btn { color: #69b1ff; }
-.card-delete-btn { color: #ff4d4f; }
+.card-edit-btn {
+    color: var(--accent-3);
+}
+
+.card-edit-btn:hover {
+    background: rgba(0, 212, 255, 0.10);
+    border-color: rgba(0, 212, 255, 0.32);
+}
+
+.card-delete-btn {
+    color: var(--accent-1);
+    margin-left: 8px;
+}
+
+.card-delete-btn:hover {
+    background: rgba(255, 107, 107, 0.10);
+    border-color: rgba(255, 107, 107, 0.32);
+}
+
+/* -------------------- Card edit form -------------------- */
 
 .card-form-wrapper {
-    padding: 16px;
-    background: #2d2d2d;
-    border-radius: 12px;
-    border: 1px solid #434343;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+    padding: 18px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--soft-shadow);
+}
+
+.card-form-wrapper form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .card-input {
     width: 100%;
-    padding: 12px;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--text);
     font-size: 15px;
-    background: #1e1e1e;
-    color: #fff;
-    border: 1px solid #434343;
-    border-radius: 8px;
-    margin-bottom: 16px;
+    line-height: 1.4;
+    outline: none;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.card-input::placeholder {
+    color: var(--muted);
+}
+
+.card-input:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.card-input:focus {
+    border-color: rgba(124, 92, 255, 0.6);
+    background: rgba(124, 92, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
 }
 
 .card-row {
@@ -77,43 +201,67 @@
 }
 
 .card-input.cvv {
-    width: 100px;
+    flex: 0 0 120px;
 }
 
-.card-submit {
+/* -------------------- Submit / cancel / add buttons -------------------- */
+
+.card-submit,
+.card-cancel,
+.add-card-btn {
     width: 100%;
-    padding: 14px;
-    background: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 500;
+    padding: 12px 18px;
+    border-radius: var(--radius-md);
+    font-size: 14px;
+    font-weight: 700;
     cursor: pointer;
+    border: 1px solid transparent;
+    transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.card-submit,
+.add-card-btn {
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    color: #041021;
+    box-shadow: 0 12px 28px rgba(124, 92, 255, 0.30);
+}
+
+.card-submit:hover,
+.add-card-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 18px 40px rgba(124, 92, 255, 0.42);
 }
 
 .card-cancel {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    background: #434343;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    font-size: 15px;
-    cursor: pointer;
+    background: rgba(255, 255, 255, 0.04);
+    border-color: var(--glass-border);
+    color: var(--muted-2);
 }
 
-.add-card-btn {
-    width: 100%;
-    padding: 16px;
-    background: #1890ff;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 16px;
-    font-weight: 500;
-    cursor: pointer;
-    margin-top: 12px;
-    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+.card-cancel:hover {
+    background: rgba(255, 107, 107, 0.10);
+    border-color: rgba(255, 107, 107, 0.32);
+    color: var(--accent-1);
+}
+
+/* -------------------- Adaptive -------------------- */
+
+@media (max-width: 560px) {
+    .card-number {
+        font-size: 0.95rem;
+        gap: 8px;
+    }
+
+    .card-edit-btn,
+    .card-delete-btn {
+        margin-left: 0;
+    }
+
+    .card-row {
+        flex-direction: column;
+    }
+
+    .card-input.cvv {
+        flex: 1;
+    }
 }
