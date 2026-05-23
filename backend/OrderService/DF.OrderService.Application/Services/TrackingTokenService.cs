@@ -12,8 +12,9 @@ public class TrackingTokenService(IConfiguration configuration) : ITrackingToken
 {
     public TrackingAccessTokenResponse CreateTrackingToken(
         Guid subjectId,
-        string role,
+        string accountType,
         Guid orderId,
+        Guid accountId,
         IReadOnlyCollection<string> scopes,
         TimeSpan lifetime)
     {
@@ -29,11 +30,10 @@ public class TrackingTokenService(IConfiguration configuration) : ITrackingToken
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, subjectId.ToString()),
-            new("role", role),
+            new("account_type", accountType),
+            new("account_id", accountId.ToString()),
             new("order_id", orderId.ToString()),
-            new("scope", string.Join(' ', scopes)),
-            new(JwtRegisteredClaimNames.Iss, "df.orderservice"),
-            new(JwtRegisteredClaimNames.Aud, "df.tracking")
+            new("scope", string.Join(' ', scopes))
         };
 
         var token = new JwtSecurityToken(

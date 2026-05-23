@@ -4,6 +4,7 @@ import type {
     AccountResponse,
     BusinessAccountResponse
 } from "../models/responses/accounts/AccountResponse"
+import type { OnboardingLinkResponse } from "../models/responses/accounts/OnboardingLinkResponse"
 
 // =========================
 // GET single account
@@ -109,11 +110,14 @@ export async function deleteAccount(
 
 // =========================
 // GET onboarding link
+// Returns { status: "ready", url } on 200, or { status: "provisioning",
+// retryAfterSeconds } on 202 while Stripe Connect is still being provisioned
+// in the background.
 // =========================
 export async function getOnboardingLink(
     businessId: string
-): Promise<string> {
-    const res = await api.get<ApiResponse<string>>(
+): Promise<OnboardingLinkResponse> {
+    const res = await api.get<ApiResponse<OnboardingLinkResponse>>(
         `/account/onboarding/${businessId}`
     )
 

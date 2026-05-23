@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="CloudinaryDotNet" Version="1.27.8" />
-    <PackageReference Include="DF.Contracts" Version="1.0.1-pre-release5" />
+    <PackageReference Include="DF.Contracts" Version="1.0.2-pre-release4" />
     <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5"/>

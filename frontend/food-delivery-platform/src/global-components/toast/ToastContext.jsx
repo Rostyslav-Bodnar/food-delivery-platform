@@ -1,9 +1,10 @@
-﻿import {
+import {
     createContext,
     useContext,
     useState,
     useCallback,
-    useEffect
+    useEffect,
+    useMemo
 } from "react";
 
 import ToastContainer from "./ToastContainer";
@@ -40,6 +41,26 @@ export function ToastProvider({ children }) {
         return id;
     }, []);
 
+    const success = useCallback(
+        (message, options) => addToast({ message, ...options, type: "success" }),
+        [addToast]
+    );
+
+    const error = useCallback(
+        (message, options) => addToast({ message, ...options, type: "error" }),
+        [addToast]
+    );
+
+    const info = useCallback(
+        (message, options) => addToast({ message, ...options, type: "info" }),
+        [addToast]
+    );
+
+    const warning = useCallback(
+        (message, options) => addToast({ message, ...options, type: "warning" }),
+        [addToast]
+    );
+
     useEffect(() => {
         registerToastHandler(addToast);
 
@@ -48,13 +69,20 @@ export function ToastProvider({ children }) {
         };
     }, [addToast]);
 
+    const value = useMemo(
+        () => ({
+            addToast,
+            removeToast,
+            success,
+            error,
+            info,
+            warning
+        }),
+        [addToast, removeToast, success, error, info, warning]
+    );
+
     return (
-        <ToastContext.Provider
-            value={{
-                addToast,
-                removeToast
-            }}
-        >
+        <ToastContext.Provider value={value}>
             {children}
 
             <ToastContainer

@@ -30,11 +30,16 @@ public class InternalAuthSigner(IConfiguration config)
         string signature
     )
     {
-        var expected = Sign(timestamp, nonce);
+        var expectedBytes = Encoding.UTF8.GetBytes(Sign(timestamp, nonce));
+        var actualBytes = Encoding.UTF8.GetBytes(signature ?? string.Empty);
 
-        return CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(expected),
-            Encoding.UTF8.GetBytes(signature)
-        );
+        // FixedTimeEquals throws on length mismatch; treating a malformed
+        // signature as "invalid" is a 401, not a 500.
+        if (expectedBytes.Length != actualBytes.Length)
+        {
+            return false;
+        }
+
+        return CryptographicOperations.FixedTimeEquals(expectedBytes, actualBytes);
     }
 }

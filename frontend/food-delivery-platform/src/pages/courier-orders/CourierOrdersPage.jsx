@@ -10,17 +10,21 @@ import {
     Store
 } from "lucide-react";
 
-import CourierSidebar from "../sidebars/CourierSidebar.jsx";
+import RoleSidebar from "../sidebars/RoleSidebar.jsx";
 import {
     changeOrderStatus,
     deliverOrder,
     getActiveCourierOrders,
     getOrdersByCourier,
-    getCourierOrderHistory
+    getCourierOrderHistory,
+    markCourierPaid
 } from "../../api/Order.ts";
 import { hasCoordinates } from "../../utils/orderLocations.js";
 import { getRoadRoute } from "../../utils/roadRouting.js";
 import useCourierLocationSender from "../../hooks/useCourierLocationSender.jsx";
+import useCourierTracking from "../../hooks/useCourierTracking.jsx";
+import useCourierEta from "../../hooks/useCourierEta.js";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
 import CourierRouteMap from "./components/CourierRouteMap.jsx";
 import {
     calculateDistanceKm,
@@ -34,6 +38,7 @@ import {
 } from "./courierOrderUtils.js";
 import "./styles/CourierOrdersPage.css";
 import {OrderStatus} from "../../models/enums/OrderStatus.ts";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const markerPalette = {
     courier: { fillColor: "#7c5cff", strokeColor: "#d9d2ff" },
@@ -42,9 +47,13 @@ const markerPalette = {
 };
 
 export default function CourierOrdersPage() {
+    const toast = useToast();
     const courierId = localStorage.getItem("currentAccountId");
     const courierName = localStorage.getItem("currentAccountName") ?? "Courier";
-
+    console.log("[Courier render]", {
+        courierId,
+        courierName
+    });
     const [isOnline, setIsOnline] = useState(true);
     const [availableOrders, setAvailableOrders] = useState([]);
     const [activeOrders, setActiveOrders] = useState([]);
@@ -54,26 +63,61 @@ export default function CourierOrdersPage() {
     const [route, setRoute] = useState(null);
     const [actionLoading, setActionLoading] = useState("");
     const [loading, setLoading] = useState(true);
-
+    console.log("[Courier state]", {
+        isOnline,
+        availableOrders: availableOrders.length,
+        activeOrders: activeOrders.length,
+        history: history.length,
+        courierPosition,
+        locationError,
+        loading,
+        actionLoading
+    });
     const activeOrder = activeOrders[0] ?? null;
+    console.log("[Active order]", activeOrder);
+    const { snapshot, status: trackingSubscriptionStatus } = useCourierTracking(activeOrder?.id, {
+        enabled: Boolean(activeOrder)
+    });
+    console.log("[Tracking hook]", {
+        snapshot,
+        trackingSubscriptionStatus
+    });
     const deliveryStage = activeOrder
-        ? getCourierDeliveryStage(activeOrder.id, activeOrder.orderStatus)
+        ? getCourierDeliveryStage(
+            activeOrder.id,
+            snapshot?.orderStatus ?? activeOrder.orderStatus,
+            snapshot?.stage
+        )
         : "pickup";
     const trackingStage = activeOrder
         ? deliveryStage === "pickup"
             ? "to-restaurant"
             : "to-customer"
         : null;
-
+    console.log("[Tracking stage]", {
+        deliveryStage,
+        trackingStage
+    });
     const { connectionStatus: trackingConnectionStatus, publishStage } = useCourierLocationSender({
         orderId: activeOrder?.id,
         courierId,
         position: courierPosition,
         stage: trackingStage,
-        enabled: Boolean(isOnline && activeOrder)
+        enabled: Boolean(isOnline && activeOrder?.id)
     });
-
+    console.log("[Location sender]", {
+        trackingConnectionStatus,
+        activeOrderId: activeOrder?.id,
+        courierPosition
+    });
+    const etaSeconds = useCourierEta({
+        route,
+        position: courierPosition,
+        intervalSeconds: 30
+    });
+    console.log("[ETA]", etaSeconds);
     useEffect(() => {
+        console.log("[Geo] starting watcher");
         if (!navigator.geolocation) {
             setLocationError("Geolocation is unavailable in this browser.");
             return undefined;
@@ -81,6 +125,10 @@ export default function CourierOrdersPage() {
 
         const watchId = navigator.geolocation.watchPosition(
             ({ coords }) => {
+                console.log("[Geo] position received", {
+                    latitude: coords.latitude,
+                    longitude: coords.longitude
+                });
                 setCourierPosition({
                     latitude: coords.latitude,
                     longitude: coords.longitude
@@ -88,6 +136,7 @@ export default function CourierOrdersPage() {
                 setLocationError("");
             },
             () => {
+                console.error("[Geo] error", error);
                 setLocationError("Allow geolocation to sort nearby orders and build the route.");
             },
             {
@@ -97,8 +146,125 @@ export default function CourierOrdersPage() {
             }
         );
 
-        return () => navigator.geolocation.clearWatch(watchId);
+        return () => {
+            console.log("[Geo] stopping watcher", watchId);
+            navigator.geolocation.clearWatch(watchId);
+        } ;
     }, []);
+
+    useEffect(() => {
+        console.log("[Snapshot effect]", {
+            activeOrder,
+            snapshot
+        });
+        if (!activeOrder || !snapshot) {
+            return;
+        }
+        
+        const snapshotStatus =
+            snapshot.orderStatus !== null &&
+            snapshot.orderStatus !== undefined
+                ? Number(snapshot.orderStatus)
+                : null;
+
+        console.log("[Snapshot status]", {
+            stage: snapshot.stage,
+            status: snapshotStatus
+        });
+        if (
+            snapshot.stage === "to-customer" ||
+            snapshotStatus === OrderStatus.PickedUp
+        ) {
+            console.log("[Tracking] Switching to dropoff");
+            setCourierDeliveryStage(activeOrder.id, "dropoff");
+
+            setActiveOrders(current =>
+                current.map(order =>
+                    order.id === activeOrder.id
+                        ? {
+                            ...order,
+                            orderStatus: OrderStatus.PickedUp
+                        }
+                        : order
+                )
+            );
+        }
+
+
+        if (
+            snapshot.stage === "cancelled" ||
+            snapshotStatus === OrderStatus.Canceled && snapshotStatus !== null
+        )
+        {
+            console.warn("[Tracking] Order cancelled");
+            clearCourierDeliveryStage(activeOrder.id);
+            setActiveOrders([]);
+            setRoute(null);
+        }
+
+        if (
+            snapshot.stage === "delivered" ||
+            snapshotStatus === OrderStatus.Delivered
+        ) {
+            // For cash-on-delivery orders, the courier still needs to confirm
+            // cash receipt — leave the order in active until that happens. The
+            // SignalR-driven reloadOrders + backend's GetActiveByCourierIdAsync
+            // filter will keep it accurate.
+            const cashPending =
+                activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid;
+
+            if (cashPending) {
+                // Just mark the order as delivered locally so the dropoff UI
+                // (with the "Cash received" button) keeps rendering; let the
+                // next reload patch up the rest.
+                setActiveOrders(current =>
+                    current.map(order =>
+                        order.id === activeOrder.id
+                            ? { ...order, orderStatus: "delivered" }
+                            : order
+                    )
+                );
+            } else {
+                console.log("[Tracking] Order delivered");
+                clearCourierDeliveryStage(activeOrder.id);
+
+                setHistory(current => {
+                    if (current.some(order => order.id === activeOrder.id))
+                        return current;
+                    return [
+                        { ...activeOrder, orderStatus: OrderStatus.Delivered },
+                        ...current
+                    ];
+                });
+
+                setActiveOrders(current =>
+                    current.filter(order => order.id !== activeOrder.id)
+                );
+
+                setRoute(null);
+            }
+        }
+    }, [activeOrder?.id, snapshot?.stage, snapshot?.orderStatus]);
+
+    const reloadOrders = React.useCallback(async ({ silent = false } = {}) => {
+        if (!courierId) return;
+        try {
+            if (!silent) setLoading(true);
+            const [available, active, historyData] = await Promise.all([
+                getOrdersByCourier(courierId),
+                getActiveCourierOrders(courierId),
+                getCourierOrderHistory(courierId)
+            ]);
+
+            setAvailableOrders(available.map(mapCourierOrder));
+            setActiveOrders(active.map(mapCourierOrder));
+            setHistory(historyData.map(mapCourierOrder));
+        } catch (error) {
+            console.error("[Orders] Failed", error);
+        } finally {
+            if (!silent) setLoading(false);
+        }
+    }, [courierId]);
 
     useEffect(() => {
         if (!courierId) {
@@ -106,72 +272,70 @@ export default function CourierOrdersPage() {
             return undefined;
         }
 
-        let isMounted = true;
+        reloadOrders();
+        const intervalId = window.setInterval(() => reloadOrders({ silent: true }), 30000);
+        return () => window.clearInterval(intervalId);
+    }, [courierId, reloadOrders]);
 
-        const loadOrders = async () => {
-            try {
-                setLoading(true);
-                const [available, active, historyData] = await Promise.all([
-                    getOrdersByCourier(courierId),
-                    getActiveCourierOrders(courierId),
-                    getCourierOrderHistory(courierId)
-                ]);
-
-                if (!isMounted) {
-                    return;
-                }
-
-                setAvailableOrders(available.map(mapCourierOrder));
-                setActiveOrders(active.map(mapCourierOrder));
-                setHistory(historyData.map(mapCourierOrder));
-            } catch (error) {
-                console.error("Failed to load courier orders", error);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
+    useOrderEventsSubscription({
+        enabled: Boolean(courierId),
+        onStatusChanged: (evt) => {
+            const matchesAssigned =
+                evt?.courierId && evt.courierId === courierId;
+            // Every connected courier is in the couriers:available group, so
+            // a Ready/Canceled/Accepted transition arrives even when this
+            // courier isn't the one assigned. Always refresh the available pool
+            // when the event touched a Ready state.
+            const touchesReady =
+                evt?.newStatus === "Ready"
+                || evt?.previousStatus === "Ready"
+                || evt?.newStatus === "Canceled";
+            if (matchesAssigned || touchesReady) {
+                reloadOrders({ silent: true });
             }
-        };
-
-        loadOrders();
-        const intervalId = window.setInterval(loadOrders, 30000);
-
-        return () => {
-            isMounted = false;
-            window.clearInterval(intervalId);
-        };
-    }, [courierId]);
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.courierId === courierId) {
+                reloadOrders({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders({ silent: true })
+    });
 
     useEffect(() => {
         let isMounted = true;
 
         const buildRoute = async () => {
+            console.log("[Route] building");
             if (!activeOrder) {
                 setRoute(null);
                 return;
             }
 
-            const start =
-                deliveryStage === "pickup"
-                    ? courierPosition
-                    : activeOrder.businessLocation;
+            const start = courierPosition;
+            console.log("[Route] start", start);
             const end =
                 deliveryStage === "pickup"
                     ? activeOrder.businessLocation
                     : activeOrder.customerLocation;
-
+            console.log("[Route] end", end);
             if (!hasCoordinates(start) || !hasCoordinates(end)) {
                 setRoute(null);
                 return;
             }
 
             try {
+                console.log("[Route] requesting route");
                 const nextRoute = await getRoadRoute(start, end);
+                console.log("[Route] success", nextRoute);
                 if (isMounted) {
                     setRoute(nextRoute);
                 }
             } catch (error) {
-                console.error("Failed to build courier route", error);
+                console.error(
+                    "[Route] Failed",
+                    error
+                );
                 if (isMounted) {
                     setRoute(null);
                 }
@@ -186,6 +350,9 @@ export default function CourierOrdersPage() {
     }, [activeOrder, courierPosition, deliveryStage]);
 
     const sortedAvailableOrders = useMemo(() => {
+        console.log(
+            "[Memo] sorting orders"
+        );
         return [...availableOrders]
             .map((order) => ({
                 ...order,
@@ -203,17 +370,22 @@ export default function CourierOrdersPage() {
                 return first.distanceToBusinessKm - second.distanceToBusinessKm;
             });
     }, [availableOrders, courierPosition]);
-
+    console.log(
+        "[Memo] history preview"
+    );
     const historyPreview = useMemo(() => history.slice(0, 4), [history]);
 
     const routeMarkers = useMemo(() => {
+        console.log(
+            "[Memo] building markers"
+        );
         if (!activeOrder) {
             return [];
         }
 
         const markers = [];
 
-        if (deliveryStage === "pickup" && hasCoordinates(courierPosition)) {
+        if (hasCoordinates(courierPosition)) {
             markers.push({
                 key: "courier",
                 label: "Your location",
@@ -239,79 +411,81 @@ export default function CourierOrdersPage() {
                 ...markerPalette.customer
             });
         }
-
+        console.log(
+            "[Markers]",
+            markers
+        );
         return markers;
     }, [activeOrder, courierPosition, deliveryStage]);
 
     const handleAcceptOrder = async (order) => {
+        console.log(
+            "[Accept order]",
+            order
+        );
         try {
             setActionLoading(order.id);
             await deliverOrder(order.id, courierId);
+            console.log(
+                "[Accept success]",
+                order.id
+            );
             setCourierDeliveryStage(order.id, "pickup");
 
             setAvailableOrders((current) => current.filter((item) => item.id !== order.id));
             setActiveOrders([{ ...order, orderStatus: "outfordelivery" }]);
         } catch (error) {
             console.error("Failed to accept order", error);
+            console.error(
+                "[Accept failed]",
+                error
+            );
         } finally {
             setActionLoading("");
         }
     };
 
-    const handlePickedUp = async () => {
-        if (!activeOrder) {
-            return;
-        }
+    const handleMarkPaid = async () => {
+        if (!activeOrder) return;
 
         try {
             setActionLoading(activeOrder.id);
-            setCourierDeliveryStage(activeOrder.id, "dropoff");
-            await publishStage("to-customer");
-            setRoute(null);
+            await markCourierPaid(activeOrder.id, courierId);
+            // Optimistic; polling will reconcile from the API in any case.
+            setActiveOrders((current) =>
+                current.map((o) =>
+                    o.id === activeOrder.id ? { ...o, courierPaid: true } : o
+                )
+            );
+            toast.success("Cash payment confirmed");
         } catch (error) {
-            console.error("Failed to update pickup status", error);
-        } finally {
-            setActionLoading("");
-        }
-    };
-
-    const handleDelivered = async () => {
-        if (!activeOrder) {
-            return;
-        }
-
-        try {
-            setActionLoading(activeOrder.id);
-            await changeOrderStatus(activeOrder.id, OrderStatus.Delivered);
-            await publishStage("delivered");
-            clearCourierDeliveryStage(activeOrder.id);
-            setHistory((current) => [{ ...activeOrder, orderStatus: "delivered" }, ...current]);
-            setActiveOrders([]);
-            setRoute(null);
-        } catch (error) {
-            console.error("Failed to finish delivery", error);
+            console.error("Failed to confirm cash receipt", error);
+            if (!error?.toastShown) {
+                toast.error(error.message ?? "Failed to confirm cash receipt");
+            }
         } finally {
             setActionLoading("");
         }
     };
 
     const routeSummary = route
-        ? `${formatRouteDistance(route.distanceMeters)} | ${formatRouteDuration(route.durationSeconds)}`
+        ? `${formatRouteDistance(route.distanceMeters)} | ${formatRouteDuration(etaSeconds ?? route.durationSeconds)}`
         : "Route will appear once coordinates are available";
 
     const trackingStatusLabel = activeOrder
-        ? trackingConnectionStatus === "connected"
+        ? trackingConnectionStatus === "connected" && trackingSubscriptionStatus === "connected"
             ? "Live tracking broadcasting"
-            : trackingConnectionStatus === "connecting"
+            : trackingConnectionStatus === "connecting" || trackingSubscriptionStatus === "connecting"
                 ? "Connecting live tracking"
                 : trackingConnectionStatus === "error"
+                    || trackingSubscriptionStatus === "error"
                     ? "Live tracking unavailable"
                     : "Live tracking paused"
         : "Location synced";
 
     return (
         <div className="courier-orders-shell">
-            <CourierSidebar
+            <RoleSidebar
                 isOnline={isOnline}
                 setIsOnline={setIsOnline}
                 userData={{ name: courierName }}
@@ -401,7 +575,7 @@ export default function CourierOrdersPage() {
                                             </div>
 
                                             <div className="courier-order-card__footer">
-                                                <span>Courier fee: {formatMoney(order.profit)}</span>
+                                                <span>Courier fee: {formatMoney(order.courierFee)}</span>
                                                 <button
                                                     type="button"
                                                     className="courier-primary-btn"
@@ -469,7 +643,7 @@ export default function CourierOrdersPage() {
                                             <strong>
                                                 {deliveryStage === "pickup"
                                                     ? "Courier -> Restaurant"
-                                                    : "Restaurant -> Customer"}
+                                                    : "Courier -> Customer"}
                                             </strong>
                                         </div>
                                         <div>
@@ -510,23 +684,22 @@ export default function CourierOrdersPage() {
 
                                     <div className="courier-active-actions">
                                         {deliveryStage === "pickup" ? (
-                                            <button
-                                                type="button"
-                                                className="courier-primary-btn"
-                                                onClick={handlePickedUp}
-                                                disabled={actionLoading === activeOrder.id}
-                                            >
-                                                {actionLoading === activeOrder.id ? "Updating..." : "Order picked up"}
-                                            </button>
-                                        ) : (
+                                            <div className="courier-status-note">
+                                                Waiting for the restaurant to confirm pickup.
+                                            </div>
+                                        ) : activeOrder.paymentMethod === "CashOnDelivery" && !activeOrder.courierPaid ? (
                                             <button
                                                 type="button"
                                                 className="courier-primary-btn courier-primary-btn--success"
-                                                onClick={handleDelivered}
+                                                onClick={handleMarkPaid}
                                                 disabled={actionLoading === activeOrder.id}
                                             >
-                                                {actionLoading === activeOrder.id ? "Finishing..." : "Delivered to customer"}
+                                                {actionLoading === activeOrder.id ? "Confirming..." : "Cash received"}
                                             </button>
+                                        ) : (
+                                            <div className="courier-status-note">
+                                                Waiting for the customer to confirm delivery.
+                                            </div>
                                         )}
                                     </div>
                                 </>

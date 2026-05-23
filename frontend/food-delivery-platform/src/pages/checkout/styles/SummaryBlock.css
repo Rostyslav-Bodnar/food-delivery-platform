@@ -1,9 +1,14 @@
-﻿/* src/pages/styles/SummaryBlock.css */
+/* =========================================================
+   Per-restaurant summary block (dishes / delivery / payable)
+   ========================================================= */
+
 .summary-block {
-    padding: 16px 20px;
-    margin-top: 20px;
-    border-radius: 16px;
-    background: rgba(255,255,255,0.06);
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--glass-border);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
     width: 100%;
     box-sizing: border-box;
 }
@@ -11,20 +16,30 @@
 .summary-row {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 18px;
+    align-items: baseline;
+    font-size: 13px;
+    color: var(--muted-2);
+}
+
+.summary-row strong {
+    color: var(--text);
+    font-weight: 600;
 }
 
 .summary-row.total {
-    font-size: 22px;
+    font-size: 14px;
     font-weight: 700;
-    padding-top: 12px;
-    margin-top: 12px;
-    border-top: 1px solid rgba(255,255,255,0.15);
+    color: var(--text);
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--glass-border);
 }
 
-.final-price {
-    background: linear-gradient(90deg, #7c5cff, #00d4ff);
+.summary-row.total .final-price {
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 16px;
+    font-weight: 800;
 }

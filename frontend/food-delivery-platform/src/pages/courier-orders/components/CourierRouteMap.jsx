@@ -1,8 +1,8 @@
 import React from "react";
 import {
     CircleMarker,
-    GeoJSON,
     MapContainer,
+    Polyline,
     TileLayer,
     Tooltip,
     useMap
@@ -33,16 +33,7 @@ export default function CourierRouteMap({
     route = null
 }) {
     const bounds = markers.map((marker) => marker.position);
-    const routeGeoJson = route?.coordinates?.length > 1
-        ? {
-            type: "Feature",
-            geometry: {
-                type: "LineString",
-                coordinates: route.coordinates.map(([latitude, longitude]) => [longitude, latitude])
-            },
-            properties: {}
-        }
-        : null;
+    const hasRoute = route?.coordinates?.length > 1;
 
     return (
         <MapContainer
@@ -58,10 +49,10 @@ export default function CourierRouteMap({
                 attribution="&copy; OpenStreetMap contributors"
             />
 
-            {routeGeoJson && (
-                <GeoJSON
-                    data={routeGeoJson}
-                    style={{
+            {hasRoute && (
+                <Polyline
+                    positions={route.coordinates}
+                    pathOptions={{
                         color: "#00d4ff",
                         weight: 5,
                         opacity: 0.82

@@ -1,6 +1,8 @@
 ﻿using DF.Contracts.Enums;
 using DF.Contracts.Gateway.Requests.Order;
+using DF.OrderService.API.Filters;
 using DF.OrderService.Application.Services.Interfaces;
+using DF.OrderService.Contracts.Pagination;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.OrderService.API.Controllers;
@@ -10,8 +12,8 @@ namespace DF.OrderService.API.Controllers;
 public class OrderController(IOrderService orderService) : ControllerBase
 {
     [HttpGet("all")]
-    public async Task<IActionResult> GetAll()
-        => Ok(await orderService.GetAllOrdersAsync());
+    public async Task<IActionResult> GetAll([FromQuery] int? page, [FromQuery] int? pageSize)
+        => Ok(await orderService.GetAllOrdersPagedAsync(PageRequest.From(page, pageSize)));
 
     [HttpGet("business")]
     public async Task<IActionResult> GetByBusiness([FromQuery] Guid businessId)
@@ -45,11 +47,16 @@ public class OrderController(IOrderService orderService) : ControllerBase
     public async Task<IActionResult> GetCustomerOrderHistory(Guid customerId)
         => Ok(await orderService.GetCustomerOrderHistoryAsync(customerId));
 
+    [HttpGet("business/{businessId}/history")]
+    public async Task<IActionResult> GetBusinessOrderHistory(Guid businessId)
+        => Ok(await orderService.GetBusinessOrderHistoryAsync(businessId));
+
     [HttpGet("courier/{courierId}/history")]
     public async Task<IActionResult> GetCourierOrderHistory(Guid courierId)
         => Ok(await orderService.GetCourierOrderHistoryAsync(courierId));
 
     [HttpPost("create")]
+    [Idempotent]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
         => Ok(await orderService.CreateOrderAsync(request));
 
@@ -60,4 +67,20 @@ public class OrderController(IOrderService orderService) : ControllerBase
     [HttpPost("courier/deliver")]
     public async Task<IActionResult> DeliverOrder([FromQuery] Guid orderId, [FromQuery] Guid courierId)
         => Ok(await orderService.DeliverOrderAsync(orderId, courierId));
+
+    [HttpPatch("courier/mark-paid")]
+    public async Task<IActionResult> MarkCourierPaid([FromQuery] Guid orderId, [FromQuery] Guid courierId)
+        => Ok(await orderService.MarkCourierPaidAsync(orderId, courierId));
+
+    [HttpGet("business/{businessId:guid}/revenue-by-dish")]
+    public async Task<IActionResult> GetRevenueByDish(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to,
+        CancellationToken ct)
+    {
+        var toUtc = (to ?? DateTime.UtcNow).ToUniversalTime();
+        var fromUtc = (from ?? toUtc.AddDays(-30)).ToUniversalTime();
+        return Ok(await orderService.GetRevenueByDishAsync(businessId, fromUtc, toUtc, ct));
+    }
 }

@@ -3,7 +3,9 @@ using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Mappers;
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
 using DF.UserService.Contracts.Models.DTO;
+using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
 using Microsoft.Extensions.Options;
 using AccountResponse = DF.Contracts.Gateway.Responses.AccountResponse;
@@ -24,42 +26,59 @@ public class AccountService(
 
     public async Task<AccountResponse> CreateAccountAsync(CreateAccountRequest accountRequest, Guid userId)
     {
+        UploadImageResult? uploadedImage = null;
+
         try
         {
-            var entity = await accountFactory.CreateAccount(accountRequest, userId);
             var user = await userRepository.Get(userId);
             if (user == null)
-                throw new NullReferenceException("User not found.");
-            
+                throw new NotFoundException("User not found.");
+
+            if (accountRequest.ImageFile is { Length: > 0 })
+            {
+                uploadedImage = await cloudinaryService.UploadAsync(accountRequest.ImageFile, "users");
+            }
+
+            var entity = accountFactory.CreateAccount(accountRequest, userId, uploadedImage);
             entity = await accountRepository.Create(entity);
 
-            if (entity is BusinessAccount businessAccount)
-            {
-                
-                // 1) створити Connected Account
-                var stripeAccountId = await stripe.CreateExpressAccountAsync(user.Email ?? "", stripeOptions.DefaultCountry);
-                businessAccount.StripeAccountId = stripeAccountId;
+            // Promote the new account to the user's active account so the next-issued
+            // JWT carries account_id + account_type claims for this account (which the
+            // gateway forwards as X-Internal-AccountId / X-Internal-AccountType). Without
+            // this step, downstream services (e.g. TrackingService) would still see the
+            // user's original Customer account and reject Business-only mutations.
+            user.AccountId = entity.Id;
+            await userRepository.Update(user);
 
-                // 2) витягнути статус
-                var status = await stripe.GetAccountStatusAsync(stripeAccountId);
-                businessAccount.StripeChargesEnabled = status.ChargesEnabled;
-                businessAccount.StripePayoutsEnabled = status.PayoutsEnabled;
-                businessAccount.StripeRequirementsDue = status.RequirementsDue;
+            // Business accounts are persisted with StripeAccountId == null. The
+            // StripeAccountProvisioningWorker picks them up and provisions the
+            // Stripe Express account out-of-band so the request path stays fast
+            // and doesn't fail when Stripe is down.
 
-                await accountRepository.Update(businessAccount);
-
-            }
-            
             return entity switch
             {
-                CustomerAccount c => AccountMapper.ToDTO((CustomerAccount)c),
-                BusinessAccount b => AccountMapper.ToDTO((BusinessAccount)b),
-                CourierAccount co => AccountMapper.ToDTO((CourierAccount)co),
-                _ => AccountMapper.ToDTO(entity) // fallback
+                CustomerAccount c => AccountMapper.ToDTO(c),
+                BusinessAccount b => AccountMapper.ToDTO(b),
+                CourierAccount co => AccountMapper.ToDTO(co),
+                _ => AccountMapper.ToDTO(entity)
             };
         }
         catch (Exception ex)
         {
+            // If the upload succeeded but the entity save failed, the Cloudinary
+            // asset would be orphaned. Best-effort cleanup.
+            if (uploadedImage is not null)
+            {
+                try
+                {
+                    await cloudinaryService.DeleteAsync(uploadedImage.PublicId);
+                }
+                catch
+                {
+                    // Swallow — surface the original failure.
+                }
+            }
+
             throw new ApplicationException($"Error creating account for user {accountRequest.AccountType}", ex);
         }
     }
@@ -154,19 +173,25 @@ public class AccountService(
         return businessAccounts.ToList();
     }
     
-    public async Task<string> GetOnboardingLinkAsync(Guid businessId, CancellationToken ct)
+    public async Task<OnboardingLinkResponse> GetOnboardingLinkAsync(Guid businessId, CancellationToken ct)
     {
         var entity = await accountRepository.Get(businessId) as BusinessAccount
-                     ?? throw new ApplicationException("Business not found");
+                     ?? throw new KeyNotFoundException("Business not found");
 
         if (string.IsNullOrWhiteSpace(entity.StripeAccountId))
-            throw new ApplicationException("StripeAccountId is not set");
+        {
+            // StripeAccountProvisioningWorker hasn't populated the account
+            // yet. Tell the caller to retry instead of erroring out.
+            return OnboardingLinkResponse.Provisioning();
+        }
 
-        return await stripe.CreateOnboardingLinkAsync(
+        var url = await stripe.CreateOnboardingLinkAsync(
             entity.StripeAccountId,
             stripeOptions.Dashboard.ReturnUrl,
             stripeOptions.Dashboard.RefreshUrl,
             ct);
+
+        return OnboardingLinkResponse.Ready(url);
     }
 
 

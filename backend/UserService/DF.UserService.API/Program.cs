@@ -1,6 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 using DF.UserService.API.Extensions;
 using DF.UserService.API.Middlewares;
+using DF.UserService.Application.BackgroundJobs;
 using DF.UserService.Application.Factories;
 using DF.UserService.Application.Factories.Interfaces;
 using DF.UserService.Application.Messaging;
@@ -15,9 +16,55 @@ using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Polly;
 using RabbitMQ.Client;
+using Serilog;
+using Serilog.Formatting.Compact;
+
+const string ServiceName = "UserService";
+
+Log.Logger = new LoggerConfiguration()
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("service", ServiceName)
+    .WriteTo.Console(new CompactJsonFormatter())
+    .CreateBootstrapLogger();
+
+try
+{
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .Enrich.WithProperty("service", ServiceName)
+    .WriteTo.Console(new CompactJsonFormatter()));
+
+var otlpEndpoint = builder.Configuration["OTEL_EXPORTER_OTLP_ENDPOINT"]
+                   ?? Environment.GetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT");
+
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r.AddService(ServiceName))
+    .WithTracing(t =>
+    {
+        t.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddEntityFrameworkCoreInstrumentation();
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            t.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint));
+    })
+    .WithMetrics(m =>
+    {
+        m.AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation();
+        if (!string.IsNullOrWhiteSpace(otlpEndpoint))
+            m.AddOtlpExporter(o => o.Endpoint = new Uri(otlpEndpoint));
+    });
 
 // =======================
 // CORS
@@ -78,6 +125,7 @@ builder.Services.Configure<StripeOptions>(
     builder.Configuration.GetSection("Stripe")
 );
 builder.Services.AddSingleton<IStripeConnectService, StripeConnectService>();
+builder.Services.AddSingleton<IBusinessDashboardService, BusinessDashboardService>();
 
 // =======================
 // FACTORIES
@@ -89,12 +137,41 @@ builder.Services.AddScoped<IAccountFactory, AccountFactory>();
 // =======================
 builder.Services.AddSingleton<IConnection>(sp =>
 {
+    var rabbitUrl = builder.Configuration["RabbitMQ:Url"];
+    if (string.IsNullOrWhiteSpace(rabbitUrl))
+        throw new InvalidOperationException("RabbitMQ:Url is missing or empty in configuration");
+
     var factory = new ConnectionFactory
     {
-        Uri = new Uri(builder.Configuration["RabbitMQ:Url"]
-                      ?? throw new InvalidOperationException("RabbitMQ Url is missing"))
+        Uri = new Uri(rabbitUrl),
+        AutomaticRecoveryEnabled = true,
+        TopologyRecoveryEnabled = true,
+        NetworkRecoveryInterval = TimeSpan.FromSeconds(10),
+        RequestedHeartbeat = TimeSpan.FromSeconds(30),
+        ClientProvidedName = "UserService"
     };
-    return factory.CreateConnectionAsync().GetAwaiter().GetResult();
+
+    var logger = sp.GetRequiredService<ILogger<Program>>();
+    var retry = new Polly.ResiliencePipelineBuilder()
+        .AddRetry(new Polly.Retry.RetryStrategyOptions
+        {
+            MaxRetryAttempts = 8,
+            BackoffType = Polly.DelayBackoffType.Exponential,
+            UseJitter = true,
+            Delay = TimeSpan.FromSeconds(2),
+            MaxDelay = TimeSpan.FromSeconds(30),
+            OnRetry = args =>
+            {
+                logger.LogWarning(args.Outcome.Exception,
+                    "RabbitMQ connect attempt {Attempt} failed; retrying in {Delay}",
+                    args.AttemptNumber + 1, args.RetryDelay);
+                return ValueTask.CompletedTask;
+            }
+        })
+        .Build();
+
+    return retry.ExecuteAsync(async ct => await factory.CreateConnectionAsync(ct))
+        .AsTask().GetAwaiter().GetResult();
 });
 
 // =======================
@@ -104,13 +181,22 @@ builder.Services.AddSingleton<IConsumer, GetAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetBusinessAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetCustomerAccountConsumer>();
 builder.Services.AddSingleton<IConsumer, GetCourierAccountConsumer>();
+builder.Services.AddSingleton<IConsumer, GetBusinessAccountsBatchConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCourierAccountsBatchConsumer>();
+builder.Services.AddSingleton<IConsumer, GetCustomerAccountsBatchConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
 
 // =======================
+// BACKGROUND WORKERS
+// =======================
+builder.Services.AddHostedService<StripeAccountProvisioningWorker>();
+
+// =======================
 // RPC CLIENTS
 // =======================
-builder.Services.AddSingleton<TrackingServiceRpcClient>();
+builder.Services.AddSingleton(sp =>
+    TrackingServiceRpcClient.CreateAsync(sp.GetRequiredService<IConnection>()).GetAwaiter().GetResult());
 
 // =======================
 // CONTROLLERS & JSON
@@ -126,18 +212,24 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddHealthChecks()
+    .AddNpgSql(
+        connectionStringFactory: sp => builder.Configuration.GetConnectionString("UserServiceDatabase")!,
+        name: "postgres", tags: ["ready"])
+    .AddRabbitMQ(
+        sp => sp.GetRequiredService<IConnection>(),
+        name: "rabbitmq", tags: ["ready"]);
+
 var app = builder.Build();
 
-app.UseCustomExceptionMiddleware();
-
-// =======================
-// MIGRATIONS
-// =======================
+// Apply database migrations on startup.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
+    await db.Database.MigrateAsync();
 }
+
+app.UseCustomExceptionMiddleware();
 
 // =======================
 // MIDDLEWARE
@@ -153,6 +245,27 @@ app.UseMiddleware<UserContextMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers();
-app.MapGet("/health", () => "OK")
-    .AllowAnonymous();
-app.Run();
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false
+});
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+
+app.UseSerilogRequestLogging();
+
+await app.RunAsync();
+return 0;
+
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "UserService terminated unexpectedly");
+    return 1;
+}
+finally
+{
+    await Log.CloseAndFlushAsync();
+}

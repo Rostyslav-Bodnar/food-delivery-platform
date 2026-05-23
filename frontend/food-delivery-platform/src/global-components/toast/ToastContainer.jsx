@@ -1,4 +1,4 @@
-﻿import ErrorPanel from "../error/ErrorPanel";
+import ErrorPanel from "../error/ErrorPanel";
 import "./ToastContainer.css";
 
 export default function ToastContainer({
@@ -11,6 +11,8 @@ export default function ToastContainer({
                 <ErrorPanel
                     key={t.id}
                     message={t.message}
+                    type={t.type}
+                    title={t.title}
                     onClose={() => removeToast(t.id)}
                     autoHideMs={t.autoHideMs}
                 />

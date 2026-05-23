@@ -39,6 +39,16 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
                 .HasColumnType("geography (point)")
                 .IsRequired(false);
 
+            // Spatial GIST index on GeoPoint — required for any PostGIS
+            // proximity query to use the index instead of a full scan.
+            entity.HasIndex(l => l.GeoPoint)
+                .HasMethod("gist");
+
+            // Unique partial index on OrderId — guards OrderCreatedConsumer
+            // idempotency against at-least-once redelivery.
+            entity.HasIndex(l => l.OrderId)
+                .IsUnique()
+                .HasFilter("\"OrderId\" IS NOT NULL");
         });
 
         modelBuilder.Entity<BusinessLocation>(entity =>
@@ -57,6 +67,9 @@ public class SqlDbContext(DbContextOptions<SqlDbContext> options) : DbContext(op
                 .WithMany()
                 .HasForeignKey(bl => bl.LocationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // GetByBusinessIdAsync is the hot read; index covers it.
+            entity.HasIndex(bl => bl.BusinessId);
         });
     }
 }

@@ -16,7 +16,7 @@ const useFetchDishes = (userData) => {
                 setDishes(res);
             } catch (err) {
                 console.error(err);
-                setError("Не вдалося завантажити список страв.");
+                setError("Failed to load dishes.");
             } finally {
                 setLoading(false);
             }

@@ -7,7 +7,7 @@ const TotalSection = ({ getGrandTotal }) => {
     return (
         <motion.section initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="checkout-section total-section">
             <div className="grand-total">
-                <span>Total amount payable:</span>
+                <span>Total:</span>
                 <strong className="grand-total-price">{getGrandTotal()} ₴</strong>
             </div>
             <button type="submit" className="submit-order-btn">

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Bike, Clock3, Package, Wallet } from "lucide-react";
 
-import CourierSidebar from "../../sidebars/CourierSidebar.jsx";
+import RoleSidebar from "../../sidebars/RoleSidebar.jsx";
 import useOrderDelivery from "./hooks/useOrderDelivery.jsx";
 import { formatMoney } from "../../courier-orders/courierOrderUtils.js";
 
@@ -30,7 +30,7 @@ export default function CourierHomePage({ userData }) {
 
     return (
         <div className="courier-dashboard-shell">
-            <CourierSidebar
+            <RoleSidebar
                 isOnline={isOnline}
                 setIsOnline={setIsOnline}
                 userData={userData}
@@ -171,7 +171,7 @@ export default function CourierHomePage({ userData }) {
                                             <strong>{order.businessName}</strong>
                                             <p>{formatOrderDate(order.orderDate)}</p>
                                         </div>
-                                        <span>{formatMoney(order.profit)}</span>
+                                        <span>{formatMoney(order.courierFee)}</span>
                                     </div>
                                 ))}
                             </div>

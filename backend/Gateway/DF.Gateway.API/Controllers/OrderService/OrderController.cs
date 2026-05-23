@@ -86,6 +86,13 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
         => proxy.ProxyAsync<IEnumerable<CustomerOrderResponse>>(HttpContext);
 
     // =========================
+    // BUSINESS HISTORY
+    // =========================
+    [HttpGet("business/{businessId}/history")]
+    public Task<Response<IEnumerable<BusinessOrderResponse>>> GetBusinessHistory(Guid businessId)
+        => proxy.ProxyAsync<IEnumerable<BusinessOrderResponse>>(HttpContext);
+
+    // =========================
     // COURIER HISTORY
     // =========================
     [HttpGet("courier/{courierId}/history")]
@@ -104,8 +111,7 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
     // CREATE BATCH
     // =========================
     [HttpPost("create/batch")]
-    public Task<Response<bool>> CreateOrders(
-        [FromBody] List<CreateOrderRequest> request)
+    public Task<Response<bool>> CreateOrders()
         => proxy.ProxyAsync<bool>(HttpContext);
 
     // =========================
@@ -116,4 +122,25 @@ public class OrderController(GatewayProxy proxy) : ControllerBase
         [FromQuery] Guid orderId,
         [FromQuery] Guid courierId)
         => proxy.ProxyAsync<OrderResponse>(HttpContext);
+
+    // =========================
+    // MARK COURIER PAID (cash on delivery)
+    // =========================
+    [HttpPatch("courier/mark-paid")]
+    public Task<Response<OrderResponse>> MarkCourierPaid(
+        [FromQuery] Guid orderId,
+        [FromQuery] Guid courierId)
+        => proxy.ProxyAsync<OrderResponse>(HttpContext);
+
+    // =========================
+    // REVENUE BY DISH (business dashboard)
+    // Returns a list of DishRevenueResponse from OrderService; typed as
+    // `object` here to avoid coupling the Gateway to OrderService.Contracts.
+    // =========================
+    [HttpGet("business/{businessId:guid}/revenue-by-dish")]
+    public Task<Response<object>> GetRevenueByDish(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+        => proxy.ProxyAsync<object>(HttpContext);
 }

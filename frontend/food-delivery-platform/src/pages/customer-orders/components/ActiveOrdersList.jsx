@@ -7,6 +7,8 @@ export default function ActiveOrdersList({
     onOpenDetails,
     onTrackOrder,
     onRequestCancel,
+    onConfirmDelivered,
+    confirmingDeliveryId,
     cancellingOrderId
 }) {
     return (
@@ -15,10 +17,12 @@ export default function ActiveOrdersList({
                 <ActiveOrderCard
                     key={order.id}
                     order={order}
-                    statusMeta={getStatusMeta(order.status)}
+                    statusMeta={getStatusMeta(order.status, order.deliveryMethod)}
                     onOpenDetails={onOpenDetails}
                     onTrackOrder={onTrackOrder}
                     onRequestCancel={onRequestCancel}
+                    onConfirmDelivered={onConfirmDelivered}
+                    confirmingDelivery={confirmingDeliveryId === order.id}
                     cancelling={cancellingOrderId === order.id}
                 />
             ))}

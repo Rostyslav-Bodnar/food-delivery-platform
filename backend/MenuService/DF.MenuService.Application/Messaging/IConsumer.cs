@@ -1,6 +1,7 @@
 namespace DF.MenuService.Application.Messaging;
 
-public interface IConsumer
+public interface IConsumer : IAsyncDisposable
 {
-    void Start();
+    Task StartAsync(CancellationToken cancellationToken);
+    Task StopAsync(CancellationToken cancellationToken);
 }

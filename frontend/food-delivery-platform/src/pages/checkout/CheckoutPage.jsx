@@ -2,12 +2,11 @@
 import React from 'react';
 import { CreditCard } from 'lucide-react';
 import "./styles/CheckoutPage.css";
-import { motion } from 'framer-motion';
-import CustomerSidebar from "../sidebars/CustomerSidebar.jsx";
+import {AnimatePresence, motion} from 'framer-motion';
+import RoleSidebar from "../sidebars/RoleSidebar.jsx";
 import ParticlesBackground from "./components/ParticlesBackground.jsx";
 import ContactInfo from "./components/ContactInfo.jsx";
 import RestaurantSection from "./components/RestaurantSection.jsx";
-import CommentSection from "./components/CommentSection.jsx";
 import TotalSection from "./components/TotalSection.jsx";
 import BottomLinks from "./components/BottomLinks.jsx";
 
@@ -17,10 +16,13 @@ import useRestaurantSettings from "./hooks/useRestaurantSettings";
 import useLocationPicker from "./hooks/useLocationPicker";
 import useOrderCalculations from "./hooks/useOrderCalculations";
 import useOrderSubmit from "./hooks/useOrderSubmit";
+import useDeliveryFees from "./hooks/useDeliveryFees";
 
 // 🔹 Stripe модалка + стилі
 import StripePaymentModal from "./components/StripePaymentModal.jsx";
 import "./styles/StripePaymentModal.css";
+import SummaryBlock from "./components/SummaryBlock.jsx";
+import OrderItem from "./components/OrderItem.jsx";
 
 const CheckoutPage = () => {
     const { groupedItems, removeItem } = useCart();
@@ -32,15 +34,18 @@ const CheckoutPage = () => {
         mapAddress,
         location
     } = useLocationPicker();
+    const { feesByRestaurant, resolvedByRestaurant } =
+        useDeliveryFees(groupedItems, location, getSettingsFor);
+
     const {
         getRestaurantSubtotal,
         getDeliveryCost,
         getRestaurantTotal,
         getGrandTotal
-    } = useOrderCalculations(groupedItems, getSettingsFor);
+    } = useOrderCalculations(groupedItems, feesByRestaurant);
 
     const { handleSubmit, paymentState, markPaid } =
-        useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal);
+        useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal, resolvedByRestaurant);
 
     // Яка модалка відкрита (ключ — назва ресторану)
     const [openForRestaurant, setOpenForRestaurant] = React.useState(null);
@@ -96,7 +101,7 @@ const CheckoutPage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
             <div className="checkout-page-wrapper">
                 <ParticlesBackground />
                 <div className="checkout-container">
@@ -105,70 +110,77 @@ const CheckoutPage = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="checkout-title"
                     >
-                        <CreditCard size={36} /> Оформлення замовлення
+                        <CreditCard size={36} /> Placing an Order
                     </motion.h1>
 
                     {/* 1) Submit: створюємо ордери; 2) якщо є онлайн-оплати — зʼявляться clientSecret, і модалка відкриється сама */}
-                    <form onSubmit={handleSubmit}>
-                        <ContactInfo formData={formData} handleInputChange={handleInputChange} />
+                    <form onSubmit={handleSubmit} className="checkout-grid">
 
-                        {/* Блоки по ресторанах */}
-                        {Object.entries(groupedItems).map(([restaurant, items], index) => {
-                            const settings = getSettingsFor(restaurant);
-                            const payOnline = settings?.paymentType === 'card';
-                            const clientSecret = paymentState?.[restaurant]?.clientSecret;
+                        {/* ✅ LEFT */}
+                        <div className="checkout-left">
+                            <ContactInfo
+                                formData={formData}
+                                handleInputChange={handleInputChange}
+                            />
 
-                            return (
-                                <div key={restaurant}>
+                            {Object.entries(groupedItems).map(([restaurant, items], index) => {
+                                const settings = getSettingsFor(restaurant);
+
+                                return (
                                     <RestaurantSection
-                                        restaurant={restaurant}
-                                        items={items}
                                         settings={settings}
                                         updateSettingsFor={(updates) => updateSettingsFor(restaurant, updates)}
-                                        handleCardChange={(e) => handleCardChange(restaurant, e)}
-                                        removeItem={removeItem}
                                         mapPosition={mapPosition}
                                         setMapPosition={setMapPosition}
                                         mapAddress={mapAddress}
-                                        getRestaurantSubtotal={() => getRestaurantSubtotal(restaurant)}
-                                        getDeliveryCost={(paymentType) => getDeliveryCost(paymentType)}
-                                        getRestaurantTotal={() => getRestaurantTotal(restaurant)}
                                         index={index}
                                     />
+                                );
+                            })}
+                            <BottomLinks />
 
-                                    {/* Інформація про підготовку оплати / повторне відкриття модалки (якщо юзер закрив) */}
-                                    {payOnline && !clientSecret && (
-                                        <div style={{ marginTop: 12, color: '#9ca3af' }}>
-                                            Готуємо форму оплати для <b>{restaurant}</b>...
-                                        </div>
-                                    )}
+                        </div>
 
-                                    {payOnline && clientSecret && openForRestaurant !== restaurant && (
-                                        <div style={{ marginTop: 12, color: '#9ca3af', marginBottom: 12 }}>
-                                            Форма оплати для <b>{restaurant}</b> готова.&nbsp;
-                                            <button
-                                                type="button"
-                                                style={{
-                                                    background: "transparent",
-                                                    border: "none",
-                                                    color: "#9aa9ff",
-                                                    textDecoration: "underline",
-                                                    cursor: "pointer",
-                                                    padding: 0
-                                                }}
-                                                onClick={() => openModalFor(restaurant)}
-                                            >
-                                                Відкрити оплату
-                                            </button>
+                        {/* ✅ RIGHT */}
+                        <div className="checkout-right">
+                            <div className="checkout-right-inner">
+
+                                {Object.entries(groupedItems).map(([restaurant, items]) => {
+                                    const settings = getSettingsFor(restaurant);
+
+                                    return (
+                                        <div key={restaurant} className="summary-card">
+
+                                            <h3 className="summary-title">
+                                                {restaurant}
+                                            </h3>
+
+                                            <AnimatePresence>
+                                                {items.map((item) => (
+                                                    <OrderItem
+                                                        key={item.id}
+                                                        item={item}
+                                                        removeItem={removeItem}
+                                                    />
+                                                ))}
+                                            </AnimatePresence>
+
+                                            <SummaryBlock
+                                                getRestaurantSubtotal={() => getRestaurantSubtotal(restaurant)}
+                                                getDeliveryCost={() => getDeliveryCost(restaurant)}
+                                                getRestaurantTotal={() => getRestaurantTotal(restaurant)}
+                                            />
+
                                         </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                        <TotalSection getGrandTotal={getGrandTotal} />
+                                    );
+                                })}
+
+                                <TotalSection getGrandTotal={getGrandTotal} />
+
+                            </div>
+                        </div>
+
                     </form>
-
-                    <BottomLinks />
                 </div>
             </div>
 
@@ -178,8 +190,8 @@ const CheckoutPage = () => {
                     open={true}
                     onClose={closeModal}
                     clientSecret={paymentState[openForRestaurant].clientSecret}
-                    title={`Оплата для «${openForRestaurant}»`}
-                    subtitle="Ваші дані захищені. Можлива перевірка 3D Secure."
+                    title={`Payment for «${openForRestaurant}»`}
+                    subtitle="Your information is secure. 3D Secure verification may be required."
                     onPaid={() => handlePaidAndMaybeOpenNext(openForRestaurant)}
                 />
             )}
@@ -188,4 +200,3 @@ const CheckoutPage = () => {
 };
 
 export default CheckoutPage;
-``

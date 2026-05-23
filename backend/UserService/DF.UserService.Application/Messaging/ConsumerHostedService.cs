@@ -1,29 +1,46 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace DF.UserService.Application.Messaging;
 
-public class ConsumerHostedService : IHostedService
+public class ConsumerHostedService(
+    IEnumerable<IConsumer> consumers,
+    ILogger<ConsumerHostedService> logger) : IHostedService
 {
-    private readonly IEnumerable<IConsumer> _consumers;
-
-    public ConsumerHostedService(IEnumerable<IConsumer> consumers)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _consumers = consumers;
-    }
-
-    public Task StartAsync(CancellationToken cancellationToken)
-    {
-        foreach (var consumer in _consumers)
+        foreach (var consumer in consumers)
         {
-            consumer.Start();
+            try
+            {
+                await consumer.StartAsync(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,
+                    "Failed to start consumer {Consumer}",
+                    consumer.GetType().Name);
+                throw;
+            }
         }
-        Console.WriteLine("All consumers started");
-        return Task.CompletedTask;
+
+        logger.LogInformation("All consumers started");
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("All consumers stopped");
-        return Task.CompletedTask;
+        foreach (var consumer in consumers)
+        {
+            try
+            {
+                await consumer.StopAsync(cancellationToken);
+                await consumer.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error stopping consumer {Type}", consumer.GetType().Name);
+            }
+        }
+        logger.LogInformation("All consumers stopped");
     }
 }

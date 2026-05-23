@@ -15,6 +15,10 @@ import RestaurantDetailsPage from './pages/restaurant-details/RestaurantDetailsP
 import CustomerOrdersPage from "./pages/customer-orders/CustomerOrdersPage.jsx";
 import BusinessOrdersPage from "./pages/business-orders/BusinessOrdersPage";
 import CourierOrdersPage from "./pages/courier-orders/CourierOrdersPage.jsx";
+import CustomerOrderHistoryPage from "./pages/order-history/CustomerOrderHistoryPage.jsx";
+import BusinessOrderHistoryPage from "./pages/order-history/BusinessOrderHistoryPage.jsx";
+import CourierOrderHistoryPage from "./pages/order-history/CourierOrderHistoryPage.jsx";
+import BusinessDashboardPage from "./pages/business-dashboard/BusinessDashboardPage.jsx";
 
 const AppRouter = () => {
     return (
@@ -31,12 +35,30 @@ const AppRouter = () => {
                         <Route path="/restaurants" element={<RestaurantsPage />} />
                         <Route path="/restaurant/:id" element={<RestaurantDetailsPage />} />
                         <Route path="/customer/orders" element={<CustomerOrdersPage />} />
+                        <Route path="/customer/orders/history" element={<CustomerOrderHistoryPage />} />
                         <Route path="/business/orders" element={<BusinessOrdersPage />} />
+                        <Route path="/business/orders/history" element={<BusinessOrderHistoryPage />} />
+                        <Route
+                            path="/business/dashboard"
+                            element={
+                                <ProtectedRoute>
+                                    <BusinessDashboardPage />
+                                </ProtectedRoute>
+                            }
+                        />
                         <Route
                             path="/courier/orders"
                             element={
                                 <ProtectedRoute>
                                     <CourierOrdersPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/courier/orders/history"
+                            element={
+                                <ProtectedRoute>
+                                    <CourierOrderHistoryPage />
                                 </ProtectedRoute>
                             }
                         />

@@ -13,5 +13,6 @@ public record CreateOrderRequest(
     CreateLocationRequest DeliverTo,
     CreateLocationRequest DeliverFrom,
     PaymentMethod PaymentMethod,
+    DeliveryMethod DeliveryMethod,
     List<CreateOrderDishRequest> Dishes
 );

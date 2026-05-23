@@ -1,89 +1,52 @@
-﻿using System.Text;
-using System.Text.Json;
 using DF.Contracts.RPC.Requests.TrackingService;
 using DF.Contracts.RPC.Responses.TrackingService;
 using DF.TrackingService.Application.Repositories.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Events;
 
 namespace DF.TrackingService.Application.Messaging.Consumers;
 
-public class GetBusinessLocationConsumer(
+public sealed class GetBusinessLocationConsumer(
     IConnection connection,
-    IServiceScopeFactory scopeFactory)
-    : IConsumer
+    IServiceScopeFactory scopeFactory,
+    ILogger<GetBusinessLocationConsumer> logger)
+    : RpcConsumerBase<GetBusinessLocationsRequest, GetBusinessLocationsResponse>(
+        connection, scopeFactory, logger, "tracking.getbusinesslocations")
 {
-    private IChannel _channel = null!;
-
-    public void Start()
+    protected override async Task<GetBusinessLocationsResponse> HandleRequestAsync(
+        GetBusinessLocationsRequest request,
+        IServiceProvider services)
     {
-        _channel = connection.CreateChannelAsync().GetAwaiter().GetResult();
+        var businessLocationRepository =
+            services.GetRequiredService<IBusinessLocationRepository>();
 
-        _channel.QueueDeclareAsync(
-            queue: "tracking.getbusinesslocations",
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        ).GetAwaiter().GetResult();
+        var businessLocations =
+            (await businessLocationRepository.GetByBusinessIdAsync(request.BusinessId))
+            .ToList();
 
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += Handle;
-
-        _channel.BasicConsumeAsync(
-            queue: "tracking.getbusinesslocations",
-            autoAck: true,
-            consumer: consumer
-        ).GetAwaiter().GetResult();
-
-        Console.WriteLine("GetLocationsConsumer started");
-    }
-
-    private async Task Handle(object sender, BasicDeliverEventArgs ea)
-    {
-        using var scope = scopeFactory.CreateScope();
-        var businessLocationRepository = scope.ServiceProvider.GetRequiredService<IBusinessLocationRepository>();
-
-        var json = Encoding.UTF8.GetString(ea.Body.ToArray());
-        var request = JsonSerializer.Deserialize<GetBusinessLocationsRequest>(json);
-
-        if (request == null)
-            return;
-
-        var businessLocations = await businessLocationRepository.GetByBusinessIdAsync(request.BusinessId);
-        
-        if (!businessLocations.Any())
-            return;
-
-        var response = new GetBusinessLocationsResponse(
-            request.BusinessId,
-            businessLocations.Select(x => new GetBusinessLocationResponse(
-                x.Id,
-                x.LocationId,
-                x.Location.FullAddress,
-                x.Location.City,
-                x.Location.Street,
-                x.Location.House,
-                x.Location.GeoPoint.Y,
-                x.Location.GeoPoint.X
-            ))
-        );
-        var responseBytes = Encoding.UTF8.GetBytes(
-            JsonSerializer.Serialize(response)
-        );
-
-        var props = new BasicProperties
+        if (businessLocations.Count == 0)
         {
-            CorrelationId = ea.BasicProperties.CorrelationId
-        };
+            // Default response carries BusinessId so the caller can still
+            // correlate, but with an empty list. Treat empty as "no locations".
+            return new GetBusinessLocationsResponse(
+                request.BusinessId,
+                Array.Empty<GetBusinessLocationResponse>());
+        }
 
-        await _channel.BasicPublishAsync(
-            exchange: "",
-            routingKey: ea.BasicProperties.ReplyTo!,
-            mandatory: false,
-            basicProperties: props,
-            body: responseBytes
-        );
+        return new GetBusinessLocationsResponse(
+            request.BusinessId,
+            businessLocations.Select(bl => new GetBusinessLocationResponse(
+                bl.Id,
+                bl.LocationId,
+                bl.Location?.FullAddress ?? string.Empty,
+                bl.Location?.City ?? string.Empty,
+                bl.Location?.Street ?? string.Empty,
+                bl.Location?.House ?? string.Empty,
+                bl.Location?.GeoPoint?.Y ?? 0,
+                bl.Location?.GeoPoint?.X ?? 0)).ToList());
     }
+
+    protected override GetBusinessLocationsResponse CreateDefaultResponse() =>
+        new(Guid.Empty, Array.Empty<GetBusinessLocationResponse>());
 }

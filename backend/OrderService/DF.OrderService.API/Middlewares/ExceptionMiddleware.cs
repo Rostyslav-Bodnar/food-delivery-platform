@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
 using DF.Contracts.Gateway.Responses;
+using DF.OrderService.Contracts.Exceptions;
+using Microsoft.EntityFrameworkCore;
 
 namespace DF.OrderService.API.Middlewares;
 
@@ -67,6 +69,14 @@ public class ExceptionMiddleware(
             ),
 
             // 🔍 NOT FOUND
+            NotFoundException => (
+                HttpStatusCode.NotFound,
+                new ServiceErrorResponse(
+                    "NOT_FOUND",
+                    ex.Message,
+                    traceId)
+            ),
+
             KeyNotFoundException => (
                 HttpStatusCode.NotFound,
                 new ServiceErrorResponse(
@@ -81,6 +91,24 @@ public class ExceptionMiddleware(
                 new ServiceErrorResponse(
                     "VALIDATION_ERROR",
                     ex.Message,
+                    traceId)
+            ),
+
+            // ⚔️ INVALID STATE TRANSITION
+            OrderStateException => (
+                HttpStatusCode.Conflict,
+                new ServiceErrorResponse(
+                    "INVALID_STATE",
+                    ex.Message,
+                    traceId)
+            ),
+
+            // ⚔️ CONCURRENCY
+            DbUpdateConcurrencyException => (
+                HttpStatusCode.Conflict,
+                new ServiceErrorResponse(
+                    "CONCURRENCY_CONFLICT",
+                    "The order was modified by another request. Reload and try again.",
                     traceId)
             ),
 

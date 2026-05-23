@@ -11,6 +11,8 @@ export default function CustomerOrdersContent({
     onOpenDetails,
     onTrackOrder,
     onRequestCancel,
+    onConfirmDelivered,
+    confirmingDeliveryId,
     cancellingOrderId
 }) {
     if (loading) {
@@ -37,6 +39,8 @@ export default function CustomerOrdersContent({
             onOpenDetails={onOpenDetails}
             onTrackOrder={onTrackOrder}
             onRequestCancel={onRequestCancel}
+            onConfirmDelivered={onConfirmDelivered}
+            confirmingDeliveryId={confirmingDeliveryId}
             cancellingOrderId={cancellingOrderId}
         />
     );

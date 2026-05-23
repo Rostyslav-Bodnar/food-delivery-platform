@@ -1,12 +1,12 @@
-﻿// src/hooks/useOrderSubmit.js
+// src/hooks/useOrderSubmit.js
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
 import { getBusinessLocationsByBusinessId } from "../../../api/BusinessLocation.ts";
+import { getClientSecret } from "../../../api/Payment.jsx";
 import { clearCart } from "../../../utils/CartStorage.jsx";
-
-const PAYMENT_API_BASE = "http://localhost:5003/api";
+import { showErrorToast, showSuccessToast } from "../../../global-components/toast/ToastService";
 
 /* -------------------- helpers -------------------- */
 
@@ -61,25 +61,15 @@ const useOrderSubmit = (
     groupedItems,
     getSettingsFor,
     mapAddress,
-    getRestaurantTotal
+    getRestaurantTotal,
+    resolvedByRestaurant
 ) => {
     const navigate = useNavigate();
     const [paymentState, setPaymentState] = useState({});
 
     /* -------- Stripe -------- */
 
-    const fetchClientSecret = async (orderId) => {
-        const res = await fetch(`${PAYMENT_API_BASE}/payments/${orderId}`, {
-            method: "GET",
-            credentials: "include",
-            headers: { Accept: "application/json" }
-        });
-
-        if (!res.ok) throw new Error("Client secret not ready");
-
-        const json = await res.json();
-        return json.clientSecret;
-    };
+    const fetchClientSecret = (orderId) => getClientSecret(orderId);
 
     const markPaid = (restaurant) => {
         setPaymentState((prev) => {
@@ -98,7 +88,8 @@ const useOrderSubmit = (
 
             if (allPaid) {
                 clearCart();
-                setTimeout(() => navigate("/orders"), 400);
+                showSuccessToast("Payment confirmed — your order is on its way");
+                setTimeout(() => navigate("/customer/orders"), 400);
             }
 
             return next;
@@ -111,13 +102,13 @@ const useOrderSubmit = (
         e.preventDefault();
 
         if (!formData.name || !formData.phone) {
-            alert("Будь ласка, заповніть імʼя та телефон");
+            showErrorToast("Please enter your name and phone number");
             return;
         }
 
         const orderedByRaw = localStorage.getItem("currentAccountId");
         if (!orderedByRaw) {
-            alert("Не знайдено ідентифікатор користувача");
+            showErrorToast("User ID not found");
             return;
         }
 
@@ -130,16 +121,18 @@ const useOrderSubmit = (
             const resolveBusinessLocation = async (
                 businessId,
                 restaurant,
-                customerLocation
+                customerLocation,
+                isPickup
             ) => {
-                if (businessLocationCache[businessId]) {
-                    return businessLocationCache[businessId];
+                // useDeliveryFees may have already resolved the nearest location for
+                // delivery-fee preview; reuse it to avoid a second roundtrip.
+                const precomputed = resolvedByRestaurant?.[restaurant]?.businessLocation;
+                if (precomputed) {
+                    return precomputed;
                 }
 
-                if (!customerLocation?.latitude || !customerLocation?.longitude) {
-                    throw new Error(
-                        `Адреса клієнта не має координат (restaurant=${restaurant})`
-                    );
+                if (businessLocationCache[businessId]) {
+                    return businessLocationCache[businessId];
                 }
 
                 const locations = await getBusinessLocationsByBusinessId(businessId);
@@ -150,7 +143,20 @@ const useOrderSubmit = (
                     );
 
                 if (normalized.length === 0) {
-                    throw new Error(`У закладу ${restaurant} немає валідних локацій`);
+                    throw new Error(`The restaurant ${restaurant} has no valid locations`);
+                }
+
+                // Pickup: customer collects at the restaurant, so there's no
+                // customer pin to compare against — use the first available location.
+                if (isPickup) {
+                    businessLocationCache[businessId] = normalized[0];
+                    return normalized[0];
+                }
+
+                if (!customerLocation?.latitude || !customerLocation?.longitude) {
+                    throw new Error(
+                        `The customer's address does not include coordinates (restaurant=${restaurant})`
+                    );
                 }
 
                 let best = normalized[0];
@@ -173,20 +179,28 @@ const useOrderSubmit = (
             const ordersPayload = await Promise.all(
                 Object.entries(groupedItems).map(async ([restaurant, items]) => {
                     const settings = getSettingsFor(restaurant);
+                    const isPickup = settings.deliveryType === "pickup";
 
                     const customerLocation = normalizeLocation(mapAddress);
-                    if (settings.deliveryType === "delivery" && !customerLocation) {
-                        throw new Error(`Адреса доставки не вибрана для ${restaurant}`);
+                    if (!isPickup && !customerLocation) {
+                        throw new Error(`No shipping address has been selected for ${restaurant}`);
                     }
 
                     const businessLocation = await resolveBusinessLocation(
                         items[0].businessId,
                         restaurant,
-                        customerLocation
+                        customerLocation,
+                        isPickup
                     );
 
                     const paymentMethod =
                         settings.paymentType === "card" ? 0 : 1; // enum OK
+                    const deliveryMethod = isPickup ? 1 : 0; // Delivery=0, Pickup=1
+
+                    // For pickup, the "delivery" address is the restaurant itself.
+                    const deliverToAddress = isPickup
+                        ? businessLocation.fullAddress
+                        : customerLocation.fullAddress;
 
                     return {
                         businessId: items[0].businessId,       // Guid ✅
@@ -198,13 +212,24 @@ const useOrderSubmit = (
                             fullAddress: businessLocation.fullAddress
                         },
                         deliverTo: {
-                            fullAddress: customerLocation.fullAddress
+                            fullAddress: deliverToAddress
                         },
                         paymentMethod,
-                        dishes: items.map((i) => ({
-                            orderId: "00000000-0000-0000-0000-000000000000",
-                            dishId: i.id
-                        }))
+                        deliveryMethod,
+                        // Group duplicate dish entries by dishId so the server sees one
+                        // OrderedDish row with a real Quantity rather than N duplicate rows.
+                        dishes: Object.values(items.reduce((acc, i) => {
+                            if (acc[i.id]) {
+                                acc[i.id].quantity += i.quantity ?? 1;
+                            } else {
+                                acc[i.id] = {
+                                    orderId: "00000000-0000-0000-0000-000000000000",
+                                    dishId: i.id,
+                                    quantity: i.quantity ?? 1
+                                };
+                            }
+                            return acc;
+                        }, {}))
                     };
                 })
             );
@@ -212,23 +237,23 @@ const useOrderSubmit = (
             /* -------- create orders -------- */
 
             const createdOk = await createOrders(ordersPayload);
-            if (!createdOk) throw new Error("Помилка створення замовлення");
+            if (!createdOk) throw new Error("Order creation error");
 
             /* -------- fetch fresh orders -------- */
 
             const allOrders = await getCustomerOrders(orderedBy);
             const freshOrders = {};
-
+            // OrderService now recomputes TotalPrice server-side (dish subtotal only;
+            // delivery fee is added later by LocationsCreatedConsumer), so the cart's
+            // grand total no longer matches o.totalPrice. Match by businessId + recency
+            // and consume orders one at a time so multiple restaurants in the same
+            // checkout each pick a distinct row.
+            const consumedIds = new Set();
             for (const [restaurant, items] of Object.entries(groupedItems)) {
                 const bid = items[0].businessId;
-                const total = getRestaurantTotal(restaurant);
 
                 const found = (allOrders ?? [])
-                    .filter(
-                        (o) =>
-                            o.businessId === bid &&
-                            Number(o.totalPrice) === Number(total)
-                    )
+                    .filter((o) => o.businessId === bid && !consumedIds.has(o.id))
                     .sort(
                         (a, b) =>
                             new Date(b.orderDate) - new Date(a.orderDate)
@@ -236,6 +261,7 @@ const useOrderSubmit = (
 
                 if (found) {
                     freshOrders[restaurant] = found;
+                    consumedIds.add(found.id);
                 }
             }
 
@@ -265,16 +291,21 @@ const useOrderSubmit = (
             }
 
             if (Object.keys(nextPaymentState).length === 0) {
+                // All-cash order: nothing to settle via Stripe — orders are
+                // already on the backend, so clear the cart and send the user
+                // straight to their orders page.
                 clearCart();
-                alert("Замовлення успішно створені 🎉");
-                navigate("/orders");
+                showSuccessToast("Order placed successfully");
+                navigate("/customer/orders");
                 return;
             }
 
             setPaymentState(nextPaymentState);
         } catch (err) {
             console.error(err);
-            alert(err.message || "Помилка при оформленні замовлення");
+            if (!err?.toastShown) {
+                showErrorToast(err.message || "An error occurred while placing your order");
+            }
         }
     };
 

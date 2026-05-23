@@ -1,7 +1,7 @@
 ﻿import React, { useEffect } from "react";
 import "../styles/BusinessHomePage.css";
 
-import BusinessSidebar from "../../sidebars/BusinessSidebar.jsx";
+import RoleSidebar from "../../sidebars/RoleSidebar.jsx";
 import DishComponent from "./components/dish/DishComponent";
 import BusinessHeader from "./components/BusinessHeader.jsx";
 import DishesContent from "./components/DishesContent.jsx";
@@ -51,6 +51,8 @@ export default function BusinessHomePage({ userData }) {
         handleOnboardingRedirect,
         loadingOnboarding,
         error: onboardingError,
+        provisioning,
+        retryAfterSeconds,
         retry,
         clearError,
     } = useOnboardingRedirect();
@@ -60,7 +62,7 @@ export default function BusinessHomePage({ userData }) {
 
     return (
         <div className="bh-page">
-            <BusinessSidebar
+            <RoleSidebar
                 userData={userData}
                 disabled={isNotOnboarded}
             />
@@ -92,6 +94,17 @@ export default function BusinessHomePage({ userData }) {
                                 ? "Redirecting..."
                                 : "Complete Onboarding"}
                         </button>
+
+                        {provisioning && (
+                            <p className="onboarding-sub">
+                                Your business is still being set up. Please try
+                                again in {retryAfterSeconds ?? 15} seconds.
+                            </p>
+                        )}
+
+                        {onboardingError && (
+                            <p className="onboarding-sub">{onboardingError}</p>
+                        )}
                     </div>
                 )}
 

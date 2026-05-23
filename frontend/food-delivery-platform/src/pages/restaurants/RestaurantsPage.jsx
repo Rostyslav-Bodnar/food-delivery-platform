@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Store } from "lucide-react";
 import "./styles/RestaurantsPage.css";
 
-import CustomerSidebar from "../sidebars/CustomerSidebar.jsx";
+import RoleSidebar from "../sidebars/RoleSidebar.jsx";
 import RestaurantCard from "./components/RestaurantCard.jsx";
 import RestaurantsFilter from "./components/RestaurantsFilter.jsx";
 
@@ -40,7 +40,7 @@ const RestaurantsPage = () => {
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
 
             <div className="main-content">
                 {/* particles */}

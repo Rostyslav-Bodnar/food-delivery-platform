@@ -1,73 +1,97 @@
-﻿.business-addresses {
-    margin-top: 20px;
-    padding: 18px;
-    border-radius: 18px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.018), rgba(255,255,255,0.012));
-    border: 1px solid rgba(255,255,255,0.04);
-    box-shadow: 0 16px 42px rgba(2, 6, 23, 0.34);
+/* =========================================================
+   Business addresses — business profile section
+   Map + saved locations + composer form
+   ========================================================= */
+
+.business-addresses {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    padding: clamp(18px, 2.4vw, 24px);
+    border-radius: var(--radius-lg);
+
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012));
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--soft-shadow);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
 }
+
+/* -------------------- Header -------------------- */
 
 .business-addresses__header {
     display: flex;
-    align-items: end;
+    align-items: flex-end;
     justify-content: space-between;
-    gap: 12px;
+    gap: 14px;
+    flex-wrap: wrap;
 }
-.business-address-form__heading,
-.business-address-form__footer,
-.business-address-card__top,
-.business-address-form__map-hint {
+
+.business-addresses__header > div {
     display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.business-addresses__header h3 {
+    margin: 0;
+    font-size: clamp(15px, 1.7vw, 18px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
+    display: inline-flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    gap: 10px;
 }
 
-.business-addresses__header h3,
-.business-address-form__heading h4,
-.business-address-card h4 {
-    margin: 0;
-    color: #eef3fb;
+.business-addresses__header h3::before {
+    content: "";
+    width: 3px;
+    height: 18px;
+    border-radius: 3px;
+    background: linear-gradient(180deg, var(--accent-2), var(--accent-3));
 }
 
-.business-addresses__header p,
-.business-address-form__heading p,
-.business-address-form__footer p,
-.business-addresses__empty p,
-.business-address-form__result span {
+.business-addresses__header p {
     margin: 0;
-    color: #9fb0c8;
+    color: var(--muted-2);
+    font-size: 0.92rem;
     line-height: 1.5;
+    max-width: 60ch;
 }
+
+/* -------------------- Primary button (gradient pill) -------------------- */
 
 .business-addresses__primary-button {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    padding: 11px 18px;
     border: none;
-    border-radius: 12px;
-    padding: 11px 15px;
-    background: linear-gradient(90deg, #7c5cff, #00d4ff);
+    border-radius: var(--radius-md);
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
     color: #041021;
     font-weight: 700;
+    font-size: 14px;
     cursor: pointer;
-    box-shadow: 0 12px 30px rgba(124,92,255,0.2);
-    transition: transform 180ms ease, box-shadow 180ms ease;
+    box-shadow: 0 12px 28px rgba(124, 92, 255, 0.30);
+    transition: transform var(--transition), box-shadow var(--transition);
 }
 
 .business-addresses__primary-button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 18px 36px rgba(124,92,255,0.24);
+    box-shadow: 0 18px 40px rgba(124, 92, 255, 0.42);
 }
 
 .business-addresses__primary-button:disabled {
-    opacity: 0.7;
+    opacity: 0.65;
     cursor: wait;
+    transform: none;
+    box-shadow: 0 8px 20px rgba(124, 92, 255, 0.18);
 }
+
+/* -------------------- Notices / empty / loading -------------------- */
 
 .business-addresses__notice,
 .business-addresses__empty,
@@ -75,48 +99,80 @@
     display: flex;
     align-items: flex-start;
     gap: 10px;
-    padding: 14px 16px;
-    border-radius: 14px;
-}
-
-.business-addresses__notice {
-    border: 1px solid rgba(255,255,255,0.05);
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.92rem;
+    line-height: 1.5;
 }
 
 .business-addresses__notice.is-success {
-    background: rgba(75, 214, 138, 0.1);
-    color: #aff0c6;
+    background: rgba(52, 211, 153, 0.10);
+    border: 1px solid rgba(52, 211, 153, 0.32);
+    color: #6ee7b7;
 }
 
 .business-addresses__notice.is-error {
-    background: rgba(255, 107, 107, 0.12);
-    color: #ffb8b8;
+    background: rgba(255, 107, 107, 0.10);
+    border: 1px solid rgba(255, 107, 107, 0.32);
+    color: #fda4a4;
 }
 
 .business-addresses__empty {
-    background: rgba(255,255,255,0.018);
-    border: 1px dashed rgba(255,255,255,0.08);
-    color: #e6eef6;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px dashed var(--glass-border);
+    color: var(--muted-2);
+}
+
+.business-addresses__empty strong {
+    color: var(--text);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.business-addresses__empty p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
 }
 
 .business-addresses__loading {
     align-items: center;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(255,255,255,0.05);
-    color: #d9e5f6;
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--glass-border);
+    color: var(--muted-2);
 }
+
+/* -------------------- Grid of saved cards -------------------- */
 
 .business-addresses__grid {
     display: grid;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
 }
 
 .business-address-card {
-    padding: 16px;
-    border-radius: 16px;
-    background: linear-gradient(180deg, rgba(10,15,24,0.95), rgba(14,20,31,0.92));
-    border: 1px solid rgba(255,255,255,0.06);
-    box-shadow: 0 12px 26px rgba(2, 6, 23, 0.26);
+    position: relative;
+    padding: 16px 18px;
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.012));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: var(--card-shadow);
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.business-address-card:hover {
+    border-color: rgba(124, 92, 255, 0.32);
+    box-shadow: 0 22px 50px rgba(2, 6, 23, 0.75), 0 0 0 1px rgba(124, 92, 255, 0.18);
+}
+
+.business-address-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
 }
 
 .business-address-card__badge,
@@ -124,65 +180,103 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 10px;
+    padding: 4px 10px;
     border-radius: 999px;
-    font-size: 0.85rem;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .business-address-card__badge {
-    background: rgba(124, 92, 255, 0.14);
-    color: #cfbeff;
+    background: rgba(124, 92, 255, 0.12);
+    border: 1px solid rgba(124, 92, 255, 0.28);
+    color: #c7baff;
 }
 
 .business-address-card__coords {
-    background: rgba(0, 212, 255, 0.1);
-    color: #a6f0ff;
+    background: rgba(0, 212, 255, 0.10);
+    border: 1px solid rgba(0, 212, 255, 0.28);
+    color: #9ee9ff;
+    font-variant-numeric: tabular-nums;
 }
 
 .business-address-card h4 {
-    margin-top: 12px;
-    margin-bottom: 10px;
+    margin: 12px 0 10px;
     font-size: 1rem;
     line-height: 1.5;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.005em;
 }
 
 .business-address-card__meta {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
+    padding-top: 10px;
+    border-top: 1px dashed var(--glass-border);
 }
 
 .business-address-card__meta span {
     display: inline-flex;
     align-items: center;
-    padding: 7px 10px;
+    padding: 4px 10px;
     border-radius: 999px;
-    background: rgba(255,255,255,0.03);
-    color: #aebbd0;
-    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--glass-border);
+    color: var(--muted-2);
+    font-size: 12.5px;
 }
+
+/* -------------------- Composer form -------------------- */
 
 .business-address-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    padding: 18px;
-    border-radius: 18px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: linear-gradient(180deg, rgba(255,255,255,0.028), rgba(255,255,255,0.015));
+    padding: clamp(16px, 2vw, 22px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.018));
+    border: 1px solid var(--glass-border);
 }
+
+.business-address-form__heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.business-address-form__heading h4 {
+    margin: 0;
+    font-size: clamp(15px, 1.6vw, 17px);
+    font-weight: 700;
+    color: var(--text);
+}
+
+.business-address-form__heading p {
+    margin: 4px 0 0;
+    color: var(--muted-2);
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+/* Search box */
 
 .business-address-form__search-shell,
 .business-address-form__field {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .business-address-form__search-shell label,
 .business-address-form__field label {
-    color: #dce5f4;
-    font-weight: 600;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
 }
 
 .business-address-form__search-input {
@@ -190,37 +284,59 @@
     align-items: center;
     gap: 10px;
     padding: 0 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: rgba(255,255,255,0.02);
-    color: #9fb0c8;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    color: var(--muted);
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
 }
 
-.business-address-form__search-input input,
-.business-address-form__field input {
-    width: 100%;
-    padding: 12px 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,0.06);
-    background: linear-gradient(180deg, rgba(255,255,255,0.024), rgba(255,255,255,0.014));
-    color: #eef3fb;
-    outline: none;
-    box-sizing: border-box;
-    font: inherit;
+.business-address-form__search-input:focus-within {
+    border-color: rgba(124, 92, 255, 0.6);
+    background: rgba(124, 92, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
+    color: var(--accent-2);
 }
 
 .business-address-form__search-input input {
+    width: 100%;
+    padding: 12px 0;
     border: none;
     background: transparent;
-    padding-left: 0;
-    box-shadow: none;
+    color: var(--text);
+    font: inherit;
+    outline: none;
 }
 
-.business-address-form__search-input input:focus,
-.business-address-form__field input:focus {
-    border-color: rgba(124,92,255,0.34);
-    box-shadow: 0 10px 24px rgba(124,92,255,0.14);
+.business-address-form__search-input input::placeholder {
+    color: var(--muted);
 }
+
+.business-address-form__field input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text);
+    font: inherit;
+    outline: none;
+    transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+}
+
+.business-address-form__field input:hover {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.business-address-form__field input:focus {
+    border-color: rgba(124, 92, 255, 0.6);
+    background: rgba(124, 92, 255, 0.06);
+    box-shadow: 0 0 0 3px rgba(124, 92, 255, 0.18);
+}
+
+/* Search results */
 
 .business-address-form__results {
     display: grid;
@@ -230,47 +346,77 @@
 .business-address-form__result {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    gap: 12px;
     width: 100%;
     padding: 12px 14px;
-    border-radius: 14px;
-    border: 1px solid rgba(255,255,255,0.05);
-    background: rgba(255,255,255,0.02);
-    color: #e8effa;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text);
     text-align: left;
     cursor: pointer;
-    transition: transform 180ms ease, border-color 180ms ease;
+    transition: transform var(--transition), border-color var(--transition), background var(--transition);
 }
 
 .business-address-form__result:hover {
     transform: translateY(-1px);
-    border-color: rgba(0,212,255,0.34);
+    border-color: rgba(0, 212, 255, 0.4);
+    background: rgba(0, 212, 255, 0.06);
+}
+
+.business-address-form__result svg {
+    color: var(--accent-3);
+    margin-top: 2px;
+    flex-shrink: 0;
 }
 
 .business-address-form__result div {
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-width: 0;
 }
+
+.business-address-form__result strong {
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.business-address-form__result span {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+/* Map */
 
 .business-address-form__map-shell {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
 }
 
 .business-address-form__map {
     width: 100%;
-    height: 300px;
-    border-radius: 18px;
+    height: 320px;
+    border-radius: var(--radius-md);
     overflow: hidden;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--card-shadow);
 }
 
 .business-address-form__map-hint {
+    display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    color: #9fb0c8;
-    font-size: 0.92rem;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+    background: rgba(0, 212, 255, 0.06);
+    border: 1px dashed rgba(0, 212, 255, 0.28);
+    color: var(--muted-2);
+    font-size: 0.88rem;
 }
 
 .business-address-form__map-hint span {
@@ -278,6 +424,12 @@
     align-items: center;
     gap: 6px;
 }
+
+.business-address-form__map-hint svg {
+    color: var(--accent-3);
+}
+
+/* Fields grid */
 
 .business-address-form__grid {
     display: grid;
@@ -289,33 +441,68 @@
     grid-template-columns: 1fr;
 }
 
+/* Footer */
+
+.business-address-form__footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding-top: 8px;
+    border-top: 1px dashed var(--glass-border);
+}
+
+.business-address-form__footer p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+    max-width: 50ch;
+}
+
+/* -------------------- Spinner -------------------- */
+
 .spin {
     animation: business-address-spin 1s linear infinite;
 }
 
 @keyframes business-address-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* -------------------- Adaptive -------------------- */
+
+@media (max-width: 860px) {
+    .business-address-form__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
-@media (max-width: 860px) {
-    .business-addresses__header,
-    .business-address-form__heading,
-    .business-address-form__footer,
-    .business-address-card__top {
+@media (max-width: 560px) {
+    .business-addresses__header {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+    }
+
+    .business-addresses__primary-button {
+        width: 100%;
     }
 
     .business-address-form__grid {
         grid-template-columns: 1fr;
     }
 
-    .business-addresses__primary-button {
+    .business-address-form__map {
+        height: 260px;
+    }
+
+    .business-address-form__footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .business-address-form__footer .business-addresses__primary-button {
         width: 100%;
     }
 }

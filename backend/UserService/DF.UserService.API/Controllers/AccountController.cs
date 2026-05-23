@@ -2,19 +2,24 @@
 using DF.Contracts.Gateway.Responses;
 using DF.UserService.API.Middlewares;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
+using DF.UserService.Contracts.Models.Response;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.UserService.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AccountController(IAccountService accountService, IUserContext userContext) : ControllerBase
+public class AccountController(
+    IAccountService accountService,
+    IUserContext userContext,
+    IBusinessDashboardService dashboardService) : ControllerBase
 {
     [HttpGet("{userId:guid}")]
     public async Task<ActionResult<AccountResponse>> GetAccount(Guid userId)
     {
         var account = await accountService.GetAccountByUserAsync(userId)
-                      ?? throw new NullReferenceException("Account not found");
+                      ?? throw new NotFoundException("Account not found");
 
         return Ok(account);
     }
@@ -32,12 +37,13 @@ public class AccountController(IAccountService accountService, IUserContext user
         var result = await accountService.GetBusinessAccountsAsync();
 
         if (result == null || !result.Any())
-            throw new NullReferenceException("No business accounts found");
+            throw new NotFoundException("No business accounts found");
 
         return Ok(result);
     }
 
     [HttpPost("courier")]
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<AccountResponse>> CreateCourierAccount(
         [FromForm] CreateCourierAccountRequest request)
         => await CreateAccount(request);
@@ -47,7 +53,8 @@ public class AccountController(IAccountService accountService, IUserContext user
         [FromForm] CreateCustomerAccountRequest request)
         => await CreateAccount(request);
 
-    [HttpPost("business")]
+    [HttpPost("business")] 
+    [Consumes("multipart/form-data")]
     public async Task<ActionResult<AccountResponse>> CreateBusinessAccount(
         [FromForm] CreateBusinessAccountRequest request)
         => await CreateAccount(request);
@@ -97,21 +104,57 @@ public class AccountController(IAccountService accountService, IUserContext user
         var deleted = await accountService.DeleteAccountAsync(id);
 
         if (!deleted)
-            throw new NullReferenceException("Account not found");
+            throw new NotFoundException("Account not found");
 
         return NoContent();
     }
 
     [HttpGet("onboarding/{businessId:guid}")]
-    public async Task<ActionResult<string>> GetOnboardingLink(Guid businessId)
+    public async Task<ActionResult<OnboardingLinkResponse>> GetOnboardingLink(Guid businessId)
     {
-        var link = await accountService.GetOnboardingLinkAsync(
+        var result = await accountService.GetOnboardingLinkAsync(
             businessId,
-            CancellationToken.None);
+            HttpContext.RequestAborted);
 
-        if (string.IsNullOrEmpty(link))
-            throw new NullReferenceException("Onboarding link not found");
+        if (result.Status == OnboardingLinkResponse.ProvisioningStatus)
+        {
+            // 202 Accepted: account exists but Stripe provisioning is still
+            // in flight (StripeAccountProvisioningWorker). Client should retry.
+            if (result.RetryAfterSeconds is int retry)
+            {
+                Response.Headers["Retry-After"] = retry.ToString();
+            }
+            return StatusCode(StatusCodes.Status202Accepted, result);
+        }
 
-        return Ok(link);
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Live financial dashboard for a business: KPI summary, daily income
+    /// series, outcome breakdown, payout history. Data is read fresh from
+    /// the business's Stripe Connect account on every call (no local
+    /// aggregation table yet).
+    /// </summary>
+    [HttpGet("business/{businessId:guid}/dashboard")]
+    public async Task<ActionResult<BusinessDashboardResponse>> GetBusinessDashboard(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+    {
+        var toUtc = (to ?? DateTime.UtcNow).ToUniversalTime();
+        var fromUtc = (from ?? toUtc.AddDays(-30)).ToUniversalTime();
+
+        var dashboard = await dashboardService.GetDashboardAsync(
+            businessId,
+            fromUtc,
+            toUtc,
+            HttpContext.RequestAborted);
+
+        if (dashboard is null)
+            throw new NotFoundException(
+                "Business not found or Stripe onboarding has not completed yet.");
+
+        return Ok(dashboard);
     }
 }

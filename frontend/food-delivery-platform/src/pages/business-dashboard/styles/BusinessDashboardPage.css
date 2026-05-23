@@ -1,0 +1,575 @@
+/* =========================================================
+   Business dashboard — income & outcome
+   Glass card layout matching the rest of the app
+   ========================================================= */
+
+.business-dashboard-shell {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.business-dashboard-page {
+    flex: 1;
+    min-width: 0;
+    color: var(--text);
+    box-sizing: border-box;
+    padding: clamp(24px, 3.5vw, 44px) clamp(16px, 3vw, 36px);
+    display: flex;
+    flex-direction: column;
+    gap: clamp(18px, 2.4vw, 28px);
+
+    background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(124, 92, 255, 0.10), transparent 60%),
+        radial-gradient(1000px 500px at 90% 85%, rgba(0, 212, 255, 0.06), transparent 60%),
+        linear-gradient(180deg, var(--bg-900), #071014 80%);
+}
+
+/* -------------------- Hero -------------------- */
+
+.dashboard-hero {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.dashboard-hero > div:first-child {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 60ch;
+}
+
+.dashboard-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    width: fit-content;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent-3);
+    background: rgba(0, 212, 255, 0.08);
+    border: 1px solid rgba(0, 212, 255, 0.28);
+}
+
+.dashboard-hero h1 {
+    margin: 0;
+    font-size: clamp(26px, 3.4vw, 36px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-hero p {
+    margin: 0;
+    color: var(--muted-2);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* -------------------- Range toggles -------------------- */
+
+.range-toggles {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    flex-wrap: wrap;
+}
+
+.range-toggles__icon {
+    display: inline-flex;
+    padding: 0 6px;
+    color: var(--muted);
+}
+
+.range-toggle {
+    padding: 7px 14px;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--muted-2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.range-toggle:hover {
+    color: var(--text);
+    background: rgba(124, 92, 255, 0.08);
+}
+
+.range-toggle.is-active {
+    color: #fff;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    box-shadow: 0 8px 22px rgba(124, 92, 255, 0.30);
+}
+
+/* -------------------- KPI grid -------------------- */
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: clamp(12px, 1.5vw, 16px);
+}
+
+.kpi-card {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(16px, 2vw, 20px);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: var(--card-shadow);
+
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+
+.kpi-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(124, 92, 255, 0.30);
+}
+
+.kpi-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 3px;
+    background: var(--kpi-rail, linear-gradient(180deg, var(--accent-2), var(--accent-3)));
+    opacity: 0.7;
+}
+
+.kpi-card__icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--kpi-icon-bg, rgba(124, 92, 255, 0.16));
+    color: var(--kpi-icon-color, var(--accent-2));
+    border: 1px solid var(--kpi-icon-border, rgba(124, 92, 255, 0.28));
+}
+
+.kpi-card__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kpi-card__label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+}
+
+.kpi-card__value {
+    font-size: clamp(1.15rem, 1.7vw, 1.35rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+    word-break: break-all;
+}
+
+.kpi-card__hint {
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+/* KPI tone variants drive the left rail + icon colors */
+
+.kpi-card.is-primary {
+    --kpi-rail: linear-gradient(180deg, var(--accent-2), var(--accent-3));
+    --kpi-icon-bg: linear-gradient(135deg, rgba(124,92,255,0.22), rgba(0,212,255,0.12));
+    --kpi-icon-color: #fff;
+    --kpi-icon-border: rgba(124,92,255,0.45);
+}
+
+.kpi-card.is-primary .kpi-card__value {
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.kpi-card.is-positive {
+    --kpi-rail: linear-gradient(180deg, #34d399, var(--accent-3));
+    --kpi-icon-bg: rgba(52, 211, 153, 0.14);
+    --kpi-icon-color: #6ee7b7;
+    --kpi-icon-border: rgba(52, 211, 153, 0.32);
+}
+
+.kpi-card.is-negative {
+    --kpi-rail: linear-gradient(180deg, var(--accent-1), #ff8e3c);
+    --kpi-icon-bg: rgba(255, 107, 107, 0.12);
+    --kpi-icon-color: var(--accent-1);
+    --kpi-icon-border: rgba(255, 107, 107, 0.32);
+}
+
+.kpi-card.is-info {
+    --kpi-rail: linear-gradient(180deg, var(--accent-3), var(--accent-2));
+    --kpi-icon-bg: rgba(0, 212, 255, 0.12);
+    --kpi-icon-color: var(--accent-3);
+    --kpi-icon-border: rgba(0, 212, 255, 0.32);
+}
+
+.kpi-card.is-neutral {
+    --kpi-rail: rgba(151, 160, 169, 0.4);
+    --kpi-icon-bg: rgba(255, 255, 255, 0.04);
+    --kpi-icon-color: var(--muted-2);
+    --kpi-icon-border: var(--glass-border);
+}
+
+/* -------------------- Chart cards -------------------- */
+
+.dashboard-charts-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+    gap: clamp(16px, 2vw, 22px);
+}
+
+.dashboard-card {
+    padding: clamp(18px, 2.2vw, 24px);
+    border-radius: var(--radius-lg);
+    background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)),
+        radial-gradient(500px 220px at 50% -20%, rgba(124, 92, 255, 0.16), transparent 70%);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    box-shadow: var(--card-shadow);
+}
+
+.dashboard-card--wide {
+    /* explicit so this card spans naturally inside the 2-col grid */
+}
+
+.dashboard-card__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+
+.dashboard-card__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+}
+
+.dashboard-card__sub {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.dashboard-card h2 {
+    margin: 4px 0 0;
+    font-size: clamp(15px, 1.6vw, 17px);
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+}
+
+.chart-empty {
+    padding: 36px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.92rem;
+    border: 1px dashed var(--glass-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* -------------------- Donut legend -------------------- */
+
+.donut-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+}
+
+.donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.donut-legend__row {
+    display: grid;
+    grid-template-columns: 12px 1fr auto auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.025);
+    border: 1px solid var(--glass-border);
+    font-size: 13px;
+}
+
+.donut-legend__dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.04);
+}
+
+.donut-legend__label {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.donut-legend__value {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted-2);
+    font-weight: 700;
+}
+
+.donut-legend__pct {
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    font-size: 11.5px;
+}
+
+/* -------------------- Payouts table -------------------- */
+
+.payouts-table-shell {
+    overflow-x: auto;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border);
+}
+
+.payouts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.payouts-table thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.025);
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.payouts-table thead th.num,
+.payouts-table tbody td.num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.payouts-table tbody td {
+    padding: 14px 16px;
+    color: var(--text);
+    border-bottom: 1px solid var(--glass-border);
+    vertical-align: top;
+}
+
+.payouts-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.payout-cell-primary {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.payout-cell-sub {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.payout-failure {
+    color: var(--accent-1);
+}
+
+.payout-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.payout-status.is-paid {
+    color: #6ee7b7;
+    background: rgba(52, 211, 153, 0.10);
+    border: 1px solid rgba(52, 211, 153, 0.30);
+}
+
+.payout-status.is-pending {
+    color: var(--gold);
+    background: rgba(245, 182, 66, 0.10);
+    border: 1px solid rgba(245, 182, 66, 0.30);
+}
+
+.payout-status.is-failed {
+    color: var(--accent-1);
+    background: rgba(255, 107, 107, 0.10);
+    border: 1px solid rgba(255, 107, 107, 0.30);
+}
+
+.payouts-empty {
+    padding: 28px 20px;
+    text-align: center;
+    color: var(--muted-2);
+    border: 1px dashed var(--glass-border);
+    border-radius: var(--radius-md);
+    background: rgba(255, 255, 255, 0.02);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.payouts-empty p {
+    margin: 0;
+    color: var(--text);
+    font-weight: 600;
+}
+
+.payouts-empty span {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+/* -------------------- Skeleton + error -------------------- */
+
+.dashboard-skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.dashboard-skeleton__row {
+    height: 120px;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    background:
+        linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(124,92,255,0.08) 50%, rgba(255,255,255,0.02) 100%) 0 0 / 200% 100%;
+    animation: dashboard-shimmer 1.4s ease-in-out infinite;
+}
+
+.dashboard-skeleton__row.tall {
+    height: 320px;
+}
+
+@keyframes dashboard-shimmer {
+    0%   { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.dashboard-error {
+    padding: 24px;
+    border-radius: var(--radius-lg);
+    background: rgba(255, 107, 107, 0.08);
+    border: 1px solid rgba(255, 107, 107, 0.32);
+    color: var(--text);
+}
+
+.dashboard-error h3 {
+    margin: 0 0 8px;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--accent-1);
+}
+
+.dashboard-error p {
+    margin: 0;
+    color: var(--muted-2);
+    line-height: 1.5;
+}
+
+/* -------------------- Adaptive -------------------- */
+
+@media (max-width: 1100px) {
+    .dashboard-charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .donut-shell {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 720px) {
+    .dashboard-hero {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .range-toggles {
+        justify-content: space-between;
+    }
+
+    .range-toggle {
+        flex: 1;
+        text-align: center;
+    }
+
+    .donut-legend__row {
+        grid-template-columns: 12px 1fr auto;
+    }
+
+    .donut-legend__pct {
+        display: none;
+    }
+}
+
+@media (max-width: 460px) {
+    .kpi-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .kpi-card {
+        padding: 14px;
+        gap: 10px;
+    }
+
+    .payouts-table thead th,
+    .payouts-table tbody td {
+        padding: 10px 12px;
+    }
+}

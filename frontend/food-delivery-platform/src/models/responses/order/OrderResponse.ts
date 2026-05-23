@@ -21,6 +21,8 @@ export interface CustomerOrderResponse extends OrderResponse {
     courierName: string;
     orderStatus: string;
     dishes: DishResponse[];
+    deliveryMethod: string;
+    paymentMethod: string;
 }
 
 export interface BusinessOrderResponse extends OrderResponse {
@@ -31,6 +33,8 @@ export interface BusinessOrderResponse extends OrderResponse {
     courierName: string;
     orderStatus: string;
     dishes: DishResponse[];
+    deliveryMethod: string;
+    paymentMethod: string;
 }
 
 export interface CourierOrderResponse extends OrderResponse {
@@ -39,6 +43,7 @@ export interface CourierOrderResponse extends OrderResponse {
     courierLocation: LocationResponse;
     orderStatus: string;
     profit: number;
+    paymentMethod: string;
 }
 
 export interface OrderDetailsResponse {
@@ -60,4 +65,5 @@ export interface OrderDetailsResponse {
     deliveredById?: string | null;
     courierName?: string | null;
     courierPhoneNumber?: string | null;
+    deliveryMethod: string;
 }

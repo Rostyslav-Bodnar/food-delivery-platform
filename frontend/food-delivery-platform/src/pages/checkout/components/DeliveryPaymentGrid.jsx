@@ -45,7 +45,7 @@ const DeliveryPaymentGrid = ({ settings, updateSettingsFor }) => {
                             checked={settings.paymentType === 'card'}
                             onChange={() => updateSettingsFor({ paymentType: 'card' })}
                         />
-                        <CreditCard size={22} /> Online card payment
+                        <CreditCard size={22} /> Card payment
                     </label>
                 </div>
             </div>

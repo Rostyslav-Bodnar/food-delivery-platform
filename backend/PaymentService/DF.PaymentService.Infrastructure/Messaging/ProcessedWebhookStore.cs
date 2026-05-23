@@ -3,6 +3,7 @@ using DF.PaymentService.Domain.Entities;
 using DF.PaymentService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace DF.PaymentService.Infrastructure.Messaging;
 
@@ -55,14 +56,17 @@ public class ProcessedWebhookStore(AppDbContext db, ILogger<ProcessedWebhookStor
     }
 
     /// <summary>
-    /// Грубе визначення порушення унікальності для різних провайдерів (SQL Server/PostgreSQL/SQLite).
-    /// У prod бажано перевіряти коди помилок провайдера.
+    /// Postgres-specific unique-violation check via SQLSTATE 23505 (rather than a fragile
+    /// string match on the error message, which can vary across provider versions and locales).
     /// </summary>
     private static bool IsUniqueViolation(DbUpdateException ex)
     {
+        if (ex.InnerException is PostgresException pgEx)
+            return pgEx.SqlState == PostgresErrorCodes.UniqueViolation; // "23505"
+
+        // Defensive fallback for non-Postgres providers — should not trigger in prod.
         var msg = ex.InnerException?.Message ?? ex.Message;
-        return msg.Contains("UNIQUE", StringComparison.OrdinalIgnoreCase)
-               || msg.Contains("duplicate", StringComparison.OrdinalIgnoreCase)
-               || msg.Contains("constraint", StringComparison.OrdinalIgnoreCase);
+        return msg.Contains("23505", StringComparison.Ordinal)
+               || msg.Contains("unique_violation", StringComparison.OrdinalIgnoreCase);
     }
 }

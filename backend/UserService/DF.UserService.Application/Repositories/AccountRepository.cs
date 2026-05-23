@@ -30,7 +30,16 @@ public class AccountRepository(AppDbContext dbContext) : IAccountRepository
 
     public async Task<Account> Update(Account entity)
     {
-        dbContext.Accounts.Update(entity);
+        // Callers load the entity via Get(...) before mutating, so the change
+        // tracker already has the deltas. Calling DbSet.Update(entity) would
+        // mark every property modified — including Stripe-managed fields like
+        // StripeChargesEnabled — and could clobber state that the webhook
+        // controllers or provisioning worker just wrote.
+        if (dbContext.Entry(entity).State == EntityState.Detached)
+        {
+            dbContext.Accounts.Attach(entity);
+        }
+
         await dbContext.SaveChangesAsync();
         return entity;
     }
@@ -76,4 +85,48 @@ public class AccountRepository(AppDbContext dbContext) : IAccountRepository
             .Include(a => a.User)
             .FirstOrDefaultAsync(b => b.StripeAccountId == stripeId, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<BusinessAccount>> GetPendingStripeAccountsAsync(
+        int take,
+        int maxAttempts,
+        DateTime notAttemptedSinceUtc,
+        CancellationToken cancellationToken)
+    {
+        return await dbContext.Accounts
+            .OfType<BusinessAccount>()
+            .Include(a => a.User)
+            .Where(b => b.StripeAccountId == null
+                        && b.StripeProvisioningAttempts < maxAttempts
+                        && (b.StripeProvisioningLastAttemptUtc == null
+                            || b.StripeProvisioningLastAttemptUtc < notAttemptedSinceUtc))
+            .OrderBy(b => b.StripeProvisioningLastAttemptUtc ?? DateTime.MinValue)
+            .ThenBy(b => b.Id)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<BusinessAccount>> GetBusinessAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<BusinessAccount>()
+            .Include(a => a.User)
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+    public async Task<List<CourierAccount>> GetCourierAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<CourierAccount>()
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+    
+    public async Task<List<CustomerAccount>> GetCustomerAccountsByIds(List<Guid> ids)
+    {
+        return await dbContext.Accounts
+            .OfType<CustomerAccount>()
+            .Where(a => ids.Contains(a.Id))
+            .ToListAsync();
+    }
+
 }

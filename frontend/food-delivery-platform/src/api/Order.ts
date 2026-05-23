@@ -83,7 +83,7 @@ export async function getActiveCourierOrders(
 // =========================
 export async function changeOrderStatus(
     orderId: string,
-    status: OrderStatus
+    status: OrderStatus | number
 ): Promise<OrderResponse> {
     const res = await api.patch<ApiResponse<OrderResponse>>(
         "/order/status",
@@ -149,6 +149,19 @@ export async function getCourierOrderHistory(
 }
 
 // =========================
+// GET BUSINESS HISTORY
+// =========================
+export async function getBusinessOrderHistory(
+    businessId: string
+): Promise<BusinessOrderResponse[]> {
+    const res = await api.get<ApiResponse<BusinessOrderResponse[]>>(
+        `/order/business/${businessId}/history`
+    )
+
+    return res.data.data!
+}
+
+// =========================
 // CREATE ORDER
 // =========================
 export async function createOrder(
@@ -189,5 +202,40 @@ export async function deliverOrder(
             { params: { orderId, courierId } }
     )
 
+    return res.data.data!
+}
+
+// =========================
+// MARK COURIER PAID (cash-on-delivery)
+// =========================
+export async function markCourierPaid(
+    orderId: string,
+    courierId: string
+): Promise<OrderResponse> {
+    const res = await api.patch<ApiResponse<OrderResponse>>(
+        "/order/courier/mark-paid",
+            null,
+            { params: { orderId, courierId } }
+    )
+
+    return res.data.data!
+}
+
+// =========================
+// TRACKING ACCESS TOKEN
+// =========================
+// Mints a short-lived JWT scoped to this order so the frontend can connect to
+// the SignalR tracking hub (/hubs/courier-tracking) with role + scope claims.
+export interface TrackingAccessTokenResponse {
+    token: string
+    expiresAtUtc: string
+}
+
+export async function getTrackingAccessToken(
+    orderId: string
+): Promise<TrackingAccessTokenResponse> {
+    const res = await api.post<ApiResponse<TrackingAccessTokenResponse>>(
+        `/orders/${orderId}/tracking-token`
+    )
     return res.data.data!
 }

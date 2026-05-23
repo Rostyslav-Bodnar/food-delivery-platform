@@ -5,6 +5,7 @@ public record OrderTrackingSnapshotDto(
     Guid? CourierId,
     string Stage,
     CourierLocationDto? CourierLocation,
+    string? OrderStatus,
     DateTime UpdatedAtUtc
 );
 

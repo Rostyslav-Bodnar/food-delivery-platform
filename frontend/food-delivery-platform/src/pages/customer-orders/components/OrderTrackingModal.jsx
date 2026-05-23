@@ -1,8 +1,8 @@
 import React from "react";
 import {
     CircleMarker,
-    GeoJSON,
     MapContainer,
+    Polyline,
     TileLayer,
     Tooltip,
     useMap
@@ -93,14 +93,7 @@ export default function OrderTrackingModal({
     ].filter(Boolean);
 
     const routeCoordinates = tracking.route?.coordinates ?? [];
-    const routeGeoJson = routeCoordinates.length > 1 ? {
-        type: "Feature",
-        geometry: {
-            type: "LineString",
-            coordinates: routeCoordinates.map(([latitude, longitude]) => [longitude, latitude])
-        },
-        properties: {}
-    } : null;
+    const hasRoute = routeCoordinates.length > 1;
     const distanceLabel = formatDistance(tracking.route?.distanceMeters);
     const durationLabel = formatDuration(tracking.route?.durationSeconds);
 
@@ -148,10 +141,10 @@ export default function OrderTrackingModal({
                                 attribution="&copy; OpenStreetMap contributors"
                             />
 
-                            {routeGeoJson && (
-                                <GeoJSON
-                                    data={routeGeoJson}
-                                    style={{
+                            {hasRoute && (
+                                <Polyline
+                                    positions={routeCoordinates}
+                                    pathOptions={{
                                         color: "#7c5cff",
                                         weight: 5,
                                         opacity: 0.85

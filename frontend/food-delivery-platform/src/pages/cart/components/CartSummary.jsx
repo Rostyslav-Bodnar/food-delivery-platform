@@ -4,18 +4,6 @@ import { Link } from 'react-router-dom';
 const CartSummary = ({ totalPrice }) => {
     return (
         <motion.div className="cart-summary">
-            <div className="summary-row">
-                <span>Subtotal:</span>
-                <strong>{totalPrice} ₴</strong>
-            </div>
-
-            <div className="summary-row">
-                <span>Delivery:</span>
-                <span>Free</span>
-            </div>
-
-            <div className="summary-divider" />
-
             <div className="summary-row total">
                 <span>Total:</span>
                 <strong className="final-price">{totalPrice} ₴</strong>

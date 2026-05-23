@@ -1,15 +1,23 @@
+/* =========================================================
+   Restaurants page — modern, glass, adaptive
+   Reuses global tokens from index.css
+   ========================================================= */
+
 .app-wrapper {
     display: flex;
     min-height: 100vh;
-    background: linear-gradient(180deg, #0b0f14, #071014);
-    color: #e6eef6;
+    color: var(--text);
 }
 
 .main-content {
     flex: 1;
     min-width: 0;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    background:
+        radial-gradient(1200px 600px at 10% 10%, rgba(124, 92, 255, 0.10), transparent 60%),
+        radial-gradient(1000px 500px at 90% 80%, rgba(0, 212, 255, 0.06), transparent 60%),
+        linear-gradient(180deg, var(--bg-900), #071014 80%);
 }
 
 .particles {
@@ -21,71 +29,101 @@
 
 .particle {
     position: absolute;
-    width: 6px;
-    height: 160px;
+    width: 4px;
+    height: 140px;
     border-radius: 999px;
-    background: linear-gradient(180deg, rgba(124,92,255,0.1), transparent);
-    filter: blur(6px);
+    background: linear-gradient(180deg, rgba(124, 92, 255, 0.18), transparent);
+    filter: blur(8px);
+    opacity: 0.6;
 }
 
 .restaurants-container {
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 40px 30px;
+    padding: clamp(20px, 3.6vw, 36px);
     position: relative;
     z-index: 1;
+    box-sizing: border-box;
 }
 
 .controls-header {
-    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    margin-bottom: 28px;
 }
 
 .page-title {
-    font-size: 42px;
-    font-weight: 900;
-    margin: 0 0 30px 0;
-    background: linear-gradient(90deg, #7c5cff, #00d4ff);
+    margin: 0;
+    font-size: clamp(26px, 4vw, 40px);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 16px;
+    background-clip: text;
 }
+
+.page-title svg {
+    color: var(--accent-2);
+    -webkit-text-fill-color: initial;
+    filter: drop-shadow(0 6px 18px rgba(124, 92, 255, 0.45));
+}
+
+/* -------------------- Grid -------------------- */
 
 .restaurants-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 32px;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 22px;
 }
 
-.no-results {
+/* -------------------- Empty / loading states -------------------- */
+
+.no-results,
+.restaurants-container > div[style*="var(--muted)"] {
+    max-width: 520px;
+    margin: 40px auto;
+    padding: 48px 32px;
     text-align: center;
-    padding: 100px 20px;
-    font-size: 24px;
-    color: #94a3b8;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--glass-border);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+    backdrop-filter: blur(14px) saturate(120%);
+    -webkit-backdrop-filter: blur(14px) saturate(120%);
+    box-shadow: var(--card-shadow);
+    color: var(--muted-2) !important;
+    font-size: 16px !important;
 }
 
-@media (max-width: 1024px) {
-    .search-and-filters {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .search-bar {
-        min-width: auto;
-    }
+.no-results p {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    background: linear-gradient(90deg, var(--accent-2), var(--accent-3));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-@media (max-width: 768px) {
+/* -------------------- Adaptive -------------------- */
+
+@media (max-width: 720px) {
     .app-wrapper {
         flex-direction: column;
     }
 
-    .main-content {
-        padding-top: 20px;
-    }
-
     .restaurants-grid {
         grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .page-title {
+        justify-content: center;
+        text-align: center;
     }
 }

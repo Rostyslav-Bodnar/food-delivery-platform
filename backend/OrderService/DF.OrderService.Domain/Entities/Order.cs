@@ -7,17 +7,20 @@ public class Order
     public Guid OrderedBy { get; set; }
     public DateTime OrderDate { get; set; }
     public decimal TotalPrice { get; set; }
-    
+
     public Guid? DeliverToId { get; set; }
     public Guid? DeliverFromId { get; set; }
-    public Guid? DeliveredById {get; set;}
+    public Guid? DeliveredById { get; set; }
     public OrderStatus OrderStatus { get; set; }
     public decimal DeliveryFee { get; set; }
     public decimal CourierFee { get; set; }
     public bool CourierPaid { get; set; }
-    
-    public string OrderNumber { get; set; }
+
+    public string OrderNumber { get; set; } = string.Empty;
     public decimal Profit { get; set; }
-    
+
     public PaymentMethod PaymentMethod { get; set; }
+    public DeliveryMethod DeliveryMethod { get; set; }
+
+    public List<OrderedDish> OrderedDishes { get; set; } = new();
 }

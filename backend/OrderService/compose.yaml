@@ -1,4 +1,4 @@
-﻿version: '3.9'
+version: '3.9'
 
 services:
   df.orderservice.api:
@@ -8,11 +8,11 @@ services:
       dockerfile: DF.OrderService.API/Dockerfile
     container_name: df.orderservice.api
     ports:
-      - "5005:8090"
+      - "5005:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       ConnectionStrings__DefaultConnection: Host=df.orderservice.db;Port=5432;Database=OrderServiceDb;Username=OrderService;Password=OrderService2025!
-      RabbitMQ__HostName: rabbitmq
+      RabbitMQ__Url: amqp://guest:guest@rabbitmq:5672/
     depends_on:
       - df.orderservice.db
     networks:

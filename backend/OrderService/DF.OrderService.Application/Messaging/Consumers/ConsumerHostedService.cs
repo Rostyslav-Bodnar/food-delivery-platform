@@ -1,22 +1,37 @@
-﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace DF.OrderService.Application.Messaging.Consumers;
 
-public class ConsumerHostedService(IEnumerable<IConsumer> consumers) : IHostedService
+public class ConsumerHostedService(
+    IEnumerable<IConsumer> consumers,
+    ILogger<ConsumerHostedService> logger) : IHostedService
 {
-    public Task StartAsync(CancellationToken cancellationToken)
+    private readonly IReadOnlyList<IConsumer> _consumers = consumers.ToList();
+
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var consumer in consumers)
+        foreach (var consumer in _consumers)
         {
-            consumer.Start();
+            await consumer.StartAsync(cancellationToken);
         }
-        Console.WriteLine("All consumers started");
-        return Task.CompletedTask;
+        logger.LogInformation("Started {Count} RabbitMQ consumer(s)", _consumers.Count);
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
+    public async Task StopAsync(CancellationToken cancellationToken)
     {
-        Console.WriteLine("All consumers stopped");
-        return Task.CompletedTask;
+        foreach (var consumer in _consumers)
+        {
+            try
+            {
+                await consumer.StopAsync(cancellationToken);
+                await consumer.DisposeAsync();
+            }
+            catch (Exception ex)
+            {
+                logger.LogWarning(ex, "Error stopping consumer {Type}", consumer.GetType().Name);
+            }
+        }
+        logger.LogInformation("Stopped {Count} RabbitMQ consumer(s)", _consumers.Count);
     }
 }

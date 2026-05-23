@@ -1,10 +1,10 @@
-﻿import React from "react";
+import React from "react";
 
 export default function OrderDetailsFooter({ total }) {
     return (
         <footer className="od-footer">
             <span>Total</span>
-            <strong>{total} ₴</strong>
+            <strong>{Number(total ?? 0).toFixed(2)} ₴</strong>
         </footer>
     );
 }

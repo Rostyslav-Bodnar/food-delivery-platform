@@ -6,8 +6,9 @@ public interface ITrackingTokenService
 {
     TrackingAccessTokenResponse CreateTrackingToken(
         Guid subjectId,
-        string role,
+        string accountType,
         Guid orderId,
+        Guid accountId,
         IReadOnlyCollection<string> scopes,
         TimeSpan lifetime);
 }

@@ -36,36 +36,57 @@ public class AccountController(GatewayProxy proxy) : ControllerBase
 
     // =========================
     // ONBOARDING
+    // Response shape from UserService:
+    //   { status: "ready", url: "https://...", retryAfterSeconds: null }   (200)
+    //   { status: "provisioning", url: null, retryAfterSeconds: 15 }       (202)
+    // The proxy just transports JSON; `object` keeps the shape generic
+    // without forcing a shared-Contracts type for what's a UserService concern.
     // =========================
     [HttpGet("onboarding/{businessId:guid}")]
-    public Task<Response<string>> GetOnboardingLink(Guid businessId)
-        => proxy.ProxyAsync<string>(HttpContext);
+    public Task<Response<object>> GetOnboardingLink(Guid businessId)
+        => proxy.ProxyAsync<object>(HttpContext);
 
     // =========================
     // CREATE / UPDATE (multipart)
     // =========================
 
     [HttpPost("customer")]
-    public Task<Response<AccountResponse>> CreateCustomer()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<CustomerAccountResponse>> CreateCustomer()
+        => proxy.ProxyAsync<CustomerAccountResponse>(HttpContext);
 
     [HttpPost("business")]
-    public Task<Response<AccountResponse>> CreateBusiness()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<BusinessAccountResponse>> CreateBusiness()
+        => proxy.ProxyAsync<BusinessAccountResponse>(HttpContext);
 
     [HttpPost("courier")]
-    public Task<Response<AccountResponse>> CreateCourier()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    [Consumes("multipart/form-data")]
+    public Task<Response<CourierAccountResponse>> CreateCourier()
+        => proxy.ProxyAsync<CourierAccountResponse>(HttpContext);
 
     [HttpPut("customer")]
-    public Task<Response<AccountResponse>> UpdateCustomer()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<CustomerAccountResponse>> UpdateCustomer()
+        => proxy.ProxyAsync<CustomerAccountResponse>(HttpContext);
 
     [HttpPut("business")]
-    public Task<Response<AccountResponse>> UpdateBusiness()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<BusinessAccountResponse>> UpdateBusiness()
+        => proxy.ProxyAsync<BusinessAccountResponse>(HttpContext);
 
     [HttpPut("courier")]
-    public Task<Response<AccountResponse>> UpdateCourier()
-        => proxy.ProxyAsync<AccountResponse>(HttpContext);
+    public Task<Response<CourierAccountResponse>> UpdateCourier()
+        => proxy.ProxyAsync<CourierAccountResponse>(HttpContext);
+
+    // =========================
+    // BUSINESS DASHBOARD (Stripe-proxy)
+    // Response is the UserService BusinessDashboardResponse aggregate;
+    // kept as `object` here so the Gateway doesn't need to import the
+    // UserService.Contracts project.
+    // =========================
+    [HttpGet("business/{businessId:guid}/dashboard")]
+    public Task<Response<object>> GetBusinessDashboard(
+        Guid businessId,
+        [FromQuery] DateTime? from,
+        [FromQuery] DateTime? to)
+        => proxy.ProxyAsync<object>(HttpContext);
 }

@@ -1,113 +1,51 @@
-using System.Text;
 using System.Text.Json;
 using DF.Contracts.RPC.Requests.MenuService;
 using DF.Contracts.RPC.Responses.MenuService;
 using DF.MenuService.Application.Repositories.Interfaces;
-using DF.MenuService.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 
 namespace DF.MenuService.Application.Messaging.Consumers;
 
-public class GetDishesConsumer : IConsumer
+public class GetDishesConsumer(
+    IConnection connection,
+    IServiceScopeFactory scopeFactory,
+    ILogger<GetDishesConsumer> logger)
+    : RpcConsumerBase(connection, scopeFactory, logger)
 {
-    private readonly IConnection _connection;
-    private readonly IChannel _channel;
-    private readonly IServiceScopeFactory _scopeFactory;
-    
-    public GetDishesConsumer(IConnection connection, IServiceScopeFactory scopeFactory)
+    protected override string QueueName => "menu.getdishes";
+
+    protected override async Task ConsumeAsync(BasicDeliverEventArgs ea)
     {
-        _connection = connection;
-        _scopeFactory = scopeFactory;
-        _channel = _connection.CreateChannelAsync().GetAwaiter().GetResult();
+        var request = JsonSerializer.Deserialize<GetDishesRequest>(ea.Body.Span)
+                      ?? throw new InvalidOperationException(
+                          "Empty GetDishesRequest payload");
 
-        _channel.QueueDeclareAsync(
-            queue: "menu.getdishes",
-            durable: false,
-            exclusive: false,
-            autoDelete: false,
-            arguments: null
-        ).GetAwaiter().GetResult();
+        await using var scope = ScopeFactory.CreateAsyncScope();
+
+        var dishRepository =
+            scope.ServiceProvider.GetRequiredService<IDishRepository>();
+
+        var ingredientRepository =
+            scope.ServiceProvider.GetRequiredService<IIngredientRepository>();
+
+        var dishes = request.BusinessId == Guid.Empty
+            ? []
+            : (await dishRepository
+                .GetByBusinessIdAsync(request.BusinessId))
+            .ToList();
+
+        var responseItems = await Task.WhenAll(
+            dishes.Select(d => MapDishAsync(d, ingredientRepository)));
+
+        var response = new GetDishesResponse(
+            responseItems.ToList());
+
+        await PublishReplyAsync(
+            ea.BasicProperties.ReplyTo,
+            ea.BasicProperties.CorrelationId,
+            response);
     }
-
-    public void Start()
-    {
-        var consumer = new AsyncEventingBasicConsumer(_channel);
-        consumer.ReceivedAsync += async (model, ea) =>
-        {
-            using var scope = _scopeFactory.CreateScope();
-            var dishRepository = scope.ServiceProvider.GetRequiredService<IDishRepository>();
-            var ingredientRepository = scope.ServiceProvider.GetRequiredService<IIngredientRepository>();
-            
-            var body = ea.Body.ToArray();
-            var message = Encoding.UTF8.GetString(body);
-
-            // Десеріалізація запиту
-            var request = JsonSerializer.Deserialize<GetDishesRequest>(message);
-
-            // Тут твоя бізнес‑логіка: знайти accountId по UserId
-            if (request.BusinessId != null)
-            {
-                var dishes = await dishRepository.GetByBusinessIdAsync(request.BusinessId);
-
-                // Отримуємо інгредієнти для кожної страви
-                var ingredientsByDish = new Dictionary<Guid, List<Ingredient>>();
-
-                foreach (var dish in dishes)
-                {
-                    var ing = await ingredientRepository.GetAllIngredientsByDishId(dish.Id);
-                    ingredientsByDish[dish.Id] = ing.ToList();
-                }
-
-                var response = new GetDishesResponse(
-                    dishes.Select(dish =>
-                        new GetDishResponse(
-                            DishId: dish.Id,
-                            Name: dish.Name,
-                            Description: dish.Description,
-                            Image: dish.Image,
-                            Price: dish.Price,
-                            CategoryId: (int)dish.Category,
-                            CategoryName: dish.Category.ToString(),
-                            CookingTime: dish.CookingTime,
-                            BusinessId: dish.BusinessId,
-                            Ingredients: new GetIngredientsResponse(
-                                ingredientsByDish[dish.Id]
-                                    .Select(i => new GetIngredientResponse(
-                                        IngredientId: i.Id,
-                                        DishId: i.DishId,
-                                        Name: i.Name,
-                                        Weight: i.Weight
-                                    )).ToList()
-                            )
-                        )
-                    ).ToList()
-                );
-
-                var responseBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(response));
-
-                var props = new BasicProperties
-                {
-                    CorrelationId = ea.BasicProperties.CorrelationId
-                };
-
-                await _channel.BasicPublishAsync(
-                    exchange: "",
-                    routingKey: ea.BasicProperties.ReplyTo,
-                    mandatory: false,
-                    basicProperties: props,
-                    body: responseBytes
-                );
-            }
-
-        };
-
-        _channel.BasicConsumeAsync(
-            queue: "menu.getdishes",
-            autoAck: true,
-            consumer: consumer
-        ).GetAwaiter().GetResult();
-    }
-
 }

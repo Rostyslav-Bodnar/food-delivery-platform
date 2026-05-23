@@ -1,17 +1,17 @@
-﻿using DF.Contracts.Gateway.Responses.Order;
+using DF.Contracts.Gateway.Responses.Order;
+using DF.OrderService.API.Middlewares;
 using DF.OrderService.Application.Repositories.Interfaces;
 using DF.OrderService.Application.Services.Interfaces;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DF.OrderService.API.Controllers;
 
 [ApiController]
 [Route("api/orders")]
-[Authorize]
 public sealed class OrderTrackingController(
     IOrderRepository orderRepository,
-    ITrackingTokenService trackingTokenService)
+    ITrackingTokenService trackingTokenService,
+    IUserContext userContext)
     : ControllerBase
 {
     [HttpPost("{orderId:guid}/tracking-token")]
@@ -19,43 +19,40 @@ public sealed class OrderTrackingController(
         Guid orderId,
         CancellationToken ct)
     {
+        if (!userContext.IsAuthenticated)
+            return Unauthorized();
+
         var order = await orderRepository.Get(orderId);
         if (order is null)
             return NotFound();
-        
-        var userId = Guid.Parse(User.FindFirst("sub")!.Value);
-        var role   = User.FindFirst("role")!.Value;
-        
-        bool allowed = role switch
+
+        var accountId = userContext.AccountId;
+        var accountType = userContext.AccountType ?? string.Empty;
+
+        var allowed = accountType switch
         {
-            "Customer" => order.OrderedBy == userId,
-            "Courier"  => order.DeliveredById == userId,
-            "Business" => order.BusinessId == userId,
+            "Customer" => order.OrderedBy == accountId,
+            "Courier"  => order.DeliveredById == accountId,
+            "Business" => order.BusinessId == accountId,
             _ => false
         };
 
         if (!allowed)
             return Forbid();
 
-        // --------
-        // Scopes
-        // --------
-        var scopes = role == "Courier"
+        var scopes = accountType == "Courier"
             ? new[] { "tracking:read", "tracking:write" }
             : new[] { "tracking:read" };
 
-        // --------
-        // Token lifetime
-        // --------
         var lifetime = TimeSpan.FromMinutes(10);
 
         var token = trackingTokenService.CreateTrackingToken(
-            subjectId: userId,
-            role: role,
+            subjectId: accountId,
+            accountType: accountType,
             orderId: orderId,
+            accountId: accountId,
             scopes: scopes,
-            lifetime: lifetime
-        );
+            lifetime: lifetime);
 
         return Ok(token);
     }

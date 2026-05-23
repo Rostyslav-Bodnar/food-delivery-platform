@@ -1,4 +1,4 @@
-﻿using DF.UserService.Application.Repositories.Interfaces;
+using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Domain.Entities;
 using DF.UserService.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -12,23 +12,15 @@ public class UserRepository(AppDbContext dbContext) : IUserRepository
         return await dbContext.Users.FindAsync(id);
     }
 
-    public async Task<IEnumerable<User?>> GetAll()
+    public async Task Update(User user)
     {
-        return await dbContext.Users.ToListAsync();
+        dbContext.Users.Update(user);
+        await dbContext.SaveChangesAsync();
     }
 
-    public async Task<User> Create(User entity)
+    public async Task<IEnumerable<User>> GetByIds(IEnumerable<Guid> ids)
     {
-        throw new NotImplementedException();
+        return await dbContext.Users.Where(u => ids.Contains(u.Id)).ToListAsync();
     }
 
-    public async Task<User> Update(User entity)
-    {
-        throw new NotImplementedException();
-    }
-
-    public async Task<bool> Delete(Guid id)
-    {
-        throw new NotImplementedException();
-    }
 }

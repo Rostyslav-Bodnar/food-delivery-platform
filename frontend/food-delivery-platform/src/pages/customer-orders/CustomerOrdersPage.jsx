@@ -1,14 +1,7 @@
 import React from "react";
-import {
-    Bike,
-    CheckCircle2,
-    Clock3,
-    Package,
-    XCircle
-} from "lucide-react";
 
 import "./styles/CustomerOrdersPage.css";
-import CustomerSidebar from "../sidebars/CustomerSidebar";
+import RoleSidebar from "../sidebars/RoleSidebar";
 import OrderDetailsComponent from "../order-details-modal/OrderDetailsComponent.jsx";
 import CustomerOrdersHeader from "./components/CustomerOrdersHeader";
 import CustomerOrdersContent from "./components/CustomerOrdersContent";
@@ -16,9 +9,15 @@ import CancelOrderModal from "./components/CancelOrderModal.jsx";
 import { useCustomerOrders } from "./hooks/useCustomerOrders";
 import { useCustomerOrderSelection } from "./hooks/useCustomerOrderSelection";
 import { useCustomerOrderStatusMeta } from "./hooks/useCustomerOrderStatusMeta";
+import { useCustomerOrderFilters } from "./hooks/useCustomerOrderFilters";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
+import { changeOrderStatus } from "../../api/Order.ts";
+import { OrderStatus } from "../../models/enums/OrderStatus.ts";
+import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const CustomerOrdersPage = () => {
+    const toast = useToast();
     const customerId = localStorage.getItem("currentAccountId");
 
     const {
@@ -26,8 +25,24 @@ const CustomerOrdersPage = () => {
         loading,
         error,
         cancellingOrderId,
-        cancelCustomerOrder
+        cancelCustomerOrder,
+        reloadOrders
     } = useCustomerOrders(customerId);
+
+    useOrderEventsSubscription({
+        enabled: Boolean(customerId),
+        onStatusChanged: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        },
+        onCourierPaid: (evt) => {
+            if (evt?.customerId === customerId) {
+                reloadOrders?.({ silent: true });
+            }
+        },
+        onReconnected: () => reloadOrders?.({ silent: true })
+    });
     const {
         selectedOrder,
         openOrderDetails,
@@ -35,8 +50,32 @@ const CustomerOrdersPage = () => {
     } = useCustomerOrderSelection();
     const { getStatusMeta } = useCustomerOrderStatusMeta();
 
+    const {
+        filter, setFilter,
+        sort, setSort,
+        search, setSearch,
+        filteredOrders
+    } = useCustomerOrderFilters(orders);
+
     const [orderToCancel, setOrderToCancel] = React.useState(null);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
+    const [confirmingDeliveryId, setConfirmingDeliveryId] = React.useState(null);
+
+    const confirmDelivered = async (order) => {
+        try {
+            setConfirmingDeliveryId(order.id);
+            await changeOrderStatus(order.id, OrderStatus.Delivered);
+            toast.success("Delivery confirmed — enjoy your meal");
+            // Polling will move the order out of active and into history.
+        } catch (err) {
+            console.error("Failed to confirm delivery", err);
+            if (!err?.toastShown) {
+                toast.error(err.message ?? "Failed to confirm delivery");
+            }
+        } finally {
+            setConfirmingDeliveryId(null);
+        }
+    };
 
     const confirmCancelOrder = async () => {
         if (!orderToCancel) {
@@ -52,40 +91,46 @@ const CustomerOrdersPage = () => {
                 setTrackingOrder(null);
             }
             setOrderToCancel(null);
+            toast.success("Order cancelled");
         } catch (cancelError) {
-            alert(cancelError.message);
+            if (!cancelError?.toastShown) {
+                toast.error(cancelError.message ?? "Failed to cancel order");
+            }
         }
     };
 
     return (
         <div className="app-wrapper">
-            <CustomerSidebar />
+            <RoleSidebar />
 
             <main className="auth-homepage customer-orders-page">
-                <CustomerOrdersHeader />
+                <CustomerOrdersHeader
+                    filter={filter}
+                    setFilter={setFilter}
+                    sort={sort}
+                    setSort={setSort}
+                    search={search}
+                    setSearch={setSearch}
+                    count={filteredOrders.length}
+                />
 
                 <CustomerOrdersContent
                     loading={loading}
                     error={error}
-                    orders={orders}
+                    orders={filteredOrders}
                     getStatusMeta={getStatusMeta}
                     onOpenDetails={openOrderDetails}
                     onTrackOrder={setTrackingOrder}
                     onRequestCancel={setOrderToCancel}
+                    onConfirmDelivered={confirmDelivered}
+                    confirmingDeliveryId={confirmingDeliveryId}
                     cancellingOrderId={cancellingOrderId}
                 />
             </main>
 
             {selectedOrder && (
                 <OrderDetailsComponent
-                    order={selectedOrder}
-                    statusMap={{
-                        preparing: { label: "Preparing", icon: Clock3 },
-                        "on-the-way": { label: "On the way", icon: Bike },
-                        new: { label: "New", icon: Package },
-                        cancelled: { label: "Cancelled", icon: XCircle },
-                        delivered: { label: "Delivered", icon: CheckCircle2 }
-                    }}
+                    orderId={selectedOrder.id}
                     onClose={closeOrderDetails}
                 />
             )}

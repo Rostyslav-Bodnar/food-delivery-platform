@@ -36,10 +36,14 @@ namespace DF.UserService.Infrastructure.Data
                     .HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 // Поточний акаунт (nullable, один до одного)
+                // SetNull (not Restrict): when the referenced Account is deleted
+                // (including via cascade from User → Accounts), null out the
+                // User.AccountId pointer. Restrict here used to block User
+                // deletion entirely because Account → User is Cascade.
                 entity.HasOne(u => u.CurrentAccount)
-                    .WithMany() // CurrentAccount не має колекції
+                    .WithMany()
                     .HasForeignKey(u => u.AccountId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.SetNull);
 
                 entity.ToTable("Users");
             });
@@ -102,6 +106,14 @@ namespace DF.UserService.Infrastructure.Data
                 entity.Property(b => b.Description)
                     .HasMaxLength(1000);
 
+                entity.Property(b => b.StripeProvisioningLastError)
+                    .HasMaxLength(500);
+
+                // Worker query indexes onto these — accelerates the "pending"
+                // and "ready-for-retry" filters in GetPendingStripeAccountsAsync.
+                entity.HasIndex(b => b.StripeAccountId);
+                entity.HasIndex(b => b.StripeProvisioningLastAttemptUtc);
+
                 entity.ToTable("BusinessAccounts");
             });
 
@@ -130,11 +142,32 @@ namespace DF.UserService.Infrastructure.Data
             {
                 entity.HasKey(rt => rt.Id);
 
-                entity.Property(rt => rt.Token)
+                entity.Property(rt => rt.TokenHash)
+                    .HasMaxLength(64)
+                    .IsRequired();
+
+                entity.Property(rt => rt.ReplacedByHash)
+                    .HasMaxLength(64);
+
+                entity.Property(rt => rt.CreatedAtUtc)
                     .IsRequired();
 
                 entity.Property(rt => rt.Expires)
                     .IsRequired();
+
+                entity.HasIndex(rt => rt.TokenHash).IsUnique();
+                entity.HasIndex(rt => rt.UserId);
+
+                entity.Ignore(rt => rt.IsExpired);
+                entity.Ignore(rt => rt.IsActive);
+
+                // Postgres-native concurrency token (system xmin column).
+                // Prevents two simultaneous Refresh calls from rotating the
+                // same row twice and forking the chain.
+                entity.Property<uint>("xmin")
+                    .HasColumnType("xid")
+                    .ValueGeneratedOnAddOrUpdate()
+                    .IsConcurrencyToken();
 
                 entity.HasOne(rt => rt.User)
                     .WithMany()
@@ -144,6 +177,23 @@ namespace DF.UserService.Infrastructure.Data
                 entity.ToTable("RefreshTokens");
             });
             
+            // === PROCESSED WEBHOOK ===
+            builder.Entity<ProcessedWebhook>(entity =>
+            {
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.WebhookId)
+                    .HasMaxLength(255)
+                    .IsRequired();
+
+                entity.Property(p => p.ProcessedAtUtc)
+                    .IsRequired();
+
+                entity.HasIndex(p => p.WebhookId).IsUnique();
+
+                entity.ToTable("ProcessedWebhooks");
+            });
+
             // === PAYOUT RECORD ===
             builder.Entity<PayoutRecord>(entity =>
             {

@@ -1,9 +1,9 @@
-﻿// src/hooks/useUserLocation.js
+// src/hooks/useUserLocation.js
 import { useState, useEffect } from 'react';
 
 const useUserLocation = () => {
-    const [userCity, setUserCity] = useState('Київ');
-    const [userAddress, setUserAddress] = useState('Хрещатик, 22');
+    const [userCity, setUserCity] = useState('Kyiv');
+    const [userAddress, setUserAddress] = useState('Khreshchatyk, 22');
 
     useEffect(() => {
         fetch('https://ipapi.co/json/')
@@ -12,18 +12,18 @@ const useUserLocation = () => {
                 if (data.city) {
                     setUserCity(data.city);
                     const addresses = {
-                        'Київ': 'Хрещатик, 22',
-                        'Львів': 'просп. Свободи, 7',
-                        'Одеса': 'Дерибасівська, 10',
-                        'Харків': 'вул. Сумська, 35',
-                        'Дніпро': 'просп. Дмитра Яворницького, 50',
+                        'Kyiv': 'Khreshchatyk, 22',
+                        'Lviv': 'Svobody Ave, 7',
+                        'Odesa': 'Derybasivska, 10',
+                        'Kharkiv': 'Sumska St, 35',
+                        'Dnipro': 'Dmytra Yavornytskoho Ave, 50',
                     };
-                    setUserAddress(addresses[data.city] || 'центр міста');
+                    setUserAddress(addresses[data.city] || 'city center');
                 }
             })
             .catch(() => {
-                setUserCity('Київ');
-                setUserAddress('Хрещатик, 22');
+                setUserCity('Kyiv');
+                setUserAddress('Khreshchatyk, 22');
             });
     }, []);
 

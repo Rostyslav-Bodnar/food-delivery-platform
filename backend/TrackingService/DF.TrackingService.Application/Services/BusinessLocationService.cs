@@ -1,4 +1,4 @@
-﻿using DF.Contracts.Gateway.Requests.Tracking;
+using DF.Contracts.Gateway.Requests.Tracking;
 using DF.Contracts.Gateway.Responses.Tracking;
 using DF.TrackingService.Application.Repositories.Interfaces;
 using DF.TrackingService.Application.Services.Interfaces;
@@ -8,7 +8,8 @@ namespace DF.TrackingService.Application.Services;
 
 public class BusinessLocationService(
     IBusinessLocationRepository businessLocationRepository,
-    ILocationRepository locationRepository
+    ILocationRepository locationRepository,
+    IUserContext userContext
 ) : IBusinessLocationService
 {
     public async Task<BusinessLocationResponse?> GetBusinessLocationAsync(Guid id)
@@ -30,9 +31,11 @@ public class BusinessLocationService(
 
     public async Task<BusinessLocationResponse> CreateBusinessLocationAsync(CreateBusinessLocationRequest request)
     {
+        EnsureCallerOwnsBusiness(request.BusinessId);
+
         var location = await locationRepository.Get(request.LocationId);
         if (location is null)
-            throw new NullReferenceException("Location not found");
+            throw new KeyNotFoundException("Location not found");
 
         var entity = new BusinessLocation
         {
@@ -48,7 +51,27 @@ public class BusinessLocationService(
 
     public async Task<bool> DeleteBusinessLocationAsync(Guid id)
     {
+        // Load first to verify the caller owns the business it belongs to.
+        var existing = await businessLocationRepository.Get(id);
+        if (existing is null)
+        {
+            return false;
+        }
+
+        EnsureCallerOwnsBusiness(existing.BusinessId);
+
         return await businessLocationRepository.Delete(id);
+    }
+
+    private void EnsureCallerOwnsBusiness(Guid businessId)
+    {
+        // account_id and account_type come from JWT claims set by UserService
+        // TokenService and validated by TrackingService's JwtBearer scheme.
+        if (!userContext.IsBusiness || userContext.AccountId != businessId)
+        {
+            throw new AccessViolationException(
+                "Caller is not authorized to modify locations for this business.");
+        }
     }
 
     private static BusinessLocationResponse MapToResponse(BusinessLocation entity)

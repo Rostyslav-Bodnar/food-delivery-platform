@@ -56,7 +56,11 @@ public sealed class PaymentsController(
     [ProducesResponseType(StatusCodes.Status202Accepted)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Refund([FromRoute] Guid paymentId, [FromBody] RefundRequest body, CancellationToken ct)
+    public async Task<IActionResult> Refund(
+        [FromRoute] Guid paymentId,
+        [FromBody] RefundRequest body,
+        [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
+        CancellationToken ct)
     {
         // Проста валідація запиту
         if (body is null) return BadRequest("Body is required.");
@@ -66,7 +70,9 @@ public sealed class PaymentsController(
         var payment = await payments.GetByIdAsync(paymentId, ct);
         if (payment is null) return NotFound();
 
-        await refundHandler.Handle(new RefundPaymentCommand(paymentId, body.Amount), ct);
+        await refundHandler.Handle(
+            new RefundPaymentCommand(paymentId, body.Amount, idempotencyKey),
+            ct);
 
         // Для Online ми чекаємо Stripe webhook → 202 Accepted (обробка асинхронна)
         return Accepted();

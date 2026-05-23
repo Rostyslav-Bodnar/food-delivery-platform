@@ -4,6 +4,7 @@ public class StripeOptions
 {
     public string SecretKey { get; init; } = string.Empty;
     public string? WebhookSecretConnect { get; init; }
+    public string? WebhookSecretPayout { get; init; }
     public string DefaultCountry { get; init; } = "US";
 
     public DashboardOptions Dashboard { get; init; } = new();

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
-//import { getTrackingAccessToken } from "../api/Order.jsx";
+import { getTrackingAccessToken } from "../api/Order";
 import { TRACKING_HUB_URL } from "../config/api.js";
 
 const normalizeLocation = (dto) => {
@@ -29,6 +29,7 @@ const normalizeSnapshot = (snapshot) => {
         courierId: snapshot.courierId ?? snapshot.CourierId ?? null,
         stage: snapshot.stage ?? snapshot.Stage ?? "awaiting-courier",
         courierLocation: normalizeLocation(snapshot.courierLocation ?? snapshot.CourierLocation),
+        orderStatus: snapshot.orderStatus ?? snapshot.OrderStatus ?? null,
         updatedAtUtc: snapshot.updatedAtUtc ?? snapshot.UpdatedAtUtc ?? new Date().toISOString()
     };
 };
@@ -52,7 +53,7 @@ export default function useCourierTracking(orderId, { enabled = true } = {}) {
             try {
                 setStatus("connecting");
 
-                const { token } = "token"//await getTrackingAccessToken(orderId);
+                const { token } = await getTrackingAccessToken(orderId);
                 if (cancelled) {
                     return;
                 }
@@ -78,7 +79,21 @@ export default function useCourierTracking(orderId, { enabled = true } = {}) {
                         courierId: location?.courierId ?? current?.courierId ?? null,
                         stage: current?.stage ?? "awaiting-courier",
                         courierLocation: location,
+                        orderStatus: current?.orderStatus ?? null,
                         updatedAtUtc: location?.timestampUtc ?? new Date().toISOString()
+                    }));
+
+                    setStatus("connected");
+                });
+
+                connection.on("OrderStatusUpdated", (orderStatus) => {
+                    setSnapshot((current) => ({
+                        orderId,
+                        courierId: current?.courierId ?? null,
+                        stage: current?.stage ?? "awaiting-courier",
+                        courierLocation: current?.courierLocation ?? null,
+                        orderStatus,
+                        updatedAtUtc: new Date().toISOString()
                     }));
 
                     setStatus("connected");

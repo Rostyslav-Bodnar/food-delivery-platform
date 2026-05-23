@@ -19,6 +19,7 @@ export const normalizeTrackingStage = (value) => {
 export const resolveTrackingStage = (rawStatus, liveStage) => {
     const normalizedLiveStage = normalizeTrackingStage(liveStage);
     const normalizedRawStatus = String(rawStatus ?? "").trim().toLowerCase();
+    const normalizedRawStatusKey = normalizedRawStatus.replace(/[^a-z]/g, "");
 
     if (normalizedRawStatus === "delivered") {
         return TRACKING_STAGE.delivered;
@@ -32,7 +33,11 @@ export const resolveTrackingStage = (rawStatus, liveStage) => {
         return normalizedLiveStage;
     }
 
-    if (normalizedRawStatus === "outfordelivery") {
+    if (normalizedRawStatusKey === "pickedup") {
+        return TRACKING_STAGE.toCustomer;
+    }
+
+    if (normalizedRawStatusKey === "outfordelivery") {
         return TRACKING_STAGE.toRestaurant;
     }
 

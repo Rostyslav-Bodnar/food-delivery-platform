@@ -1,14 +1,15 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
 import {
     createDish,
     updateDish,
     deleteDish
 } from "../../../../api/Dish.ts";
+import { useToast } from "../../../../global-components/toast/ToastContext";
 
 const useDishMutations = (dishes) => {
     const [localDishes, setLocalDishes] = useState(dishes);
-
+    const toast = useToast();
 
     useEffect(() => {
         setLocalDishes(dishes);
@@ -19,8 +20,12 @@ const useDishMutations = (dishes) => {
             const created = await createDish(newDish);
 
             setLocalDishes(prev => [created, ...prev]);
+            toast.success("Dish added to your menu");
         } catch (err) {
             console.error(err);
+            if (!err?.toastShown) {
+                toast.error(err.message ?? "Failed to add dish");
+            }
         }
     };
 
@@ -35,12 +40,12 @@ const useDishMutations = (dishes) => {
                         : d
                 )
             );
+            toast.success("Dish updated");
         } catch (err) {
             console.error(err);
-
-            toast.addToast({
-                message: err.message,
-            });
+            if (!err?.toastShown) {
+                toast.error(err.message ?? "Failed to update dish");
+            }
         }
     };
 
@@ -51,12 +56,12 @@ const useDishMutations = (dishes) => {
             setLocalDishes(prev =>
                 prev.filter(d => d.id !== id)
             );
+            toast.success("Dish removed");
         } catch (err) {
             console.error(err);
-
-            toast.addToast({
-                message: err.message,
-            });
+            if (!err?.toastShown) {
+                toast.error(err.message ?? "Failed to remove dish");
+            }
         }
     };
 
