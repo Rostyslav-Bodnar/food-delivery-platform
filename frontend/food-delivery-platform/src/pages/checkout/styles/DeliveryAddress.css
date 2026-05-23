@@ -1,12 +1,43 @@
-﻿/* src/pages/styles/DeliveryAddress.css */
+/* =========================================================
+   Delivery address picker (map + readout)
+   ========================================================= */
+
 .delivery-address-wrapper {
     grid-column: 1 / -1;
-    margin-top: 12px;
+    margin-top: 14px;
     width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.delivery-address-wrapper h3 {
+    margin: 0;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--muted-2);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delivery-address-wrapper h3 svg {
+    color: var(--accent-3);
 }
 
 .leaflet-container {
     width: 100%;
-    height: 300px;
-    margin-top: 10px;
+    height: 280px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--card-shadow);
+}
+
+@media (max-width: 560px) {
+    .leaflet-container {
+        height: 220px;
+    }
 }
