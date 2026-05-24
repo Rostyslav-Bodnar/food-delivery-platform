@@ -29,17 +29,6 @@ const Header = () => {
             </NavLink>
 
             <nav>
-                {!user && (
-                    <>
-                        <NavLink className="nav-link" to="/login">
-                            Login
-                        </NavLink>
-                        <NavLink className="nav-link" to="/register">
-                            Register
-                        </NavLink>
-                    </>
-                )}
-
                 {user && (
                     <AccountSection
                         user={user}
