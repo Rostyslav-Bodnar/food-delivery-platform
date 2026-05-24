@@ -44,7 +44,13 @@ const PopularSection = ({ popularDishes, scrollPopular }) => {
                     >
                         <Link to={`/dish/${dish.id}`} className="dish-card popular-card">
                             <div className="image-wrapper">
-                                <img src={dish.image} alt={dish.name} />
+                                {dish.image ? (
+                                    <img src={dish.image} alt={dish.name} />
+                                ) : (
+                                    <div className="image-placeholder" aria-label={dish.name}>
+                                        {dish.name?.charAt(0).toUpperCase() ?? "?"}
+                                    </div>
+                                )}
                                 <div className="rating-badge">
                                     <Star size={16} fill="gold" /> {dish.rating}
                                 </div>

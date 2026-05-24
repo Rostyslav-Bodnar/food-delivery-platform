@@ -44,7 +44,7 @@ const CheckoutPage = () => {
         getGrandTotal
     } = useOrderCalculations(groupedItems, feesByRestaurant);
 
-    const { handleSubmit, paymentState, markPaid } =
+    const { handleSubmit, paymentState, markPaid, submitting } =
         useOrderSubmit(formData, groupedItems, getSettingsFor, location, getRestaurantTotal, resolvedByRestaurant);
 
     // Яка модалка відкрита (ключ — назва ресторану)
@@ -128,6 +128,7 @@ const CheckoutPage = () => {
 
                                 return (
                                     <RestaurantSection
+                                        key={restaurant}
                                         settings={settings}
                                         updateSettingsFor={(updates) => updateSettingsFor(restaurant, updates)}
                                         mapPosition={mapPosition}
@@ -175,7 +176,7 @@ const CheckoutPage = () => {
                                     );
                                 })}
 
-                                <TotalSection getGrandTotal={getGrandTotal} />
+                                <TotalSection getGrandTotal={getGrandTotal} submitting={submitting} />
 
                             </div>
                         </div>

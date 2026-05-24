@@ -167,6 +167,23 @@
 .popular-scroll{
     display:flex; gap:14px; overflow-x:auto; padding-bottom:6px; scroll-behavior:smooth; -webkit-overflow-scrolling:touch;
 }
+
+/* Shown when a dish has no image — avoids the `<img src="" />` 404
+   and gives the card a clean fallback (first letter on a gradient). */
+.popular-card .image-placeholder{
+    width: 100%;
+    aspect-ratio: 16 / 11;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    font-weight: 800;
+    color: rgba(255, 255, 255, 0.55);
+    background: linear-gradient(135deg, rgba(124, 92, 255, 0.22), rgba(0, 212, 255, 0.10));
+    border-bottom: 1px solid var(--glass-border);
+    text-transform: uppercase;
+    user-select: none;
+}
 .popular-scroll::-webkit-scrollbar{ height:8px; }
 .popular-scroll::-webkit-scrollbar-thumb{ background: rgba(255,255,255,0.06); border-radius:6px; }
 

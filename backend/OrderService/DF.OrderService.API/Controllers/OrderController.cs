@@ -61,6 +61,7 @@ public class OrderController(IOrderService orderService) : ControllerBase
         => Ok(await orderService.CreateOrderAsync(request));
 
     [HttpPost("create/batch")]
+    [Idempotent]
     public async Task<IActionResult> CreateOrders([FromBody] List<CreateOrderRequest> request)
         => Ok(await orderService.CreateOrdersAsync(request));
 

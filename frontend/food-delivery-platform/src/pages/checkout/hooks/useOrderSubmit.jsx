@@ -1,6 +1,6 @@
 // src/hooks/useOrderSubmit.js
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { createOrders, getCustomerOrders } from "../../../api/Order.ts";
 import { getBusinessLocationsByBusinessId } from "../../../api/BusinessLocation.ts";
@@ -66,6 +66,11 @@ const useOrderSubmit = (
 ) => {
     const navigate = useNavigate();
     const [paymentState, setPaymentState] = useState({});
+    const [submitting, setSubmitting] = useState(false);
+    // Synchronous guard: useState updates are async, so a rapid double-click
+    // can race past the `submitting` check before React renders. The ref is
+    // checked + set in the same tick, eliminating the gap.
+    const inFlightRef = useRef(false);
 
     /* -------- Stripe -------- */
 
@@ -101,6 +106,11 @@ const useOrderSubmit = (
     const handleSubmit = async (e) => {
         e.preventDefault();
 
+        // Drop the click if a previous submission is still in flight. Cheaper
+        // than the disabled-button alone because it runs before any state
+        // touch, so duplicates can't sneak through during the render gap.
+        if (inFlightRef.current) return;
+
         if (!formData.name || !formData.phone) {
             showErrorToast("Please enter your name and phone number");
             return;
@@ -114,6 +124,9 @@ const useOrderSubmit = (
 
         const orderedBy = orderedByRaw.replace(/^"+|"+$/g, "");
         const now = new Date().toISOString();
+
+        inFlightRef.current = true;
+        setSubmitting(true);
 
         try {
             const businessLocationCache = {};
@@ -236,7 +249,16 @@ const useOrderSubmit = (
 
             /* -------- create orders -------- */
 
-            const createdOk = await createOrders(ordersPayload);
+            // Idempotency-Key makes the batch call safe against retries
+            // (network blip → axios retry, tab refresh, etc.). Backend
+            // `[Idempotent]` filter replays the stored 2xx response if the
+            // same key arrives twice. One UUID per submission attempt.
+            const idempotencyKey =
+                typeof crypto !== "undefined" && crypto.randomUUID
+                    ? crypto.randomUUID()
+                    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+            const createdOk = await createOrders(ordersPayload, idempotencyKey);
             if (!createdOk) throw new Error("Order creation error");
 
             /* -------- fetch fresh orders -------- */
@@ -306,10 +328,13 @@ const useOrderSubmit = (
             if (!err?.toastShown) {
                 showErrorToast(err.message || "An error occurred while placing your order");
             }
+        } finally {
+            inFlightRef.current = false;
+            setSubmitting(false);
         }
     };
 
-    return { handleSubmit, paymentState, markPaid };
+    return { handleSubmit, paymentState, markPaid, submitting };
 };
 
 export default useOrderSubmit;
