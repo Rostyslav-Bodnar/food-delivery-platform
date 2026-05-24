@@ -347,7 +347,7 @@ builder.Services.AddScoped<IUserContext, UserContext>();
 // Health checks — DB + RabbitMQ + Redis. /health/live is process-only, /health/ready verifies deps.
 builder.Services.AddHealthChecks()
     .AddNpgSql(
-        connectionStringFactory: sp => builder.Configuration.GetConnectionString("DefaultConnection")!,
+        connectionStringFactory: sp => builder.Configuration.GetConnectionString("TrackingServiceDatabase")!,
         name: "postgres", tags: ["ready"])
     .AddRabbitMQ(
         sp => sp.GetRequiredService<IConnection>(),

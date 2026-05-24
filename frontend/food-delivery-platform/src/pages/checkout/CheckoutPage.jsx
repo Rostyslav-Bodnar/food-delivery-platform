@@ -128,6 +128,7 @@ const CheckoutPage = () => {
 
                                 return (
                                     <RestaurantSection
+                                        key={restaurant}
                                         settings={settings}
                                         updateSettingsFor={(updates) => updateSettingsFor(restaurant, updates)}
                                         mapPosition={mapPosition}
