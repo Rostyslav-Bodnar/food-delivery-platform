@@ -1,5 +1,6 @@
 using DF.UserService.Application.Repositories.Interfaces;
 using DF.UserService.Application.Services.Interfaces;
+using DF.UserService.Contracts.Exceptions;
 using DF.UserService.Contracts.Models.DTO;
 using DF.UserService.Contracts.Models.Response;
 using DF.UserService.Domain.Entities;
@@ -82,6 +83,95 @@ public sealed class BusinessDashboardService : IBusinessDashboardService
             Balance: balance,
             Window: new DashboardWindow(fromUtc, toUtc),
             Currency: currency
+        );
+    }
+
+    public async Task<ManualPayoutResponse> CreateManualPayoutAsync(
+        Guid businessId,
+        Guid requestingUserId,
+        CancellationToken ct = default)
+    {
+        // Resolve + authorize. Service is singleton, repo is scoped.
+        BusinessAccount business;
+        using (var scope = _services.CreateScope())
+        {
+            var accounts = scope.ServiceProvider.GetRequiredService<IAccountRepository>();
+            var account = await accounts.Get(businessId);
+            if (account is not BusinessAccount b)
+                throw new NotFoundException($"Business '{businessId}' not found.");
+
+            // Only the business owner can drain its balance.
+            if (b.UserId != requestingUserId)
+                throw new UnauthorizedAccessException("You do not own this business.");
+
+            business = b;
+        }
+
+        if (string.IsNullOrWhiteSpace(business.StripeAccountId))
+            throw new ArgumentException("Business has not finished Stripe onboarding.");
+
+        if (business.StripePayoutsEnabled != true)
+            throw new ArgumentException(
+                "Payouts are not enabled on this Stripe account yet. " +
+                "Finish the remaining verification steps in Stripe.");
+
+        var requestOptions = new RequestOptions { StripeAccount = business.StripeAccountId };
+
+        // Pick the largest available balance entry (matches dashboard logic
+        // for multi-currency accounts).
+        var balanceService = new BalanceService(_client);
+        var balance = await balanceService.GetAsync(null, requestOptions, ct);
+
+        var primary = balance.Available?
+            .OrderByDescending(b => b.Amount)
+            .FirstOrDefault();
+
+        if (primary is null || primary.Amount <= 0)
+            throw new ArgumentException(
+                "No available balance to pay out. New payments may still be in 'pending' " +
+                "for the standard Stripe settlement window.");
+
+        // Idempotency: bucket by minute so a rapid double-click on the UI
+        // can't fire two payouts. Stripe will return the original payout
+        // for repeat calls with the same key.
+        var idempotencyKey =
+            $"manual-payout:{businessId}:{DateTime.UtcNow:yyyyMMddHHmm}";
+
+        var payoutService = new PayoutService(_client);
+        var payoutOptions = new PayoutCreateOptions
+        {
+            Amount = primary.Amount,
+            Currency = primary.Currency
+        };
+
+        var payoutRequestOptions = new RequestOptions
+        {
+            StripeAccount = business.StripeAccountId,
+            IdempotencyKey = idempotencyKey
+        };
+
+        Payout payout;
+        try
+        {
+            payout = await payoutService.CreateAsync(payoutOptions, payoutRequestOptions, ct);
+        }
+        catch (StripeException ex)
+        {
+            // Surface Stripe's user-facing message — they're usually clearer
+            // than "Internal error" (e.g. "Your bank account is invalid").
+            _logger.LogWarning(ex, "Stripe rejected manual payout for business {BusinessId}", businessId);
+            throw new ArgumentException(ex.StripeError?.Message ?? ex.Message);
+        }
+
+        var currency = (payout.Currency ?? primary.Currency ?? DefaultCurrency).ToUpperInvariant();
+
+        return new ManualPayoutResponse(
+            PayoutId: payout.Id,
+            Amount: FromMinor(payout.Amount, payout.Currency ?? primary.Currency!),
+            Currency: currency,
+            CreatedAtUtc: payout.Created,
+            ArrivalUtc: payout.ArrivalDate,
+            Status: payout.Status ?? "pending"
         );
     }
 

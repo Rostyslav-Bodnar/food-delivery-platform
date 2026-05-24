@@ -89,4 +89,14 @@ public class AccountController(GatewayProxy proxy) : ControllerBase
         [FromQuery] DateTime? from,
         [FromQuery] DateTime? to)
         => proxy.ProxyAsync<object>(HttpContext);
+
+    // =========================
+    // MANUAL PAYOUT
+    // Triggers a Stripe Payout on the business's connected account.
+    // Response shape is the UserService ManualPayoutResponse record;
+    // kept as `object` (same convention as dashboard proxy).
+    // =========================
+    [HttpPost("business/{businessId:guid}/payouts/manual")]
+    public Task<Response<object>> CreateManualPayout(Guid businessId)
+        => proxy.ProxyAsync<object>(HttpContext);
 }

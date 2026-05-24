@@ -9,6 +9,7 @@ import {
     OutcomeBreakdownChart
 } from "./components/DashboardCharts.jsx";
 import PayoutsTable from "./components/PayoutsTable.jsx";
+import ManualPayoutButton from "./components/ManualPayoutButton.jsx";
 import useBusinessDashboard from "./hooks/useBusinessDashboard.jsx";
 import "./styles/BusinessDashboardPage.css";
 
@@ -17,12 +18,13 @@ export default function BusinessDashboardPage() {
     const businessName = localStorage.getItem("currentAccountName") ?? "Your business";
 
     const [windowDays, setWindowDays] = useState(30);
-    const { dashboard, dishRevenue, loading, error } = useBusinessDashboard(
+    const { dashboard, dishRevenue, loading, error, refresh } = useBusinessDashboard(
         businessId,
         windowDays
     );
 
     const currency = dashboard?.currency ?? "USD";
+    const availableBalance = dashboard?.balance?.available ?? 0;
 
     return (
         <div className="business-dashboard-shell">
@@ -103,6 +105,12 @@ export default function BusinessDashboardPage() {
                                     <span className="dashboard-card__eyebrow">Bank payouts</span>
                                     <h2>Recent settlements</h2>
                                 </div>
+                                <ManualPayoutButton
+                                    businessId={businessId}
+                                    available={availableBalance}
+                                    currency={currency}
+                                    onPayoutCreated={refresh}
+                                />
                             </header>
                             <PayoutsTable payouts={dashboard.payouts} />
                         </article>
