@@ -34,7 +34,7 @@ const useLoginForm = () => {
             setSubmitting(true)
 
             await login(formData)
-            window.location.href = "/food-delivery-platform/profile"
+            window.location.href = "/profile"
         } catch (err) {
             const message = err.message.toLowerCase()
 

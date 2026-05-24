@@ -80,7 +80,7 @@ export const UserProvider = ({ children }) => {
             // most routes are role-specific (a customer's /cart doesn't apply
             // to a business user).
             if (previousType && nextType && previousType !== nextType) {
-                window.location.href = "/food-delivery-platform/";
+                window.location.href = "/";
             }
         } catch (err) {
             setError(err.message);
@@ -95,7 +95,7 @@ export const UserProvider = ({ children }) => {
             await logout();
         } finally {
             localStorage.clear();
-            window.location.href = "/food-delivery-platform/";
+            window.location.href = "/";
         }
     };
 
