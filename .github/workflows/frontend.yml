@@ -1,0 +1,90 @@
+name: Frontend CI/CD
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/food-delivery-platform/**'
+  pull_request:
+    branches: [ main ]
+
+# `contents: write` is required because the deploy step pushes the built
+# bundle to the `gh-pages` branch using the default GITHUB_TOKEN.
+permissions:
+  contents: write
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+
+  # =========================
+  # CI
+  # =========================
+  ci:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: frontend/food-delivery-platform
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/food-delivery-platform/package-lock.json
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Upload the built dist/ so the deploy job can pick it up without
+      # rebuilding (and so PR runs leave a downloadable artifact for review).
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: frontend/food-delivery-platform/dist
+          retention-days: 7
+
+
+  # =========================
+  # DEPLOY (gh-pages)
+  # =========================
+  deploy:
+    needs: ci
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: frontend/food-delivery-platform/dist
+
+      # Mirrors `npm run deploy` (gh-pages -d dist) but driven by GITHUB_TOKEN
+      # so no personal access token is needed. Publishes the built bundle
+      # to the `gh-pages` branch, which GitHub Pages serves at
+      # https://rostyslav-bodnar.github.io/food-delivery-platform
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: frontend/food-delivery-platform/dist
+          publish_branch: gh-pages
+          user_name: 'github-actions[bot]'
+          user_email: 'github-actions[bot]@users.noreply.github.com'
+          commit_message: 'Deploy ${{ github.sha }}'

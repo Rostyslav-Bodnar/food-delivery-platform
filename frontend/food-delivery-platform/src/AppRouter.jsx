@@ -22,7 +22,7 @@ import BusinessDashboardPage from "./pages/business-dashboard/BusinessDashboardP
 
 const AppRouter = () => {
     return (
-        <Router basename="/food-delivery-platform">
+        <Router basename="/">
             <div className="app-container">
                 <Header />
                 <main>

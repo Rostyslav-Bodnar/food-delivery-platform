@@ -71,9 +71,15 @@ builder.Services.AddOpenTelemetry()
 // =======================
 builder.Services.AddCors(options =>
 {
+    // Origin comes from config (AllowedOrigins:Url) so prod (Render) and
+    // dev (appsettings.Development.json) can each set the appropriate
+    // Gateway URL. Override on Render via env var `AllowedOrigins__Url`.
+    var allowedOrigin = builder.Configuration["AllowedOrigins:Url"]
+                        ?? "http://localhost:5229";
+
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins("http://localhost:5229")
+        policy.WithOrigins(allowedOrigin)
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
