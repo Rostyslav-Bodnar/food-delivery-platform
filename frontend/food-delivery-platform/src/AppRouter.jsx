@@ -19,6 +19,8 @@ import CustomerOrderHistoryPage from "./pages/order-history/CustomerOrderHistory
 import BusinessOrderHistoryPage from "./pages/order-history/BusinessOrderHistoryPage.jsx";
 import CourierOrderHistoryPage from "./pages/order-history/CourierOrderHistoryPage.jsx";
 import BusinessDashboardPage from "./pages/business-dashboard/BusinessDashboardPage.jsx";
+import OnboardingDonePage from "./pages/stripe-onboarding/OnboardingDonePage.jsx";
+import OnboardingRefreshPage from "./pages/stripe-onboarding/OnboardingRefreshPage.jsx";
 
 const AppRouter = () => {
     return (
@@ -28,6 +30,14 @@ const AppRouter = () => {
                 <main>
                     <Routes>
                         <Route path="/" element={<HomePage />} />
+                        <Route
+                            path="/stripe/onboarding/done"
+                            element={<OnboardingDonePage />}
+                        />
+                        <Route
+                            path="/stripe/onboarding/refresh"
+                            element={<OnboardingRefreshPage />}
+                        />
                         <Route path="/auth" element={<AuthorizationPage />} />
                         <Route path="/dish/:id" element={<DishPage />} />
                         <Route path="/cart" element={<CartPage />} />

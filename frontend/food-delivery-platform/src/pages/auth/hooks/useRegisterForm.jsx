@@ -42,7 +42,7 @@ const useRegisterForm = () => {
             setSubmitting(true)
 
             await register(formData)
-            window.location.href = "/food-delivery-platform/profile"
+            window.location.href = "/profile"
         } catch (err) {
             const message = err.message?.toLowerCase() ?? ""
 
