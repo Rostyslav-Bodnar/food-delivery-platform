@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
     getBusinessDashboard,
     getRevenueByDish
@@ -7,13 +7,19 @@ import {
 /**
  * Loads the Stripe-backed dashboard summary AND the per-dish revenue
  * aggregate from OrderService in parallel. Re-fetches whenever the
- * businessId or windowDays changes.
+ * businessId or windowDays changes, or whenever refresh() is called
+ * (e.g. after a manual payout drains the available balance).
  */
 export default function useBusinessDashboard(businessId, windowDays) {
     const [dashboard, setDashboard] = useState(null);
     const [dishRevenue, setDishRevenue] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [reloadTick, setReloadTick] = useState(0);
+
+    const refresh = useCallback(() => {
+        setReloadTick(t => t + 1);
+    }, []);
 
     useEffect(() => {
         if (!businessId) {
@@ -52,7 +58,7 @@ export default function useBusinessDashboard(businessId, windowDays) {
         return () => {
             cancelled = true;
         };
-    }, [businessId, windowDays]);
+    }, [businessId, windowDays, reloadTick]);
 
-    return { dashboard, dishRevenue, loading, error };
+    return { dashboard, dishRevenue, loading, error, refresh };
 }

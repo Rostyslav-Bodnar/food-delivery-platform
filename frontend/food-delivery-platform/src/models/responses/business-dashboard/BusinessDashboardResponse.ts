@@ -61,3 +61,12 @@ export interface DishRevenue {
     orderCount: number
     revenue: number
 }
+
+export interface ManualPayoutResponse {
+    payoutId: string
+    amount: number
+    currency: string
+    createdAtUtc: string
+    arrivalUtc?: string | null
+    status: string
+}
