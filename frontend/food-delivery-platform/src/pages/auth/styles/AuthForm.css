@@ -73,6 +73,18 @@
 .fullname-inputs {
     display: flex;
     gap: 0.9rem;
+    width: 100%;
+}
+
+/* Inputs inherit the browser's default `size="20"` width and won't shrink
+   below it inside a flex container without an explicit `min-width: 0`.
+   `flex: 1 1 0` makes the two children share the row width equally;
+   `box-sizing: border-box` keeps padding + border inside the computed
+   width so neither input crosses the form border. */
+.fullname-inputs input {
+    flex: 1 1 0;
+    min-width: 0;
+    box-sizing: border-box;
 }
 
 
