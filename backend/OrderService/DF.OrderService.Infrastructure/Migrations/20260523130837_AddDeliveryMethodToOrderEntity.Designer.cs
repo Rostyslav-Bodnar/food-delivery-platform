@@ -15,6 +15,7 @@ namespace DF.OrderService.Infrastructure.Migrations
     [Migration("20260523130837_AddDeliveryMethodToOrderEntity")]
     partial class AddDeliveryMethodToOrderEntity
     {
+        
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

@@ -82,24 +82,34 @@ builder.Services.AddSwaggerGen();
 // CORS Policy
 builder.Services.AddCors(options =>
 {
-    // Origins come from config (AllowedOrigins) so prod can override
-    // localhost via env var (`AllowedOrigins__0`, `AllowedOrigins__1`, ...
-    // on Render) without a code change.
-    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                         ?? new[]
-                         {
-                             "http://localhost:3000",
-                             "http://localhost:4173",
-                             "http://localhost:5173",
-                             "http://localhost:5229"
-                         };
+    // TrackingService is the only service the browser hits directly (for
+    // SignalR negotiate on the courier-tracking hub), so it needs both:
+    //   - AllowedOrigins:Url          → gateway origin (REST calls forwarded by gateway)
+    //   - AllowedOrigins:FrontendUrl  → frontend origin (SignalR direct from browser)
+    // Override on Render via env vars `AllowedOrigins__Url` /
+    // `AllowedOrigins__FrontendUrl`.
+    var gatewayOrigin = builder.Configuration["AllowedOrigins:Url"];
+    var frontendOrigin = builder.Configuration["AllowedOrigins:FrontendUrl"];
+
+    var allowedOrigins = new[] { gatewayOrigin, frontendOrigin }
+        .Where(o => !string.IsNullOrWhiteSpace(o))
+        .ToArray();
+
+    if (allowedOrigins.Length == 0)
+    {
+        allowedOrigins = new[]
+        {
+            "http://localhost:5173",
+            "http://localhost:5229"
+        };
+    }
 
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
-            .AllowAnyHeader()                     // дозволяємо всі заголовки
-            .AllowAnyMethod()                   // дозволяємо всі HTTP методи
-            .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
+        policy.WithOrigins(allowedOrigins!)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
