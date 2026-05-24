@@ -38,8 +38,17 @@ const wrapError = (message: string): ToastShownError => {
 // Axios instance
 // =========================
 
+// Gateway base URL. Defaults to the local dev gateway so `npm run dev`
+// works without any env file; production (Vercel) overrides via the
+// `VITE_GATEWAY_API_URL` env var defined in the project settings.
+const trimTrailingSlash = (value: string) => value.replace(/\/+$/, "");
+
+const gatewayBaseUrl = trimTrailingSlash(
+    import.meta.env.VITE_GATEWAY_API_URL ?? "http://localhost:5229/api"
+);
+
 export const api: AxiosInstance = axios.create({
-    baseURL: "http://localhost:5229/api",
+    baseURL: gatewayBaseUrl,
     withCredentials: true
 });
 
