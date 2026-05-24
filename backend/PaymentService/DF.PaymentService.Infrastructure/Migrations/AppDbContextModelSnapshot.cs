@@ -250,6 +250,10 @@ namespace DF.PaymentService.Infrastructure.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
+                    b.Property<string>("DestinationStripeAccountId")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("DisputeId")
                         .HasMaxLength(128)
                         .HasColumnType("character varying(128)");

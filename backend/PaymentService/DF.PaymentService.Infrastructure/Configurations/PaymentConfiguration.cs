@@ -37,6 +37,10 @@ public class PaymentConfiguration : IEntityTypeConfiguration<Payment>
         builder.Property(p => p.StripeClientSecret)
                .HasMaxLength(256);
 
+        // Stripe Connect account IDs are ~21 chars (`acct_*`), pad to 64 for safety.
+        builder.Property(p => p.DestinationStripeAccountId)
+               .HasMaxLength(64);
+
         builder.Property(p => p.CancelReason)
                .HasMaxLength(256);
 
