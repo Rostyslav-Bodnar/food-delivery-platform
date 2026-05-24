@@ -178,12 +178,20 @@ export async function createOrder(
 // =========================
 // CREATE ORDERS (BATCH)
 // =========================
+// Optionally pass `idempotencyKey` to make the call safe against retries:
+// the OrderService `[Idempotent]` filter replays the stored 2xx response
+// for any subsequent request that carries the same key. Mint one UUID per
+// submission attempt (not per axios retry) on the caller side.
 export async function createOrders(
-    request: CreateOrderRequest[]
+    request: CreateOrderRequest[],
+    idempotencyKey?: string
 ): Promise<boolean> {
     const res = await api.post<ApiResponse<boolean>>(
         "/order/create/batch",
-            request
+        request,
+        idempotencyKey
+            ? { headers: { "Idempotency-Key": idempotencyKey } }
+            : undefined
     )
 
     return res.data.data!

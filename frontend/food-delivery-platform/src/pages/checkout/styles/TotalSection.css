@@ -81,3 +81,30 @@
 .submit-order-btn:active {
     transform: translateY(0);
 }
+
+.submit-order-btn:disabled {
+    cursor: not-allowed;
+    transform: none;
+    filter: saturate(0.6) brightness(0.85);
+    box-shadow: 0 6px 18px rgba(124, 92, 255, 0.20);
+}
+
+.submit-order-btn:disabled::before {
+    transform: translateX(-100%) !important;
+}
+
+.submit-order-btn[aria-busy="true"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.submit-order-btn__spinner {
+    animation: submit-order-btn-spin 0.9s linear infinite;
+}
+
+@keyframes submit-order-btn-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
