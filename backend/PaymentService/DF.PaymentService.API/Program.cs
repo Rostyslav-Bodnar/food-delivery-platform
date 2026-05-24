@@ -27,16 +27,18 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
 // ------------------------------------------------------------
-// 2) CORS — origins come from config (AllowedOrigins) so prod doesn't ship localhost
+// 2) CORS — origin comes from config (AllowedOrigins:Url) so prod (Render)
+//    and dev (appsettings.Development.json) can each set their own Gateway
+//    URL. Override on Render via env var `AllowedOrigins__Url`.
 // ------------------------------------------------------------
-var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
-                     ?? new[] { "http://localhost:5173" };
+var allowedOrigin = builder.Configuration["AllowedOrigins:Url"]
+                    ?? "http://localhost:5229";
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(allowedOrigins)
+        policy.WithOrigins(allowedOrigin)
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();

@@ -82,13 +82,21 @@ builder.Services.AddSwaggerGen();
 // CORS Policy
 builder.Services.AddCors(options =>
 {
+    // Origins come from config (AllowedOrigins) so prod can override
+    // localhost via env var (`AllowedOrigins__0`, `AllowedOrigins__1`, ...
+    // on Render) without a code change.
+    var allowedOrigins = builder.Configuration.GetSection("AllowedOrigins").Get<string[]>()
+                         ?? new[]
+                         {
+                             "http://localhost:3000",
+                             "http://localhost:4173",
+                             "http://localhost:5173",
+                             "http://localhost:5229"
+                         };
+
     options.AddPolicy("AllowFrontend", policy =>
     {
-        policy.WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:4173",
-                "http://localhost:5173",
-                "http://localhost:5229")
+        policy.WithOrigins(allowedOrigins)
             .AllowAnyHeader()                     // дозволяємо всі заголовки
             .AllowAnyMethod()                   // дозволяємо всі HTTP методи
             .AllowCredentials();               // розкоментуй, якщо потрібні куки або авторизація
