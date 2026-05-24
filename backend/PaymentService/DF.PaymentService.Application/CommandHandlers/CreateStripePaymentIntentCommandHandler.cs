@@ -19,7 +19,16 @@ public class CreateStripePaymentIntentCommandHandler(IPaymentRepository repo, IS
         if (!string.IsNullOrWhiteSpace(payment.StripePaymentIntentId))
             return;
 
-        var result = await stripe.CreatePaymentIntentAsync(payment, ct);
+        // Destination-charge path when the business is onboarded with Stripe Connect.
+        // Falls back to a plain platform charge when DestinationStripeAccountId is null.
+        var result = payment.FundsFlow == FundsFlow.Destination
+                     && !string.IsNullOrWhiteSpace(payment.DestinationStripeAccountId)
+            ? await stripe.CreateDestinationPaymentIntentAsync(
+                payment,
+                payment.DestinationStripeAccountId!,
+                ct: ct)
+            : await stripe.CreatePaymentIntentAsync(payment, ct);
+
         payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
 
         // Виставити TTL на підтвердження (наприклад, 15 хв)

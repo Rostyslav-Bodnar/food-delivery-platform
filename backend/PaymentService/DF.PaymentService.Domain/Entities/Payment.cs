@@ -13,6 +13,11 @@ public class Payment : AggregateRoot
     
     public FundsFlow FundsFlow { get; private set; } = FundsFlow.Standard;
 
+    // Connected-account ID for destination charges (acct_*). When non-null,
+    // PaymentIntent is created with TransferData.Destination so funds land on
+    // the business's Stripe Connect account (minus application_fee).
+    public string? DestinationStripeAccountId { get; private set; }
+
     // Stripe debug/trace
     public string? StripePaymentIntentId { get; private set; }
     public string? StripeClientSecret { get; private set; }
@@ -252,4 +257,18 @@ public class Payment : AggregateRoot
     public void SetExpiration(DateTime? expiresAt) => ExpiresAt = expiresAt;
     
     public void MarkDestinationFlow() => FundsFlow = FundsFlow.Destination;
+
+    /// <summary>
+    /// Wire this payment to a connected Stripe account. Switches the funds
+    /// flow to Destination so PI creation uses TransferData.Destination and
+    /// refunds use reverse_transfer = true.
+    /// </summary>
+    public void SetDestinationAccount(string stripeAccountId)
+    {
+        if (string.IsNullOrWhiteSpace(stripeAccountId))
+            throw new ArgumentException("Stripe account id cannot be empty.", nameof(stripeAccountId));
+
+        DestinationStripeAccountId = stripeAccountId.Trim();
+        MarkDestinationFlow();
+    }
 }

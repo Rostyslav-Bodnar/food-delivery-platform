@@ -27,7 +27,11 @@ public class OrderCreatedConsumer(
             var createPayment = scope.ServiceProvider.GetRequiredService<CreatePaymentCommandHandler>();
             await createPayment.Handle(new CreatePaymentCommand(
                 order.OrderId, order.TotalPrice, order.Currency,
-                Enum.Parse<PaymentMethod>(order.PaymentMethod)), stoppingToken);
+                Enum.Parse<PaymentMethod>(order.PaymentMethod),
+                // Empty string from OrderService means "business has no Stripe account yet" — fall back to platform charge.
+                string.IsNullOrWhiteSpace(order.BusinessStripeAccountId)
+                    ? null
+                    : order.BusinessStripeAccountId), stoppingToken);
         });
 
 

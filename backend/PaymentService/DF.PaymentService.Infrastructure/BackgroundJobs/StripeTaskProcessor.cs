@@ -110,7 +110,17 @@ public sealed class StripeTaskProcessor(
             return;
         }
 
-        var result = await stripe.CreatePaymentIntentAsync(payment, ct);
+        // Destination-charge path when the business is onboarded with Stripe Connect.
+        // Falls back to a plain platform charge when DestinationStripeAccountId is null
+        // (older orders, businesses that haven't completed onboarding).
+        var result = payment.FundsFlow == FundsFlow.Destination
+                     && !string.IsNullOrWhiteSpace(payment.DestinationStripeAccountId)
+            ? await stripe.CreateDestinationPaymentIntentAsync(
+                payment,
+                payment.DestinationStripeAccountId!,
+                ct: ct)
+            : await stripe.CreatePaymentIntentAsync(payment, ct);
+
         payment.SetStripeSecrets(result.PaymentIntentId, result.ClientSecret);
         payment.SetExpiration(DateTime.UtcNow.Add(options.PaymentExpiration));
 

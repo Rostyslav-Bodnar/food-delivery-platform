@@ -55,6 +55,7 @@ const mapOrder = (order) => {
         deliveryMethod: order.deliveryMethod ?? "Delivery",
         paymentMethod: order.paymentMethod ?? "",
         courierPaid: Boolean(order.courierPaid),
+        isPaid: Boolean(order.isPaid),
         total: order.totalPrice,
         createdAt: new Date(order.orderDate).toLocaleString(),
         createdAtRaw: order.orderDate,
