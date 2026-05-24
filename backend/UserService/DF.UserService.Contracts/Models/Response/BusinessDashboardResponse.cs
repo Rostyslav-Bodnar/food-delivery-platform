@@ -61,3 +61,17 @@ public sealed record DashboardWindow(
     DateTime FromUtc,
     DateTime ToUtc
 );
+
+/// <summary>
+/// Result of a manual payout initiated from the business dashboard.
+/// Wraps the Stripe Payout we just created on the connected account so
+/// the UI can show "we initiated $X, expected to arrive on Y".
+/// </summary>
+public sealed record ManualPayoutResponse(
+    string PayoutId,
+    decimal Amount,
+    string Currency,
+    DateTime CreatedAtUtc,
+    DateTime? ArrivalUtc,
+    string Status
+);
