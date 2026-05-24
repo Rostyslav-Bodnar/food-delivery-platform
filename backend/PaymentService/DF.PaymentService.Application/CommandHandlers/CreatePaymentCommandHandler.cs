@@ -24,6 +24,15 @@ public class CreatePaymentCommandHandler(
             new Money(command.Amount, command.Currency),
             command.Method);
 
+        // Online + a known connected account → destination charge. When the
+        // business hasn't onboarded yet, the field arrives empty and we fall
+        // back to a platform charge (kept for forward-compat with old data).
+        if (command.Method == PaymentMethod.Online
+            && !string.IsNullOrWhiteSpace(command.DestinationStripeAccountId))
+        {
+            payment.SetDestinationAccount(command.DestinationStripeAccountId);
+        }
+
         await repository.AddAsync(payment, cancellationToken);
 
         // For Online payments, stage a PaymentTask in the same transaction so the
