@@ -157,4 +157,26 @@ public class AccountController(
 
         return Ok(dashboard);
     }
+
+    /// <summary>
+    /// Drain the connected account's available balance to the business's
+    /// bank account on demand. Normal Express accounts pay out
+    /// automatically on Stripe's schedule — this is the manual override.
+    /// Fires `payout.created` (→ `payout.paid` / `payout.failed`) which
+    /// hits StripePayoutWebhookController and lands as a PayoutRecord.
+    /// </summary>
+    [HttpPost("business/{businessId:guid}/payouts/manual")]
+    public async Task<ActionResult<ManualPayoutResponse>> CreateManualPayout(Guid businessId)
+    {
+        var userId = userContext.UserId;
+        if (userId == Guid.Empty)
+            throw new UnauthorizedAccessException("User is not authorized");
+
+        var result = await dashboardService.CreateManualPayoutAsync(
+            businessId,
+            userId,
+            HttpContext.RequestAborted);
+
+        return Ok(result);
+    }
 }

@@ -14,4 +14,15 @@ public interface IBusinessDashboardService
         DateTime fromUtc,
         DateTime toUtc,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Initiates a manual payout of the connected account's full available
+    /// balance to the business's external bank account. Throws if the
+    /// business has not finished Stripe onboarding, payouts are disabled,
+    /// or available balance is zero.
+    /// </summary>
+    Task<ManualPayoutResponse> CreateManualPayoutAsync(
+        Guid businessId,
+        Guid requestingUserId,
+        CancellationToken ct = default);
 }

@@ -365,6 +365,48 @@
     font-size: 11.5px;
 }
 
+/* -------------------- Manual payout button -------------------- */
+
+.manual-payout-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 16px;
+    border-radius: var(--radius-md);
+    border: 1px solid rgba(52, 211, 153, 0.40);
+    background: linear-gradient(90deg, rgba(52, 211, 153, 0.18), rgba(0, 212, 255, 0.14));
+    color: #6ee7b7;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: transform var(--transition), box-shadow var(--transition), background var(--transition), border-color var(--transition);
+}
+
+.manual-payout-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    border-color: rgba(52, 211, 153, 0.65);
+    background: linear-gradient(90deg, rgba(52, 211, 153, 0.30), rgba(0, 212, 255, 0.22));
+    box-shadow: 0 10px 24px rgba(52, 211, 153, 0.22);
+}
+
+.manual-payout-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--glass-border);
+    color: var(--muted-2);
+}
+
+.manual-payout-btn__spin {
+    animation: manual-payout-spin 1s linear infinite;
+}
+
+@keyframes manual-payout-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
 /* -------------------- Payouts table -------------------- */
 
 .payouts-table-shell {

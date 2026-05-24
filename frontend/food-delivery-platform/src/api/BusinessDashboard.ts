@@ -3,7 +3,8 @@ import { api } from "./apiClient"
 import type { ApiResponse } from "../models/responses/Response"
 import type {
     BusinessDashboardResponse,
-    DishRevenue
+    DishRevenue,
+    ManualPayoutResponse
 } from "../models/responses/business-dashboard/BusinessDashboardResponse"
 
 const toIso = (d: Date) => d.toISOString()
@@ -37,6 +38,20 @@ export async function getRevenueByDish(
     const res = await api.get<ApiResponse<DishRevenue[]>>(
         `/order/business/${businessId}/revenue-by-dish`,
         { params: { from: toIso(from), to: toIso(to) } }
+    )
+    return res.data.data!
+}
+
+/**
+ * Drains the connected account's full available balance to the
+ * business's bank. Stripe normally pays out automatically on a daily
+ * schedule — this is the manual override.
+ */
+export async function createManualPayout(
+    businessId: string
+): Promise<ManualPayoutResponse> {
+    const res = await api.post<ApiResponse<ManualPayoutResponse>>(
+        `/account/business/${businessId}/payouts/manual`
     )
     return res.data.data!
 }
