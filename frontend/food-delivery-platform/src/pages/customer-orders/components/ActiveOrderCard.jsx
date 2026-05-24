@@ -1,5 +1,5 @@
 import React from "react";
-import { Bike, Clock3, MapPin, Wallet } from "lucide-react";
+import { Bike, Clock3, CreditCard, MapPin, Wallet } from "lucide-react";
 
 const formatCurrency = (value) =>
     new Intl.NumberFormat("uk-UA", {
@@ -15,11 +15,32 @@ export default function ActiveOrderCard({
     onTrackOrder,
     onRequestCancel,
     onConfirmDelivered,
+    onRequestPay,
     confirmingDelivery,
-    cancelling
+    cancelling,
+    payingNow
 }) {
+    // Card orders cannot be confirmed delivered until the customer has
+    // actually paid — the backend's OrderStatusTransitions rejects the
+    // transition with a 400, so hiding the button gives clearer UX than
+    // letting the user click it and see an error toast.
+    const isOnlinePaymentPending =
+        order.paymentMethod === "Online" && !order.isPaid;
+
     const canConfirmDelivered =
-        order.deliveryMethod !== "Pickup" && order.status === "picked-up";
+        order.deliveryMethod !== "Pickup" &&
+        order.status === "picked-up" &&
+        !isOnlinePaymentPending;
+
+    // Card-payment orders can be paid from this page if the original
+    // checkout flow was abandoned (user closed the Stripe modal). The PI
+    // stays open on Stripe's side, so the same clientSecret resumes the
+    // unfinished payment. Hidden for cash, delivered, and cancelled orders.
+    const canPayNow =
+        order.paymentMethod === "Online" &&
+        !order.isPaid &&
+        order.status !== "delivered" &&
+        order.status !== "cancelled";
 
     return (
         <div className="active-order-card">
@@ -87,6 +108,23 @@ export default function ActiveOrderCard({
                         disabled={confirmingDelivery}
                     >
                         {confirmingDelivery ? "Confirming..." : "Confirm received"}
+                    </button>
+                )}
+
+                {isOnlinePaymentPending && order.status === "picked-up" && (
+                    <div className="payment-required-note">
+                        Pay for the order before confirming delivery.
+                    </div>
+                )}
+
+                {canPayNow && (
+                    <button
+                        className="pay-now-btn"
+                        onClick={() => onRequestPay?.(order)}
+                        disabled={payingNow}
+                    >
+                        <CreditCard size={14} />
+                        {payingNow ? "Opening payment..." : "Pay now"}
                     </button>
                 )}
 

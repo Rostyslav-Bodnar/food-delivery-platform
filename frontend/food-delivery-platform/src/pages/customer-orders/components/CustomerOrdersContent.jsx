@@ -12,8 +12,10 @@ export default function CustomerOrdersContent({
     onTrackOrder,
     onRequestCancel,
     onConfirmDelivered,
+    onRequestPay,
     confirmingDeliveryId,
-    cancellingOrderId
+    cancellingOrderId,
+    payingOrderId
 }) {
     if (loading) {
         return <OrdersSkeleton />;
@@ -40,8 +42,10 @@ export default function CustomerOrdersContent({
             onTrackOrder={onTrackOrder}
             onRequestCancel={onRequestCancel}
             onConfirmDelivered={onConfirmDelivered}
+            onRequestPay={onRequestPay}
             confirmingDeliveryId={confirmingDeliveryId}
             cancellingOrderId={cancellingOrderId}
+            payingOrderId={payingOrderId}
         />
     );
 }

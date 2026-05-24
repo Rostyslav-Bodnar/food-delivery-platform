@@ -8,8 +8,10 @@ export default function ActiveOrdersList({
     onTrackOrder,
     onRequestCancel,
     onConfirmDelivered,
+    onRequestPay,
     confirmingDeliveryId,
-    cancellingOrderId
+    cancellingOrderId,
+    payingOrderId
 }) {
     return (
         <div className="active-orders-list">
@@ -22,8 +24,10 @@ export default function ActiveOrdersList({
                     onTrackOrder={onTrackOrder}
                     onRequestCancel={onRequestCancel}
                     onConfirmDelivered={onConfirmDelivered}
+                    onRequestPay={onRequestPay}
                     confirmingDelivery={confirmingDeliveryId === order.id}
                     cancelling={cancellingOrderId === order.id}
+                    payingNow={payingOrderId === order.id}
                 />
             ))}
         </div>

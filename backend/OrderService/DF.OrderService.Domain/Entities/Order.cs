@@ -22,5 +22,11 @@ public class Order
     public PaymentMethod PaymentMethod { get; set; }
     public DeliveryMethod DeliveryMethod { get; set; }
 
+    // Card payment settled in Stripe (payment_intent.succeeded webhook
+    // → PaymentSucceededEvent → consumed by OrderService → flips this
+    // to true). Used to block Online orders from being marked Delivered
+    // before the customer has actually paid.
+    public bool IsPaid { get; set; }
+
     public List<OrderedDish> OrderedDishes { get; set; } = new();
 }

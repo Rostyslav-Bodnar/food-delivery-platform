@@ -87,6 +87,9 @@ namespace DF.OrderService.Infrastructure.Migrations
                     b.Property<int>("DeliveryMethod")
                         .HasColumnType("integer");
 
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("boolean");
+
                     b.Property<DateTime>("OrderDate")
                         .HasColumnType("timestamp with time zone");
 

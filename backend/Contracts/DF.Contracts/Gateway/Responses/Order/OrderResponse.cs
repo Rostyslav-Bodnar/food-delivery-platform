@@ -12,7 +12,8 @@ public record OrderResponse(
     decimal TotalPrice,
     decimal DeliveryFee,
     decimal CourierFee,
-    bool CourierPaid
+    bool CourierPaid,
+    bool IsPaid = false
     );
 
 public record CustomerOrderResponse(
@@ -33,8 +34,9 @@ public record CustomerOrderResponse(
     string OrderStatus,
     List<DishResponse> dishes,
     string DeliveryMethod = "",
-    string PaymentMethod = ""
-) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
+    string PaymentMethod = "",
+    bool IsPaid = false
+) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid, IsPaid);
 
 public record BusinessOrderResponse(
     Guid Id,
@@ -54,8 +56,9 @@ public record BusinessOrderResponse(
     string OrderStatus,
     List<DishResponse> dishes,
     string DeliveryMethod = "",
-    string PaymentMethod = ""
-) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid);
+    string PaymentMethod = "",
+    bool IsPaid = false
+) : OrderResponse(Id, BusinessId, BusinessName, OrderedBy, OrderDate, TotalPrice, DeliveryFee, CourierFee, CourierPaid, IsPaid);
 
 public record CourierOrderResponse(
     Guid Id,
@@ -95,7 +98,8 @@ public record OrderDetailsResponse(
     string? CourierName,
     string? CourierPhoneNumber,
     string DeliveryMethod,
-    string PaymentMethod = ""
+    string PaymentMethod = "",
+    bool IsPaid = false
     );
     
     public record DishResponse(

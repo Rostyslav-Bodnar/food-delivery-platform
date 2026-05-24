@@ -5,7 +5,7 @@
         <Nullable>enable</Nullable>
 
         <PackageId>DF.Contracts</PackageId>
-        <Version>1.0.2-pre-release13</Version>
+        <Version>1.0.2-pre-release14</Version>
         <Authors>Rostyslav</Authors>
         <PackageDescription>Shared contracts for DF microservices</PackageDescription>
 

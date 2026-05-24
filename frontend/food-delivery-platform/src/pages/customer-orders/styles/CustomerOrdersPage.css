@@ -273,7 +273,8 @@
 
 .track-btn,
 .details-btn,
-.cancel-btn {
+.cancel-btn,
+.pay-now-btn {
     box-sizing: border-box;
     min-height: 42px;
     padding: 0 16px;
@@ -325,9 +326,37 @@
     transform: translateY(-1px);
 }
 
+.pay-now-btn {
+    gap: 6px;
+    background: linear-gradient(90deg, #34d399, var(--accent-3));
+    border-color: transparent;
+    color: #062028;
+    box-shadow: 0 6px 18px rgba(52, 211, 153, 0.32);
+}
+
+.pay-now-btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 26px rgba(52, 211, 153, 0.45), 0 0 0 1px rgba(0, 212, 255, 0.25);
+}
+
+/* Inline hint shown when an unpaid card order has been picked up — the
+   "Confirm received" button is hidden until the payment lands. */
+.payment-required-note {
+    grid-column: 1 / -1;
+    padding: 10px 14px;
+    border-radius: var(--radius-md);
+    background: rgba(245, 182, 66, 0.10);
+    border: 1px solid rgba(245, 182, 66, 0.30);
+    color: var(--gold);
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+}
+
 .track-btn:disabled,
 .details-btn:disabled,
-.cancel-btn:disabled {
+.cancel-btn:disabled,
+.pay-now-btn:disabled {
     opacity: 0.55;
     cursor: wait;
     transform: none;

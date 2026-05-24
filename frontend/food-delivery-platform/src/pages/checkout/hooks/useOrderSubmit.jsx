@@ -295,14 +295,22 @@ const useOrderSubmit = (
                 const settings = getSettingsFor(restaurant);
                 if (settings.paymentType !== "card") continue;
 
+                // Payment row + Stripe PaymentIntent are created asynchronously
+                // by PaymentService (RabbitMQ consumer → CreatePaymentCommandHandler
+                // → StripeTaskProcessor polling every 5s). On Render free tier
+                // with cold consumers, the whole chain can take 20-30s. Poll
+                // with exponential-ish backoff up to ~30s before giving up.
+                const delaysMs = [500, 1000, 1500, 2000, 2500, 3000, 4000, 5000, 5000, 5000];
                 let clientSecret = null;
 
-                for (let i = 0; i < 5 && !clientSecret; i++) {
+                for (const delay of delaysMs) {
                     try {
                         clientSecret = await fetchClientSecret(order.id);
+                        if (clientSecret) break;
                     } catch {
-                        await new Promise((r) => setTimeout(r, 1200));
+                        // 404 / network — payment not ready yet, keep polling
                     }
+                    await new Promise((r) => setTimeout(r, delay));
                 }
 
                 nextPaymentState[restaurant] = {

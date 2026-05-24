@@ -28,4 +28,15 @@ public interface IOrderRepository : IRepository<Order>
         DateTime fromUtc,
         DateTime toUtc,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Online (card-paid) orders that are still in pre-pickup state, haven't
+    /// been paid, and were created before `cutoffUtc`. Used by the
+    /// payment-timeout worker to auto-cancel abandoned orders that never
+    /// got paid.
+    /// </summary>
+    Task<IReadOnlyList<Order>> GetStaleUnpaidOnlineOrdersAsync(
+        DateTime cutoffUtc,
+        int take,
+        CancellationToken ct = default);
 }

@@ -119,6 +119,26 @@ public class OrderRepository(AppDbContext dbContext) : IOrderRepository
             .ToListAsync(ct);
     }
 
+    public async Task<IReadOnlyList<Order>> GetStaleUnpaidOnlineOrdersAsync(
+        DateTime cutoffUtc,
+        int take,
+        CancellationToken ct = default)
+    {
+        // Only cancel orders that haven't gone out the door yet. Once a
+        // courier has picked the order up (PickedUp/OutForDelivery), the
+        // restaurant has already invested cost — at that point the cancel
+        // should be operator-driven, not automated.
+        return await dbContext.Orders
+            .Where(o => o.PaymentMethod == PaymentMethod.Online
+                        && !o.IsPaid
+                        && o.OrderDate < cutoffUtc
+                        && (o.OrderStatus == OrderStatus.Preparing
+                            || o.OrderStatus == OrderStatus.Ready))
+            .OrderBy(o => o.OrderDate)
+            .Take(take)
+            .ToListAsync(ct);
+    }
+
     public async Task<bool> CreateRangeWithDishesAsync(
         IEnumerable<Order> orders,
         IEnumerable<OrderedDish> dishes)

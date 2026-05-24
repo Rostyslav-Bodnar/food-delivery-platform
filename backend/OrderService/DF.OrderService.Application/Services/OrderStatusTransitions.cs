@@ -39,5 +39,20 @@ public static class OrderStatusTransitions
     {
         if (!IsAllowed(order, to))
             throw new IllegalStatusTransitionException(order.OrderStatus.ToString(), to.ToString());
+
+        // Real-world business rule: a card-paid order cannot be marked
+        // Delivered until the Stripe PaymentIntent has succeeded
+        // (PaymentSucceededEvent → OrderService consumer → IsPaid = true).
+        // Cash-on-delivery orders settle separately via the courier
+        // "Mark Paid" flow (CourierPaid flag) so they're free to move
+        // through Delivered regardless of IsPaid.
+        if (to == OrderStatus.Delivered
+            && order.PaymentMethod == PaymentMethod.Online
+            && !order.IsPaid)
+        {
+            throw new OrderStateException(
+                "Cannot mark this order as delivered: the card payment has not been completed yet. " +
+                "Please finish paying for the order first.");
+        }
     }
 }
