@@ -32,12 +32,44 @@ const CustomerOrdersPage = () => {
         reloadOrders
     } = useCustomerOrders(customerId);
 
+    // The SignalR callback closes over `orders` at subscription time. We need
+    // the LATEST orders list when the event arrives to look up the order's
+    // pre-cancel state — ref dodges the stale-closure trap.
+    const ordersRef = React.useRef(orders);
+    React.useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
+
     useOrderEventsSubscription({
         enabled: Boolean(customerId),
         onStatusChanged: (evt) => {
-            if (evt?.customerId === customerId) {
-                reloadOrders?.({ silent: true });
+            if (evt?.customerId !== customerId) return;
+
+            // Specific UX for the payment-timeout auto-cancel: the order is
+            // an Online order that was sitting unpaid past the 15-min
+            // deadline. The backend worker fired CancelOrderAsync, so the
+            // user gets here with newStatus=Canceled and an unpaid Online
+            // record. A generic "order canceled" toast would leave them
+            // guessing; spell out the cause and the recovery.
+            if (evt.newStatus === "Canceled") {
+                const order = ordersRef.current.find((o) => o.id === evt.orderId);
+                if (
+                    order &&
+                    order.paymentMethod === "Online" &&
+                    !order.isPaid
+                ) {
+                    toast.warning(
+                        "Your order was cancelled because the payment wasn't completed in time. Place the order again and pay to receive your food.",
+                        { autoHideMs: 8000 }
+                    );
+                } else if (evt.previousStatus !== "Canceled") {
+                    // Generic cancel from another source (business cancellation,
+                    // ops action, manual cancel). Quiet info-level toast.
+                    toast.info("Order cancelled");
+                }
             }
+
+            reloadOrders?.({ silent: true });
         },
         onCourierPaid: (evt) => {
             if (evt?.customerId === customerId) {

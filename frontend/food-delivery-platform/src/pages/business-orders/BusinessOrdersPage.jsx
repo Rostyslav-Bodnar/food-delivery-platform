@@ -18,6 +18,7 @@ import { useOrderSelection } from "./hooks/useOrderSelection";
 import { useOrderStatus } from "./hooks/useOrderStatus";
 import LiveOrderTrackingModal from "../../features/order-tracking/LiveOrderTrackingModal.jsx";
 import useOrderEventsSubscription from "../../hooks/useOrderEventsSubscription.jsx";
+import { useToast } from "../../global-components/toast/ToastContext";
 
 const STATUS_MAP = {
     pending: { label: "New", color: "#7c5cff", icon: Package },
@@ -30,6 +31,7 @@ const STATUS_MAP = {
 };
 
 export default function BusinessOrdersPage({ userData }) {
+    const toast = useToast();
     const businessId = localStorage.getItem("currentAccountId");
 
     const { orders, setOrders, loading, reloadOrders } = useBusinessOrders(businessId);
@@ -43,12 +45,39 @@ export default function BusinessOrdersPage({ userData }) {
     const { handleStatusChange } = useOrderStatus(setOrders);
     const [trackingOrder, setTrackingOrder] = React.useState(null);
 
+    // Latest orders for the SignalR callback closure (same trick as
+    // CustomerOrdersPage). Used to detect payment-timeout cancellations.
+    const ordersRef = React.useRef(orders);
+    React.useEffect(() => {
+        ordersRef.current = orders;
+    }, [orders]);
+
     useOrderEventsSubscription({
         enabled: Boolean(businessId),
         onStatusChanged: (evt) => {
-            if (evt?.businessId === businessId) {
-                reloadOrders?.();
+            if (evt?.businessId !== businessId) return;
+
+            // Friendlier toast when an order auto-cancels because the
+            // customer never paid — gives the restaurant a clear reason
+            // ("stop preparing, you won't get paid for it") instead of
+            // a mysterious silent disappearance.
+            if (evt.newStatus === "Canceled") {
+                const order = ordersRef.current.find((o) => o.id === evt.orderId);
+                if (
+                    order &&
+                    order.paymentMethod === "Online" &&
+                    !order.isPaid
+                ) {
+                    toast.warning(
+                        "An order was cancelled — the customer didn't complete payment in time. Stop preparing it if you've started.",
+                        { autoHideMs: 8000 }
+                    );
+                } else if (evt.previousStatus !== "Canceled") {
+                    toast.info("An order was cancelled");
+                }
             }
+
+            reloadOrders?.();
         },
         onCourierPaid: (evt) => {
             if (evt?.businessId === businessId) {

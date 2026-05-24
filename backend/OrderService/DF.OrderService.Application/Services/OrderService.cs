@@ -302,7 +302,8 @@ public class OrderService(
                 : $"{courier.Name} {courier.Surname}",
             CourierPhoneNumber: courier?.PhoneNumber,
             DeliveryMethod: order.DeliveryMethod.ToString(),
-            PaymentMethod: order.PaymentMethod.ToString());
+            PaymentMethod: order.PaymentMethod.ToString(),
+            IsPaid: order.IsPaid);
     }
 
     public async Task<IEnumerable<BusinessOrderResponse>> GetAllByBusinessIdAsync(Guid businessId)
@@ -380,7 +381,8 @@ public class OrderService(
                 OrderStatus: order.OrderStatus.ToString(),
                 dishes: MapDishResponses(order),
                 DeliveryMethod: order.DeliveryMethod.ToString(),
-                PaymentMethod: order.PaymentMethod.ToString());
+                PaymentMethod: order.PaymentMethod.ToString(),
+                IsPaid: order.IsPaid);
         });
     }
 
@@ -722,7 +724,8 @@ public class OrderService(
                 OrderStatus: order.OrderStatus.ToString(),
                 dishes: MapDishResponses(order),
                 DeliveryMethod: order.DeliveryMethod.ToString(),
-                PaymentMethod: order.PaymentMethod.ToString());
+                PaymentMethod: order.PaymentMethod.ToString(),
+                IsPaid: order.IsPaid);
         });
     }
 
@@ -1081,7 +1084,8 @@ public class OrderService(
             TotalPrice: order.TotalPrice,
             DeliveryFee: order.DeliveryFee,
             CourierFee: order.CourierFee,
-            CourierPaid: order.CourierPaid);
+            CourierPaid: order.CourierPaid,
+            IsPaid: order.IsPaid);
     }
 
     private static List<DishResponse> MapDishResponses(Order order)

@@ -1,5 +1,6 @@
 using DF.OrderService.API.Extensions;
 using DF.OrderService.API.Middlewares;
+using DF.OrderService.Application.BackgroundJobs;
 using DF.OrderService.Application.Messaging.Clients;
 using DF.OrderService.Application.Messaging.Consumers;
 using DF.OrderService.Application.Messaging.Publishers;
@@ -156,8 +157,18 @@ builder.Services.AddHostedService<OutboxPublisherHostedService>();
 //Consumers
 builder.Services.AddSingleton<IConsumer, LocationsCreatedConsumer>();
 builder.Services.AddSingleton<IConsumer, CourierPayoutCompletedConsumer>();
+builder.Services.AddSingleton<IConsumer, PaymentSucceededConsumer>();
 
 builder.Services.AddHostedService<ConsumerHostedService>();
+
+// Auto-cancel Online orders that sit unpaid past the deadline (default 15 min).
+// Configurable via the "OrderPaymentTimeout" config section so ops can tune
+// the deadline / disable it without redeploying.
+var paymentTimeoutOptions =
+    builder.Configuration.GetSection("OrderPaymentTimeout").Get<OrderPaymentTimeoutOptions>()
+    ?? new OrderPaymentTimeoutOptions();
+builder.Services.AddSingleton(paymentTimeoutOptions);
+builder.Services.AddHostedService<OrderPaymentTimeoutWorker>();
 
 builder.Services.AddAuthorization();
 

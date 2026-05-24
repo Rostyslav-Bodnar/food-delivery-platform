@@ -45,6 +45,7 @@ export function useBusinessOrders(businessId) {
                     rawStatus: o.orderStatus,
                     deliveryMethod: o.deliveryMethod ?? "Delivery",
                     paymentMethod: o.paymentMethod ?? "",
+                    isPaid: Boolean(o.isPaid),
                     courier: o.courierName ? { name: o.courierName } : null,
                     items: o.dishes.map((d) => ({
                         name: d.dishName,
